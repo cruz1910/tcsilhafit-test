@@ -1,0 +1,46 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v3
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v3
+        with:
+          java-version: "21"
+          distribution: "temurin"
+
+      - name: Build backend
+        working-directory: backend
+        run: mvn clean install
+
+      - name: Run test
+        working-directory: backend
+        run: mvn test
+
+      - name: Build Docker image (backend)
+        run: docker build -t my-app-java ./backend
+
+  deploy:
+    name: Deploy to production
+    needs: [build]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to render 
+        uses: johnbeynon/render-deploy-action@v0.0.8
+        with:
+          service-id: ${{ secrets.SERVICE_ID }}
+          api-key: ${{ secrets.RENDER_API_KEY }}

@@ -29,6 +29,14 @@
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
+         <!-- Postgres -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+
         <!-- JPA -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
