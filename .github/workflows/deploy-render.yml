@@ -26,12 +26,15 @@ jobs:
         working-directory: backend
         run: mvn clean install
 
-      - name: Run test
+      - name: Run backend tests
         working-directory: backend
         run: mvn test
 
       - name: Build Docker image (backend)
-        run: docker build -t my-app-java ./backend
+        run: docker build -t ilhafit-backend ./backend
+
+      - name: Build Docker image (frontend)
+        run: docker build -t ilhafit-frontend ./frontend
 
   deploy:
     name: Deploy to production
@@ -39,8 +42,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Deploy to render 
+      - name: Deploy backend to Render
         uses: johnbeynon/render-deploy-action@v0.0.8
         with:
-          service-id: ${{ secrets.SERVICE_ID }}
+          service-id: ${{ secrets.RENDER_BACKEND_SERVICE_ID }}
+          api-key: ${{ secrets.RENDER_API_KEY }}
+
+      - name: Deploy frontend to Render
+        uses: johnbeynon/render-deploy-action@v0.0.8
+        with:
+          service-id: ${{ secrets.RENDER_FRONTEND_SERVICE_ID }}
           api-key: ${{ secrets.RENDER_API_KEY }}
