@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { toast } from 'react-toastify';
 
 // Configuração base da API
 const api = axios.create({
@@ -27,22 +28,37 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    // Mensagem de erro padrão
+    let errorMessage = "Ocorreu um erro inesperado. Tente novamente mais tarde.";
+
     if (error.response) {
       // Erro de resposta do servidor
       console.error('Erro na resposta:', error.response.data);
-      
+
+      // Tenta extrair mensagem de erro do backend (formato comum: { erro: "..." } ou { message: "..." })
+      errorMessage = error.response.data?.erro || error.response.data?.message || errorMessage;
+
       // Se for erro 401 (não autorizado), redirecionar para login
       if (error.response.status === 401) {
         localStorage.removeItem('token');
         window.location.href = '/login';
+        // Não exibe toast se for redirecionar, ou exibe "Sessão expirada"
+        toast.error("Sessão expirada. Faça login novamente.");
+        return Promise.reject(error);
       }
     } else if (error.request) {
       // Erro de requisição (sem resposta)
       console.error('Erro na requisição:', error.request);
+      errorMessage = "Erro de conexão com o servidor. Verifique sua internet.";
     } else {
       // Outro tipo de erro
       console.error('Erro:', error.message);
+      errorMessage = error.message;
     }
+
+    // Exibe o toast com a mensagem de erro
+    toast.error(errorMessage);
+
     return Promise.reject(error);
   }
 );
