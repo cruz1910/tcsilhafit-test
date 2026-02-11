@@ -26,4 +26,38 @@ public class AuthController {
             return ResponseEntity.status(401).body(Map.of("erro", e.getMessage()));
         }
     }
+
+    @PostMapping("/esqueci-senha")
+    public ResponseEntity<?> esqueciSenha(@RequestBody Map<String, String> payload) {
+        String email = payload.get("email");
+        try {
+            authService.forgotPassword(email);
+            return ResponseEntity.ok(Map.of("mensagem", "Email de recuperação enviado."));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("erro", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/redefinir-senha")
+    public ResponseEntity<?> redefinirSenha(@RequestBody Map<String, String> payload) {
+        String token = payload.get("token");
+        String novaSenha = payload.get("novaSenha");
+        try {
+            authService.resetPassword(token, novaSenha);
+            return ResponseEntity.ok(Map.of("mensagem", "Senha redefinida com sucesso."));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("erro", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/confirmar-email")
+    public ResponseEntity<?> confirmarEmail(@RequestBody Map<String, String> payload) {
+        String token = payload.get("token");
+        try {
+            authService.confirmEmail(token);
+            return ResponseEntity.ok(Map.of("mensagem", "Email confirmado com sucesso."));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("erro", e.getMessage()));
+        }
+    }
 }

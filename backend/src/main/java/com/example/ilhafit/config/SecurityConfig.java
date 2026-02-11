@@ -40,6 +40,9 @@ public class SecurityConfig {
                         // Permitir rotas públicas
                         .requestMatchers(
                                 "/api/autenticacao/**",
+                                "/api/autenticacao/esqueci-senha",
+                                "/api/autenticacao/redefinir-senha",
+                                "/api/autenticacao/confirmar-email",
                                 "/api/usuarios/registrar",
                                 "/api/profissionais/registrar",
                                 "/api/estabelecimentos/registrar",

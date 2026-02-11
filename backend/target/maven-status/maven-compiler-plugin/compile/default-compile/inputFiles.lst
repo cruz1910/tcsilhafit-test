@@ -21,11 +21,14 @@ C:\Users\santo\OneDrive\Documentos\Faculdade\tcs-fit-teste\backend\src\main\java
 C:\Users\santo\OneDrive\Documentos\Faculdade\tcs-fit-teste\backend\src\main\java\com\example\ilhafit\mapper\ProfissionalMapper.java
 C:\Users\santo\OneDrive\Documentos\Faculdade\tcs-fit-teste\backend\src\main\java\com\example\ilhafit\dto\EnderecoDTO.java
 C:\Users\santo\OneDrive\Documentos\Faculdade\tcs-fit-teste\backend\src\main\java\com\example\ilhafit\repository\ProfissionalRepository.java
+C:\Users\santo\OneDrive\Documentos\Faculdade\tcs-fit-teste\backend\src\main\java\com\example\ilhafit\repository\VerificationTokenRepository.java
 C:\Users\santo\OneDrive\Documentos\Faculdade\tcs-fit-teste\backend\src\main\java\com\example\ilhafit\service\EstabelecimentoService.java
 C:\Users\santo\OneDrive\Documentos\Faculdade\tcs-fit-teste\backend\src\main\java\com\example\ilhafit\entity\Estabelecimento.java
 C:\Users\santo\OneDrive\Documentos\Faculdade\tcs-fit-teste\backend\src\main\java\com\example\ilhafit\controller\AuthController.java
 C:\Users\santo\OneDrive\Documentos\Faculdade\tcs-fit-teste\backend\src\main\java\com\example\ilhafit\entity\Endereco.java
 C:\Users\santo\OneDrive\Documentos\Faculdade\tcs-fit-teste\backend\src\main\java\com\example\ilhafit\controller\AdministradorController.java
+C:\Users\santo\OneDrive\Documentos\Faculdade\tcs-fit-teste\backend\src\main\java\com\example\ilhafit\entity\VerificationToken.java
+C:\Users\santo\OneDrive\Documentos\Faculdade\tcs-fit-teste\backend\src\main\java\com\example\ilhafit\repository\PasswordResetTokenRepository.java
 C:\Users\santo\OneDrive\Documentos\Faculdade\tcs-fit-teste\backend\src\main\java\com\example\ilhafit\entity\Administrador.java
 C:\Users\santo\OneDrive\Documentos\Faculdade\tcs-fit-teste\backend\src\main\java\com\example\ilhafit\mapper\AdministradorMapper.java
 C:\Users\santo\OneDrive\Documentos\Faculdade\tcs-fit-teste\backend\src\main\java\com\example\ilhafit\repository\EstabelecimentoRepository.java
@@ -36,5 +39,7 @@ C:\Users\santo\OneDrive\Documentos\Faculdade\tcs-fit-teste\backend\src\main\java
 C:\Users\santo\OneDrive\Documentos\Faculdade\tcs-fit-teste\backend\src\main\java\com\example\ilhafit\service\ProfissionalService.java
 C:\Users\santo\OneDrive\Documentos\Faculdade\tcs-fit-teste\backend\src\main\java\com\example\ilhafit\repository\UsuarioRepository.java
 C:\Users\santo\OneDrive\Documentos\Faculdade\tcs-fit-teste\backend\src\main\java\com\example\ilhafit\dto\UsuarioDTO.java
+C:\Users\santo\OneDrive\Documentos\Faculdade\tcs-fit-teste\backend\src\main\java\com\example\ilhafit\entity\PasswordResetToken.java
 C:\Users\santo\OneDrive\Documentos\Faculdade\tcs-fit-teste\backend\src\main\java\com\example\ilhafit\dto\LoginDTO.java
+C:\Users\santo\OneDrive\Documentos\Faculdade\tcs-fit-teste\backend\src\main\java\com\example\ilhafit\service\EmailService.java
 C:\Users\santo\OneDrive\Documentos\Faculdade\tcs-fit-teste\backend\src\main\java\com\example\ilhafit\entity\Role.java

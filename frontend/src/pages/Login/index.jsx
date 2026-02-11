@@ -128,6 +128,18 @@ const Login = () => {
             }}
           />
 
+          <Box sx={{ display: "flex", justifyContent: "center", mt: 1, mb: 2 }}>
+            <Typography
+              variant="body2"
+              color="primary.main"
+              fontWeight={600}
+              sx={{ cursor: "pointer", "&:hover": { textDecoration: "underline" } }}
+              onClick={() => navigate("/esqueci-senha")}
+            >
+              Esqueceu a senha?
+            </Typography>
+          </Box>
+
           <Button
             type="submit"
             variant="contained"

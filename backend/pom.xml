@@ -35,6 +35,12 @@
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
 
+        <!-- EMAIL -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+        </dependency>
+
          <!-- Postgres -->
         <dependency>
             <groupId>org.postgresql</groupId>

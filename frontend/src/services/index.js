@@ -25,6 +25,18 @@ export const authService = {
         return user ? JSON.parse(user) : null;
     },
 
+    // Esqueci a senha
+    esqueciSenha: async (email) => {
+        const response = await api.post('/autenticacao/esqueci-senha', { email });
+        return response.data;
+    },
+
+    // Redefinir senha
+    redefinirSenha: async (token, novaSenha) => {
+        const response = await api.post('/autenticacao/redefinir-senha', { token, novaSenha });
+        return response.data;
+    },
+
     // Registro (Centralizado no service para facilitar chamadas do front)
     register: async (formData, type) => {
         let endpoint = '/usuarios/registrar';
