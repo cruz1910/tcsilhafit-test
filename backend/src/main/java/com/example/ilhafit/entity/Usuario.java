@@ -33,8 +33,7 @@ public class Usuario {
     @Column(nullable = false)
     private String senha;
 
-    @NotBlank(message = "CPF é obrigatório")
-    @Column(nullable = false, unique = true)
+    @Column(unique = true)
     private String cpf;
 
     @Enumerated(EnumType.STRING)

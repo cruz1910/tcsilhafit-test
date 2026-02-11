@@ -17,8 +17,9 @@ import {
     Select,
     MenuItem,
     FormControl,
+    InputAdornment,
 } from "@mui/material";
-import { FaTimes, FaUpload, FaWhatsapp, FaUser, FaBuilding, FaUserTie } from "react-icons/fa";
+import { FaTimes, FaUpload, FaWhatsapp, FaUser, FaBuilding, FaUserTie, FaEye, FaEyeSlash } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
@@ -30,6 +31,8 @@ const Cadastro = () => {
     const isDark = theme.palette.mode === 'dark';
 
     const [accountType, setAccountType] = useState("aluno");
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [formData, setFormData] = useState({
         nome: "",
         email: "",
@@ -249,36 +252,78 @@ const Cadastro = () => {
                         sx={inputStyles}
                     />
 
-                    <Grid container spacing={2}>
-                        <Grid item xs={12} sm={6}>
+
+                    <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+                        <Box sx={{ flex: 1 }}>
                             <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 0.5, color: "text.secondary" }}>
                                 Senha
                             </Typography>
                             <TextField
                                 fullWidth
                                 name="senha"
-                                type="password"
+                                type={showPassword ? "text" : "password"}
                                 value={formData.senha}
                                 onChange={handleInputChange}
                                 placeholder="••••••••"
-                                sx={inputStyles}
+                                sx={{
+                                    "& .MuiOutlinedInput-root": {
+                                        bgcolor: isDark ? "rgba(255, 255, 255, 0.05)" : "rgba(16, 185, 129, 0.05)",
+                                        borderRadius: 2,
+                                        "& fieldset": { borderColor: isDark ? "rgba(255, 255, 255, 0.1)" : "rgba(16, 185, 129, 0.2)" },
+                                        "&:hover fieldset": { borderColor: theme.palette.primary.main },
+                                    }
+                                }}
+                                InputProps={{
+                                    endAdornment: (
+                                        <InputAdornment position="end">
+                                            <IconButton
+                                                onClick={() => setShowPassword(!showPassword)}
+                                                edge="end"
+                                                size="small"
+                                            >
+                                                {showPassword ? <FaEyeSlash size={16} /> : <FaEye size={16} />}
+                                            </IconButton>
+                                        </InputAdornment>
+                                    ),
+                                }}
                             />
-                        </Grid>
-                        <Grid item xs={12} sm={6}>
+                        </Box>
+                        <Box sx={{ flex: 1 }}>
                             <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 0.5, color: "text.secondary" }}>
                                 Confirmar Senha
                             </Typography>
                             <TextField
                                 fullWidth
                                 name="confirmarSenha"
-                                type="password"
+                                type={showConfirmPassword ? "text" : "password"}
                                 value={formData.confirmarSenha}
                                 onChange={handleInputChange}
                                 placeholder="••••••••"
-                                sx={inputStyles}
+                                sx={{
+                                    "& .MuiOutlinedInput-root": {
+                                        bgcolor: isDark ? "rgba(255, 255, 255, 0.05)" : "rgba(16, 185, 129, 0.05)",
+                                        borderRadius: 2,
+                                        "& fieldset": { borderColor: isDark ? "rgba(255, 255, 255, 0.1)" : "rgba(16, 185, 129, 0.2)" },
+                                        "&:hover fieldset": { borderColor: theme.palette.primary.main },
+                                    }
+                                }}
+                                InputProps={{
+                                    endAdornment: (
+                                        <InputAdornment position="end">
+                                            <IconButton
+                                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                                edge="end"
+                                                size="small"
+                                            >
+                                                {showConfirmPassword ? <FaEyeSlash size={16} /> : <FaEye size={16} />}
+                                            </IconButton>
+                                        </InputAdornment>
+                                    ),
+                                }}
                             />
-                        </Grid>
-                    </Grid>
+                        </Box>
+                    </Box>
+
 
                     {(accountType === "estabelecimento" || accountType === "profissional") && (
                         <>

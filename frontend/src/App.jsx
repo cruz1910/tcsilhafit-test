@@ -7,6 +7,7 @@ import Cadastro from "./pages/Cadastro/index.jsx";
 import Login from "./pages/Login/index.jsx";
 import Mapa from "./pages/Mapa/index.jsx";
 import Perfil from "./pages/Perfil/index.jsx";
+import Admin from "./pages/Admin/index.jsx";
 import AppLayout from "./components/Layout/index.jsx";
 
 function App() {
@@ -20,6 +21,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/mapa" element={<Mapa />} />
         <Route path="/perfil" element={<Perfil />} />
+        <Route path="/admin" element={<Admin />} />
       </Routes>
     </AppLayout>
   );

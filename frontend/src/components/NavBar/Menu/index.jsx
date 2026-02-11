@@ -5,6 +5,7 @@ const links = [
   { name: "Estabelecimento", path: "/estabelecimento" },
   { name: "Profissional", path: "/profissional" },
   { name: "Mapa", path: "/mapa" },
+  { name: "Admin", path: "/admin" },
 ];
 
 const Menu = () => {

@@ -17,11 +17,16 @@ import com.example.ilhafit.repository.AdministradorRepository;
 import com.example.ilhafit.repository.EstabelecimentoRepository;
 import com.example.ilhafit.repository.ProfissionalRepository;
 import com.example.ilhafit.repository.UsuarioRepository;
+import com.example.ilhafit.security.JwtTokenProvider;
+import com.example.ilhafit.security.UserPrincipal;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.example.ilhafit.dto.LoginDTO;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -37,54 +42,28 @@ public class AuthService {
     private final AdministradorMapper administradorMapper;
     private final ProfissionalMapper profissionalMapper;
 
+    private final AuthenticationManager authenticationManager;
+    private final JwtTokenProvider tokenProvider;
+    private final PasswordEncoder passwordEncoder;
+
     public LoginDTO.Response login(LoginDTO.Request dto) {
-        // Tenta buscar em cada repositório
+        // Autentica usando Spring Security (chama o CustomUserDetailsService)
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(dto.getEmail(), dto.getSenha()));
 
-        // 1. Usuário
-        Optional<Usuario> usuario = usuarioRepository.findByEmail(dto.getEmail());
-        if (usuario.isPresent() && usuario.get().getSenha().equals(dto.getSenha())) {
-            return LoginDTO.Response.builder()
-                    .id(usuario.get().getId())
-                    .nome(usuario.get().getNome())
-                    .email(usuario.get().getEmail())
-                    .role(usuario.get().getRole().name())
-                    .build();
-        }
+        // Gera o token JWT
+        String token = tokenProvider.generateToken(authentication);
 
-        // 2. Estabelecimento
-        Optional<Estabelecimento> est = estabelecimentoRepository.findByEmail(dto.getEmail());
-        if (est.isPresent() && est.get().getSenha().equals(dto.getSenha())) {
-            return LoginDTO.Response.builder()
-                    .id(est.get().getId())
-                    .nome(est.get().getNome())
-                    .email(est.get().getEmail())
-                    .role(est.get().getRole().name())
-                    .build();
-        }
+        // Obtém os detalhes do usuário autenticado para retornar na resposta
+        UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
 
-        // 3. Administrador
-        Optional<Administrador> admin = administradorRepository.findByEmail(dto.getEmail());
-        if (admin.isPresent() && admin.get().getSenha().equals(dto.getSenha())) {
-            return LoginDTO.Response.builder()
-                    .id(admin.get().getId())
-                    .nome(admin.get().getNome())
-                    .email(admin.get().getEmail())
-                    .role(admin.get().getRole().name())
-                    .build();
-        }
-
-        // 4. Profissional
-        Optional<Profissional> prof = profissionalRepository.findByEmail(dto.getEmail());
-        if (prof.isPresent() && prof.get().getSenha().equals(dto.getSenha())) {
-            return LoginDTO.Response.builder()
-                    .id(prof.get().getId())
-                    .nome(prof.get().getNome())
-                    .email(prof.get().getEmail())
-                    .role(prof.get().getRole().name())
-                    .build();
-        }
-
-        throw new RuntimeException("Credenciais inválidas");
+        return LoginDTO.Response.builder()
+                .token(token)
+                .id(userPrincipal.getId())
+                .nome(userPrincipal.getNome())
+                .email(userPrincipal.getEmail())
+                .role(userPrincipal.getRole().name())
+                .build();
     }
 
     public UsuarioDTO.Resposta registerUsuario(UsuarioDTO.Registro dto) {
@@ -92,6 +71,7 @@ public class AuthService {
             throw new RuntimeException("Email já cadastrado");
         }
         Usuario usuario = usuarioMapper.toEntity(dto);
+        usuario.setSenha(passwordEncoder.encode(dto.getSenha())); // Criptografa senha
         usuario.setRole(Role.USER);
         usuario = usuarioRepository.save(usuario);
         return usuarioMapper.toDTO(usuario);
@@ -102,6 +82,7 @@ public class AuthService {
             throw new RuntimeException("Email já cadastrado");
         }
         Estabelecimento estabelecimento = estabelecimentoMapper.toEntity(dto);
+        estabelecimento.setSenha(passwordEncoder.encode(dto.getSenha())); // Criptografa senha
         estabelecimento.setRole(Role.ESTABELECIMENTO);
         if (estabelecimento.getNomeFantasia() == null || estabelecimento.getNomeFantasia().trim().isEmpty()) {
             estabelecimento.setNomeFantasia(estabelecimento.getNome());
@@ -118,6 +99,7 @@ public class AuthService {
             throw new RuntimeException("Email já cadastrado");
         }
         Administrador admin = administradorMapper.toEntity(dto);
+        admin.setSenha(passwordEncoder.encode(dto.getSenha())); // Criptografa senha
         admin.setRole(Role.ADMIN);
         admin = administradorRepository.save(admin);
         return administradorMapper.toDTO(admin);
@@ -128,6 +110,7 @@ public class AuthService {
             throw new RuntimeException("Email já cadastrado");
         }
         Profissional profissional = profissionalMapper.toEntity(dto);
+        profissional.setSenha(passwordEncoder.encode(dto.getSenha())); // Criptografa senha
         profissional.setRole(Role.PROFISSIONAL);
         profissional = profissionalRepository.save(profissional);
         return profissionalMapper.toDTO(profissional);

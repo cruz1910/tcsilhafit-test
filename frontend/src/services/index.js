@@ -35,7 +35,7 @@ export const authService = {
         };
 
         if (type === 'aluno') {
-            payload.cpf = "00000000000"; // Dummy CPF to satisfy Backend @NotBlank
+            payload.cpf = null;
         } else if (type === 'estabelecimento') {
             endpoint = '/estabelecimentos/registrar';
             payload = {
@@ -190,5 +190,116 @@ export const profissionalService = {
     delete: async (id) => {
         const response = await api.delete(`/profissionais/${id}`);
         return response.data;
+    },
+};
+
+// ==================== ADMINISTRADORES ====================
+
+export const administradorService = {
+    // Buscar todos os administradores
+    getAll: async () => {
+        const response = await api.get('/administradores');
+        return response.data;
+    },
+
+    // Buscar administrador por ID
+    getById: async (id) => {
+        const response = await api.get(`/administradores/${id}`);
+        return response.data;
+    },
+
+    // Criar administrador
+    create: async (adminData) => {
+        const response = await api.post('/administradores', adminData);
+        return response.data;
+    },
+
+    // Atualizar administrador
+    update: async (id, adminData) => {
+        const response = await api.put(`/administradores/${id}`, adminData);
+        return response.data;
+    },
+
+    // Deletar administrador
+    delete: async (id) => {
+        const response = await api.delete(`/administradores/${id}`);
+        return response.data;
+    },
+};
+
+// ==================== ADMIN (PAINEL ADMINISTRATIVO) ====================
+
+export const adminService = {
+    // Buscar TODOS os usuários de todos os tipos
+    getAllUsers: async () => {
+        try {
+            const [usuarios, profissionais, estabelecimentos, administradores] = await Promise.all([
+                userService.getAll(),
+                profissionalService.getAll(),
+                estabelecimentoService.getAll(),
+                administradorService.getAll(),
+            ]);
+
+            // Normalizar e adicionar tipo
+            const allUsers = [
+                ...usuarios.map(u => ({ ...u, tipo: 'aluno' })),
+                ...profissionais.map(p => ({ ...p, tipo: 'profissional' })),
+                ...estabelecimentos.map(e => ({ ...e, tipo: 'estabelecimento' })),
+                ...administradores.map(a => ({ ...a, tipo: 'admin' })),
+            ];
+
+            return allUsers;
+        } catch (error) {
+            console.error('Erro ao buscar todos os usuários:', error);
+            throw error;
+        }
+    },
+
+    // Deletar usuário de qualquer tipo
+    deleteUser: async (id, tipo) => {
+        switch (tipo) {
+            case 'aluno':
+                return await userService.delete(id);
+            case 'profissional':
+                return await profissionalService.delete(id);
+            case 'estabelecimento':
+                return await estabelecimentoService.delete(id);
+            case 'admin':
+                return await administradorService.delete(id);
+            default:
+                throw new Error(`Tipo de usuário inválido: ${tipo}`);
+        }
+    },
+
+    // Atualizar usuário de qualquer tipo
+    updateUser: async (id, data, tipo) => {
+        switch (tipo) {
+            case 'aluno':
+                return await userService.update(id, data);
+            case 'profissional':
+                return await profissionalService.update(id, data);
+            case 'estabelecimento':
+                return await estabelecimentoService.update(id, data);
+            case 'admin':
+                return await administradorService.update(id, data);
+            default:
+                throw new Error(`Tipo de usuário inválido: ${tipo}`);
+        }
+    },
+
+    // Buscar usuário por ID e tipo
+    getUser: async (id, tipo) => {
+        switch (tipo) {
+            case 'aluno':
+                return await userService.getById(id);
+            case 'profissional':
+                return await profissionalService.getById(id);
+            case 'estabelecimento':
+                return await estabelecimentoService.getById(id);
+            case 'admin':
+                return await administradorService.getById(id);
+            default:
+                throw new Error(`Tipo de usuário inválido: ${tipo}`);
+        }
     },
 };

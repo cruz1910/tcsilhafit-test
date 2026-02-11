@@ -17,7 +17,8 @@ import Menu from "./Menu";
 import Entrar from "./Entrar";
 import ToggleThemeButton from "../ToggleThemeButton";
 import { authService } from "../../services";
-import { FaUserCircle, FaSignOutAlt, FaCog } from "react-icons/fa";
+import { FaUserCircle, FaSignOutAlt, FaCog, FaUserShield } from "react-icons/fa";
+
 
 const NavBar = () => {
   const [user, setUser] = useState(null);
@@ -121,6 +122,12 @@ const NavBar = () => {
                     <ListItemIcon><FaUserCircle size={18} /></ListItemIcon>
                     Meu Perfil
                   </MenuItem>
+                  {user.role === 'ADMIN' && (
+                    <MenuItem component={Link} to="/admin" onClick={handleMenuClose}>
+                      <ListItemIcon><FaUserShield size={18} /></ListItemIcon>
+                      Painel Admin
+                    </MenuItem>
+                  )}
                   <MenuItem component={Link} to="/perfil" onClick={handleMenuClose}>
                     <ListItemIcon><FaCog size={18} /></ListItemIcon>
                     Configurações
