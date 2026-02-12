@@ -38,7 +38,6 @@ const ModalChatIA = ({ open, onClose }) => {
         setMessages(prev => [...prev, userMsg]);
         setInputValue('');
 
-        // Mock AI Response
         setTimeout(() => {
             let aiText = "Com base no que você disse, recomendo conferir o CrossFit IlhaFit ou o Studio de Pilates Core. Ambos têm ótimas avaliações!";
 

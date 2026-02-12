@@ -12,6 +12,7 @@ import Mapa from "./pages/Mapa/index.jsx";
 import Perfil from "./pages/Perfil/index.jsx";
 import Admin from "./pages/Admin/index.jsx";
 import AppLayout from "./components/Layout/index.jsx";
+import ProtectedRoute from "./components/ProtectedRoute.jsx";
 
 function App() {
   return (
@@ -21,14 +22,20 @@ function App() {
         <Route path="/estabelecimento" element={<Estabelecimento />} />
         <Route path="/profissional" element={<Profissional />} />
         <Route path="/cadastro" element={<Cadastro />} />
-        <Route path="/cadastro" element={<Cadastro />} />
         <Route path="/login" element={<Login />} />
         <Route path="/esqueci-senha" element={<EsqueciSenha />} />
         <Route path="/redefinir-senha" element={<RedefinirSenha />} />
         <Route path="/confirmar-email" element={<ConfirmarEmail />} />
         <Route path="/mapa" element={<Mapa />} />
         <Route path="/perfil" element={<Perfil />} />
-        <Route path="/admin" element={<Admin />} />
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute adminOnly>
+              <Admin />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </AppLayout>
   );

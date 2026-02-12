@@ -14,12 +14,11 @@ const Profissional = () => {
         const fetchProfissionais = async () => {
             try {
                 const data = await profissionalService.getAll();
-                // Mapeamento para o formato esperado pelo CardProfissional
                 const mappedData = data.map(item => ({
                     ...item,
                     Imagem: item.fotoUrl || "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=500&auto=format&fit=crop&q=60",
                     especialidades: item.especializacao ? item.especializacao.split(", ") : (item.atividadesOferecidas || []),
-                    avaliacao: 4.8, // Mock as backend doesn't have it
+                    avaliacao: 4.8, 
                 }));
                 setProfissionais(mappedData);
             } catch (error) {

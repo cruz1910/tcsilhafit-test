@@ -47,15 +47,12 @@ const Admin = () => {
     const [tabValue, setTabValue] = useState(0);
 
     useEffect(() => {
-        // Verificação de admin removida temporariamente para visualização
-        /*
         const userInfo = authService.getUserInfo();
         if (!userInfo || userInfo.role !== "ADMIN") {
             toast.error("Acesso negado! Apenas administradores podem acessar esta página.");
             navigate("/");
             return;
         }
-        */
     }, [navigate]);
 
     const handleTabChange = (event, newValue) => {

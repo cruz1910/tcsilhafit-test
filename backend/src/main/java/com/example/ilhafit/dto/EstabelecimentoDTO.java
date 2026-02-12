@@ -33,7 +33,7 @@ public class EstabelecimentoDTO {
         private EnderecoDTO endereco;
         private Boolean exclusivoMulheres;
         private List<String> atividadesOferecidas;
-        private String fotoUrl;
+        private List<String> fotosUrl;
     }
 
     @Data
@@ -48,7 +48,8 @@ public class EstabelecimentoDTO {
         private EnderecoDTO endereco;
         private Boolean exclusivoMulheres;
         private List<String> atividadesOferecidas;
-        private String fotoUrl;
+        private List<String> fotosUrl;
         private Role role;
+        private Double avaliacao;
     }
 }

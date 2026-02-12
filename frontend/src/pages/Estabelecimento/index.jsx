@@ -14,13 +14,13 @@ const Estabelecimento = () => {
     const fetchEstabelecimentos = async () => {
       try {
         const data = await estabelecimentoService.getAll();
-        // Mapeamento para o formato esperado pelo CardEstabelecimento
         const mappedData = data.map(item => ({
           ...item,
-          Imagem: item.fotoUrl || "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=1470&auto=format&fit=crop", // Fallback image
+          Imagem: (item.fotosUrl && item.fotosUrl.length > 0) ? item.fotosUrl[0] : "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=1470&auto=format&fit=crop",
+          Imagens: item.fotosUrl || [],
           categorias: item.atividadesOferecidas || [],
-          avaliacao: 4.5, // Mock value as backend doesn't have it yet
-          aberto: true,   // Mock value as backend doesn't have it yet
+          avaliacao: item.avaliacao || 0.0,
+          aberto: true,
           descricao: item.descricao || "Um ótimo local para treinar e cuidar da sua saúde.",
         }));
         setEstabelecimentos(mappedData);

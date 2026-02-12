@@ -55,6 +55,7 @@ const Cadastro = () => {
         atividadesOferecidas: [],
         exclusivoMulheres: false,
         fotoUrl: "",
+        fotosUrl: [],
     });
 
     const handleTypeChange = (event, newType) => {
@@ -86,9 +87,31 @@ const Cadastro = () => {
     };
 
     const handleFileChange = (e) => {
-        if (e.target.files && e.target.files[0]) {
-            setFormData(prev => ({ ...prev, fotoUrl: URL.createObjectURL(e.target.files[0]) }));
+        if (e.target.files && e.target.files.length > 0) {
+            if (accountType === "estabelecimento") {
+                const newPhotos = Array.from(e.target.files).map(file => URL.createObjectURL(file));
+                setFormData(prev => ({
+                    ...prev,
+                    fotosUrl: [...(prev.fotosUrl || []), ...newPhotos]
+                }));
+            } else {
+                setFormData(prev => ({ ...prev, fotoUrl: URL.createObjectURL(e.target.files[0]) }));
+            }
         }
+    };
+
+    const fetchCoordinates = async (address) => {
+        try {
+            const query = `${address.logradouro}, ${address.numero || ''}, ${address.bairro}, ${address.cidade}, ${address.estado}`;
+            const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`);
+            const data = await response.json();
+            if (data && data.length > 0) {
+                return { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon) };
+            }
+        } catch (error) {
+            console.error("Erro ao buscar coordenadas:", error);
+        }
+        return null;
     };
 
     const handleSubmit = async (e) => {
@@ -99,14 +122,25 @@ const Cadastro = () => {
         }
 
         try {
-            // Realiza o cadastro
-            await authService.register(formData, accountType);
+            const dataToSend = { ...formData };
 
-            // Login Automático para que as informações apareçam no NavBar imediatamente
+            // Geocoding para Estabelecimentos
+            if (accountType === "estabelecimento" && dataToSend.endereco) {
+                const coords = await fetchCoordinates(dataToSend.endereco);
+                if (coords) {
+                    dataToSend.endereco = {
+                        ...dataToSend.endereco,
+                        latitude: coords.lat,
+                        longitude: coords.lon
+                    };
+                }
+            }
+
+            await authService.register(dataToSend, accountType);
+
             try {
                 const loginData = await authService.login(formData.email, formData.senha);
                 toast.success(`Cadastro realizado! Bem-vindo(a), ${loginData.nome}! 🚀`);
-                // Dispara evento de storage para sincronizar estados (NavBar, etc)
                 window.dispatchEvent(new Event('storage'));
             } catch (loginErr) {
                 console.warn("Erro no login automático:", loginErr);
@@ -494,14 +528,30 @@ const Cadastro = () => {
                                         borderRadius: accountType === "estabelecimento" ? 2 : "50%"
                                     }}
                                 />
+                                {accountType === "estabelecimento" && formData.fotosUrl?.length > 0 && (
+                                    <Box sx={{ display: 'flex', gap: 1 }}>
+                                        {formData.fotosUrl.slice(0, 3).map((url, i) => (
+                                            <Avatar key={i} src={url} variant="rounded" sx={{ width: 40, height: 40 }} />
+                                        ))}
+                                        {formData.fotosUrl.length > 3 && (
+                                            <Typography variant="caption">+{formData.fotosUrl.length - 3}</Typography>
+                                        )}
+                                    </Box>
+                                )}
                                 <Button
                                     variant="outlined"
                                     component="label"
                                     startIcon={<FaUpload />}
                                     sx={{ textTransform: 'none', borderRadius: 2 }}
                                 >
-                                    Upload
-                                    <input type="file" hidden accept="image/*" onChange={handleFileChange} />
+                                    {accountType === "estabelecimento" ? "Adicionar Fotos" : "Upload"}
+                                    <input
+                                        type="file"
+                                        hidden
+                                        accept="image/*"
+                                        multiple={accountType === "estabelecimento"}
+                                        onChange={handleFileChange}
+                                    />
                                 </Button>
                             </Box>
                         </>

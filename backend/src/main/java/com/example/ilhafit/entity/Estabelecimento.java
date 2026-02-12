@@ -59,8 +59,10 @@ public class Estabelecimento {
     @Column(name = "atividade")
     private List<String> atividadesOferecidas;
 
+    @ElementCollection
+    @CollectionTable(name = "estabelecimento_fotos", joinColumns = @JoinColumn(name = "estabelecimento_id"))
     @Column(name = "foto_url")
-    private String fotoUrl;
+    private List<String> fotosUrl;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, columnDefinition = "VARCHAR(50)")

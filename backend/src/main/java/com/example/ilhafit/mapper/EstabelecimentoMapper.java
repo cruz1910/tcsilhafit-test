@@ -23,7 +23,7 @@ public class EstabelecimentoMapper {
         est.setEndereco(enderecoMapper.toEntity(dto.getEndereco()));
         est.setExclusivoMulheres(dto.getExclusivoMulheres());
         est.setAtividadesOferecidas(dto.getAtividadesOferecidas());
-        est.setFotoUrl(dto.getFotoUrl());
+        est.setFotosUrl(dto.getFotosUrl());
         return est;
     }
 
@@ -39,7 +39,7 @@ public class EstabelecimentoMapper {
         dto.setEndereco(enderecoMapper.toDTO(est.getEndereco()));
         dto.setExclusivoMulheres(est.getExclusivoMulheres());
         dto.setAtividadesOferecidas(est.getAtividadesOferecidas());
-        dto.setFotoUrl(est.getFotoUrl());
+        dto.setFotosUrl(est.getFotosUrl());
         dto.setRole(est.getRole());
         return dto;
     }

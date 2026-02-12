@@ -11,4 +11,6 @@ public class EnderecoDTO {
     private String cidade;
     private String estado;
     private String cep;
+    private Double latitude;
+    private Double longitude;
 }

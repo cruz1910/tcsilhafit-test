@@ -41,7 +41,6 @@ const AdminEstabelecimentos = () => {
     const [deleteDialog, setDeleteDialog] = useState({ open: false, estabelecimento: null });
 
     useEffect(() => {
-        // Verificar se é admin
         const userInfo = authService.getUserInfo();
         if (!userInfo || userInfo.role !== "ADMIN") {
             toast.error("Acesso negado!");

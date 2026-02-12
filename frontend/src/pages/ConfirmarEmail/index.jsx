@@ -13,7 +13,7 @@ const ConfirmarEmail = () => {
     const [searchParams] = useSearchParams();
     const token = searchParams.get("token");
     const navigate = useNavigate();
-    const [status, setStatus] = useState("verificando"); // verificando, sucesso, erro
+    const [status, setStatus] = useState("verificando"); 
 
     useEffect(() => {
         if (token) {

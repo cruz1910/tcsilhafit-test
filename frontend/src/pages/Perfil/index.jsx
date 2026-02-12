@@ -47,7 +47,7 @@ const Perfil = () => {
         nome: '',
         email: '',
         telefone: '',
-        cidade: 'Florianópolis', // Padrão conforme imagem ou banco
+        cidade: 'Florianópolis', 
         cpf: '',
         cnpj: '',
         descricao: '',

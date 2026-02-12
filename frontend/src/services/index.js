@@ -58,10 +58,12 @@ export const authService = {
                 telefone: formData.telefone,
                 atividadesOferecidas: formData.atividadesOferecidas,
                 exclusivoMulheres: formData.exclusivoMulheres,
-                fotoUrl: formData.fotoUrl,
+                fotosUrl: formData.fotosUrl,
                 endereco: formData.endereco ? {
                     ...formData.endereco,
-                    rua: formData.endereco.logradouro
+                    rua: formData.endereco.logradouro,
+                    latitude: formData.endereco.latitude,
+                    longitude: formData.endereco.longitude
                 } : null
             };
         } else if (type === 'profissional') {
@@ -313,5 +315,20 @@ export const adminService = {
             default:
                 throw new Error(`Tipo de usuário inválido: ${tipo}`);
         }
+    },
+};
+// ==================== AVALIAÇÕES ====================
+
+export const avaliacaoService = {
+    // Listar avaliações de um estabelecimento
+    getByEstabelecimento: async (id) => {
+        const response = await api.get(`/avaliacoes/estabelecimento/${id}`);
+        return response.data;
+    },
+
+    // Enviar nova avaliação
+    avaliar: async (data) => {
+        const response = await api.post('/avaliacoes', data);
+        return response.data;
     },
 };

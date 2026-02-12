@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Dialog,
     DialogContent,
@@ -12,124 +12,172 @@ import {
     Grid,
     useTheme,
     alpha,
+    TextField,
 } from "@mui/material";
 import {
-    FaArrowLeft,
-    FaWhatsapp,
+    FaChevronLeft,
     FaStar,
     FaMapMarkerAlt,
-    FaRegClock,
-    FaInfoCircle
+    FaClock,
+    FaWhatsapp,
+    FaPaperPlane
 } from "react-icons/fa";
-import { authService } from "../../services";
+import { useNavigate } from "react-router-dom";
+import { authService, avaliacaoService } from "../../services";
+import { toast } from "react-toastify";
 
 const ModalDetalhesEstabelecimento = ({ open, onClose, estabelecimento }) => {
     const theme = useTheme();
-    const isDark = theme.palette.mode === 'dark';
-    const isLoggedIn = authService.isAuthenticated();
+    const navigate = useNavigate();
+    const [avaliacoes, setAvaliacoes] = useState([]);
+    const [novaAvaliacao, setNovaAvaliacao] = useState({ nota: 5, comentario: "" });
+    const [loading, setLoading] = useState(false);
+    const isAuthenticated = authService.isAuthenticated();
 
-    if (!estabelecimento) return null;
+    useEffect(() => {
+        if (open && estabelecimento?.id) {
+            loadAvaliacoes();
+        }
+    }, [open, estabelecimento]);
+
+    const loadAvaliacoes = async () => {
+        try {
+            const data = await avaliacaoService.getByEstabelecimento(estabelecimento.id);
+            setAvaliacoes(data);
+        } catch (error) {
+            console.error("Erro ao carregar avaliações:", error);
+        }
+    };
+
+    const handleEnviarAvaliacao = async () => {
+        if (!novaAvaliacao.comentario.trim()) {
+            toast.warning("Por favor, escreva um comentário.");
+            return;
+        }
+        setLoading(true);
+        try {
+            await avaliacaoService.avaliar({
+                ...novaAvaliacao,
+                estabelecimentoId: estabelecimento.id
+            });
+            toast.success("Avaliação enviada com sucesso!");
+            setNovaAvaliacao({ nota: 5, comentario: "" });
+            loadAvaliacoes();
+        } catch (error) {
+            toast.error("Erro ao enviar avaliação.");
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const handleWhatsApp = () => {
         const message = encodeURIComponent(`Olá, vi seu estabelecimento no IlhaFit e gostaria de mais informações.`);
-        const phone = estabelecimento.telefone || "5548999999999";
+        const phone = estabelecimento.telefone?.replace(/\D/g, '') || "5548999999999";
         window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
     };
+
+    if (!estabelecimento) return null;
 
     return (
         <Dialog
             open={open}
             onClose={onClose}
+            maxWidth="lg"
             fullWidth
-            maxWidth="md"
             PaperProps={{
                 sx: {
-                    borderRadius: 4,
+                    borderRadius: 3,
+                    bgcolor: 'background.paper',
                     overflow: 'hidden',
-                    bgcolor: theme.palette.background.paper,
+                    maxHeight: '90vh'
                 }
             }}
         >
-            <Box sx={{ position: 'relative' }}>
-                {/* Banner Image */}
+            {/* Cabeçalho Fixo com Imagem */}
+            <Box sx={{ position: 'relative', width: '100%', height: { xs: 200, md: 350 }, flexShrink: 0 }}>
                 <Box
-                    component="img"
-                    src={estabelecimento.Imagem}
-                    alt={estabelecimento.nome}
                     sx={{
                         width: '100%',
-                        height: { xs: 200, md: 350 },
-                        objectFit: 'cover',
+                        height: '100%',
+                        backgroundImage: `url(${estabelecimento.Imagem || "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=1470&auto=format&fit=crop"})`,
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
                     }}
                 />
-
-                {/* Close Button */}
                 <IconButton
                     onClick={onClose}
                     sx={{
                         position: 'absolute',
-                        top: 16,
-                        left: 16,
-                        bgcolor: 'rgba(255, 255, 255, 0.9)',
-                        '&:hover': { bgcolor: '#fff' },
-                        boxShadow: 2,
+                        top: 20,
+                        right: 20,
+                        bgcolor: 'rgba(255,255,255,0.9)',
+                        boxShadow: 3,
+                        width: 44,
+                        height: 44,
+                        zIndex: 10,
+                        '&:hover': { bgcolor: '#fff' }
                     }}
                 >
-                    <FaArrowLeft size={18} color="#334155" />
+                    <FaChevronLeft size={18} color="#000" />
                 </IconButton>
             </Box>
 
-            <DialogContent sx={{ p: { xs: 2, md: 4 } }}>
-                {/* Header: Title and WhatsApp */}
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+            <DialogContent sx={{ p: { xs: 3, md: 6 }, overflowY: 'auto' }}>
+                {/* Cabeçalho de Informações: Título e WhatsApp */}
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                     <Box>
-                        <Typography variant="h4" fontWeight={800} sx={{ color: theme.palette.text.primary, mb: 1 }}>
-                            {estabelecimento.nome || "Estabelecimento"}
+                        <Typography variant="h3" fontWeight={800} color="text.primary" sx={{ mb: 1, letterSpacing: '-0.02em' }}>
+                            {estabelecimento.nome}
                         </Typography>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, bgcolor: '#FEF3C7', px: 1, py: 0.5, borderRadius: 1.5 }}>
-                                <FaStar color="#F59E0B" size={14} />
-                                <Typography variant="subtitle2" fontWeight={700} color="#92400E">
-                                    {estabelecimento.avaliacao}
+
+                        {/* Avaliação e Categorias */}
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, bgcolor: '#FEF3C7', px: 1.5, py: 0.5, borderRadius: 2 }}>
+                                <FaStar color="#F59E0B" size={16} />
+                                <Typography variant="h6" fontWeight={800} color="#92400E" sx={{ lineHeight: 1 }}>
+                                    {estabelecimento.avaliacao || "0.0"}
                                 </Typography>
                             </Box>
-                            <Typography variant="body2" color="text.secondary">
-                                (0 avaliações)
+                            <Typography variant="body1" color="text.secondary" fontWeight={500}>
+                                ({avaliacoes.length} avaliações)
                             </Typography>
                         </Box>
                     </Box>
 
                     <Button
                         variant="contained"
-                        startIcon={<FaWhatsapp />}
+                        startIcon={<FaWhatsapp size={20} />}
                         onClick={handleWhatsApp}
                         sx={{
                             bgcolor: '#10B981',
                             '&:hover': { bgcolor: '#059669' },
-                            borderRadius: 2,
-                            px: 3,
-                            py: 1,
+                            borderRadius: 3,
+                            px: 4,
+                            py: 1.5,
                             textTransform: 'none',
-                            fontWeight: 700,
-                            display: { xs: 'none', sm: 'flex' }
+                            fontWeight: 800,
+                            fontSize: '1rem',
+                            boxShadow: '0 4px 12px rgba(16, 185, 129, 0.2)'
                         }}
                     >
                         WhatsApp
                     </Button>
                 </Box>
 
-                {/* Tags */}
-                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 3 }}>
-                    {estabelecimento.categorias?.map((cat) => (
+                <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', mb: 5 }}>
+                    {estabelecimento.categorias?.map((cat, i) => (
                         <Chip
-                            key={cat}
+                            key={i}
                             label={cat}
                             variant="outlined"
                             sx={{
-                                borderColor: alpha(theme.palette.primary.main, 0.3),
-                                color: theme.palette.primary.main,
-                                fontWeight: 600,
-                                borderRadius: 1.5
+                                fontWeight: 700,
+                                borderRadius: 2,
+                                px: 1,
+                                height: 32,
+                                fontSize: '0.85rem',
+                                color: 'error.main',
+                                borderColor: alpha(theme.palette.error.main, 0.3)
                             }}
                         />
                     ))}
@@ -138,131 +186,193 @@ const ModalDetalhesEstabelecimento = ({ open, onClose, estabelecimento }) => {
                             label="Aulas Femininas"
                             variant="outlined"
                             sx={{
-                                borderColor: '#F472B6',
+                                fontWeight: 700,
+                                borderRadius: 2,
+                                px: 1,
+                                height: 32,
+                                fontSize: '0.85rem',
                                 color: '#DB2777',
-                                fontWeight: 600,
-                                borderRadius: 1.5
+                                borderColor: alpha('#F472B6', 0.3)
                             }}
                         />
                     )}
                 </Box>
 
-                <Grid container spacing={4}>
-                    <Grid item xs={12} md={7}>
-                        {/* About */}
-                        <Typography variant="h6" fontWeight={700} sx={{ mb: 1.5 }}>Sobre</Typography>
-                        <Typography variant="body1" color="text.secondary" sx={{ mb: 4, lineHeight: 1.7 }}>
-                            {estabelecimento.descricao || "Sem descrição disponível."}
-                        </Typography>
-
-                        {/* Location */}
-                        <Typography variant="h6" fontWeight={700} sx={{ mb: 1.5 }}>Localização</Typography>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-                            <FaMapMarkerAlt color={theme.palette.primary.main} />
-                            <Typography variant="body2" color="text.primary" fontWeight={500}>
-                                {estabelecimento.endereco?.rua || "Endereço não informado"}
+                <Grid container spacing={8}>
+                    {/* Coluna da Esquerda */}
+                    <Grid item xs={12} lg={7}>
+                        <Box sx={{ mb: 6 }}>
+                            <Typography variant="h5" fontWeight={800} sx={{ mb: 2 }}>Sobre</Typography>
+                            <Typography color="text.secondary" variant="body1" sx={{ lineHeight: 1.8, fontSize: '1.1rem' }}>
+                                {estabelecimento.descricao || "A Bio Ritmo Premium oferece uma experiência única de treinamento com equipamentos de última geração e atendimento personalizado."}
                             </Typography>
                         </Box>
 
-                        {/* Map Placeholder */}
-                        <Paper
-                            variant="outlined"
-                            sx={{
-                                height: 200,
+                        {estabelecimento.Imagens && estabelecimento.Imagens.length > 0 && (
+                            <Box sx={{ mb: 6 }}>
+                                <Typography variant="h5" fontWeight={800} sx={{ mb: 2 }}>Galeria</Typography>
+                                <Grid container spacing={2}>
+                                    {estabelecimento.Imagens.map((img, index) => (
+                                        <Grid item xs={6} sm={4} key={index}>
+                                            <Box
+                                                component="img"
+                                                src={img}
+                                                alt={`Foto ${index + 1}`}
+                                                sx={{
+                                                    width: '100%',
+                                                    height: 120,
+                                                    objectFit: 'cover',
+                                                    borderRadius: 2,
+                                                    cursor: 'pointer',
+                                                    transition: 'transform 0.2s',
+                                                    '&:hover': { transform: 'scale(1.02)' }
+                                                }}
+                                                onClick={() => window.open(img, '_blank')}
+                                            />
+                                        </Grid>
+                                    ))}
+                                </Grid>
+                            </Box>
+                        )}
+
+                        <Box sx={{ mb: 6 }}>
+                            <Typography variant="h5" fontWeight={800} sx={{ mb: 2 }}>Localização</Typography>
+                            <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-start', mb: 3 }}>
+                                <Box sx={{ mt: 0.5 }}>
+                                    <FaMapMarkerAlt color="#FF0000" size={22} />
+                                </Box>
+                                <Box>
+                                    <Typography variant="h6" fontWeight={700}>
+                                        {estabelecimento.endereco?.rua}, {estabelecimento.endereco?.numero}
+                                    </Typography>
+                                    <Typography color="text.secondary" variant="body1">
+                                        {estabelecimento.endereco?.bairro}, {estabelecimento.endereco?.cidade}
+                                    </Typography>
+                                </Box>
+                            </Box>
+
+                            {/* Placeholder Mapa */}
+                            <Paper sx={{
+                                width: '100%',
+                                height: 300,
+                                bgcolor: '#F8FAFC',
+                                borderRadius: 4,
                                 display: 'flex',
                                 flexDirection: 'column',
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                bgcolor: isDark ? alpha(theme.palette.text.primary, 0.02) : '#f8fafc',
-                                borderRadius: 3,
-                                borderStyle: 'dashed',
+                                border: '2px dashed',
                                 borderColor: 'divider',
-                                mb: 4
-                            }}
-                        >
-                            <FaMapMarkerAlt size={40} color={theme.palette.primary.main} style={{ opacity: 0.5, marginBottom: 8 }} />
-                            <Typography variant="subtitle2" color="text.secondary" fontWeight={700}>Mapa integrado aqui</Typography>
-                            <Typography variant="caption" color="text.secondary">(Google Maps ou OpenStreetMap)</Typography>
-                        </Paper>
+                            }} elevation={0}>
+                                <FaMapMarkerAlt size={60} color="#FF0000" style={{ opacity: 0.2, marginBottom: 16 }} />
+                                <Typography variant="h6" fontWeight={800} color="text.secondary">Mapa integrado aqui</Typography>
+                                <Typography variant="body2" color="text.secondary">(Google Maps ou OpenStreetMap)</Typography>
+                            </Paper>
+                        </Box>
                     </Grid>
 
-                    <Grid item xs={12} md={5}>
-                        {/* Hours */}
-                        <Typography variant="h6" fontWeight={700} sx={{ mb: 1.5 }}>Horário de Funcionamento</Typography>
-                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, mb: 4 }}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                                <FaRegClock color={theme.palette.primary.main} />
-                                <Box>
-                                    <Typography variant="body2" fontWeight={600}>Segunda a Sexta:</Typography>
-                                    <Typography variant="body2" color="text.secondary">05:30 - 23:30</Typography>
+                    {/* Coluna da Direita */}
+                    <Grid item xs={12} lg={5}>
+                        <Box sx={{ mb: 6 }}>
+                            <Typography variant="h5" fontWeight={800} sx={{ mb: 2 }}>Horário de Funcionamento</Typography>
+                            <Paper variant="outlined" sx={{ p: 4, borderRadius: 4, bgcolor: '#F8FAFC', border: 'none' }}>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
+                                    <FaClock color="#FF0000" size={20} />
+                                    <Box>
+                                        <Typography variant="body1" fontWeight={700}>Segunda a Sexta</Typography>
+                                        <Typography variant="h6" fontWeight={800} color="primary">05:30 - 23:30</Typography>
+                                    </Box>
                                 </Box>
-                            </Box>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                                <FaRegClock color={theme.palette.primary.main} />
-                                <Box>
-                                    <Typography variant="body2" fontWeight={600}>Sábado e Domingo:</Typography>
-                                    <Typography variant="body2" color="text.secondary">08:00 - 20:00</Typography>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                    <FaClock color="#FF0000" size={20} />
+                                    <Box>
+                                        <Typography variant="body1" fontWeight={700}>Sábado e Domingo</Typography>
+                                        <Typography variant="h6" fontWeight={800} color="primary">08:00 - 20:00</Typography>
+                                    </Box>
                                 </Box>
-                            </Box>
+                            </Paper>
                         </Box>
 
-                        {/* Mobile WhatsApp Button */}
-                        <Button
-                            variant="contained"
-                            fullWidth
-                            startIcon={<FaWhatsapp />}
-                            onClick={handleWhatsApp}
-                            sx={{
-                                bgcolor: '#10B981',
-                                '&:hover': { bgcolor: '#059669' },
-                                borderRadius: 2,
-                                py: 1.5,
-                                textTransform: 'none',
-                                fontWeight: 700,
-                                display: { xs: 'flex', sm: 'none' },
-                                mb: 4
-                            }}
-                        >
-                            WhatsApp
-                        </Button>
+                        <Divider sx={{ my: 6 }} />
+
+                        {/* Seção de Avaliações */}
+                        <Typography variant="h5" fontWeight={800} sx={{ mb: 3 }}>Avaliações</Typography>
+
+                        {isAuthenticated && (
+                            <Paper elevation={0} sx={{ mb: 4, p: 4, bgcolor: '#F8FAFC', borderRadius: 4 }}>
+                                <Typography variant="h6" fontWeight={800} sx={{ mb: 2 }}>Sua avaliação</Typography>
+                                <Box sx={{ display: 'flex', gap: 1, mb: 3 }}>
+                                    {[1, 2, 3, 4, 5].map((star) => (
+                                        <FaStar
+                                            key={star}
+                                            size={28}
+                                            color={star <= novaAvaliacao.nota ? "#FFD700" : "#E2E8F0"}
+                                            style={{ cursor: 'pointer', transition: '0.2s' }}
+                                            onClick={() => setNovaAvaliacao({ ...novaAvaliacao, nota: star })}
+                                        />
+                                    ))}
+                                </Box>
+                                <TextField
+                                    fullWidth
+                                    multiline
+                                    rows={4}
+                                    placeholder="Como foi sua experiência neste local?"
+                                    value={novaAvaliacao.comentario}
+                                    onChange={(e) => setNovaAvaliacao({ ...novaAvaliacao, comentario: e.target.value })}
+                                    sx={{
+                                        mb: 3,
+                                        bgcolor: 'white',
+                                        '& .MuiOutlinedInput-root': { borderRadius: 3 }
+                                    }}
+                                />
+                                <Button
+                                    fullWidth
+                                    variant="contained"
+                                    onClick={handleEnviarAvaliacao}
+                                    disabled={loading}
+                                    sx={{
+                                        borderRadius: 3,
+                                        textTransform: 'none',
+                                        fontWeight: 800,
+                                        bgcolor: '#FF0000',
+                                        '&:hover': { bgcolor: '#D00000' },
+                                        height: 56,
+                                        fontSize: '1.1rem',
+                                        boxShadow: '0 8px 16px rgba(255, 0, 0, 0.15)'
+                                    }}
+                                >
+                                    {loading ? "Enviando..." : "Enviar avaliação"}
+                                </Button>
+                            </Paper>
+                        )}
+
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                            {avaliacoes.length > 0 ? (
+                                avaliacoes.map((av) => (
+                                    <Paper key={av.id} elevation={0} sx={{ p: 3, borderRadius: 3, border: '1px solid', borderColor: 'divider' }}>
+                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                                            <Typography variant="subtitle1" fontWeight={800}>{av.nomeAutor}</Typography>
+                                            <Box sx={{ display: 'flex', gap: 0.5 }}>
+                                                {[...Array(5)].map((_, i) => (
+                                                    <FaStar key={i} size={14} color={i < av.nota ? "#FFD700" : "#E2E8F0"} />
+                                                ))}
+                                            </Box>
+                                        </Box>
+                                        <Typography variant="body1" color="text.secondary" sx={{ lineHeight: 1.6 }}>
+                                            {av.comentario}
+                                        </Typography>
+                                    </Paper>
+                                ))
+                            ) : (
+                                <Box sx={{ py: 6, textAlign: 'center', bgcolor: '#F8FAFC', borderRadius: 4, border: '1px dashed', borderColor: 'divider' }}>
+                                    <Typography variant="body1" color="text.secondary" fontWeight={500}>
+                                        Seja o primeiro a avaliar!
+                                    </Typography>
+                                </Box>
+                            )}
+                        </Box>
                     </Grid>
                 </Grid>
-
-                <Divider sx={{ my: 4 }} />
-
-                {/* Reviews */}
-                <Typography variant="h5" fontWeight={800} sx={{ mb: 3 }}>Avaliações</Typography>
-
-                {!isLoggedIn ? (
-                    <Paper
-                        elevation={0}
-                        sx={{
-                            p: 3,
-                            textAlign: 'center',
-                            bgcolor: isDark ? alpha(theme.palette.text.primary, 0.02) : '#f8fafc',
-                            borderRadius: 3,
-                            border: '1px solid',
-                            borderColor: 'divider',
-                        }}
-                    >
-                        <Typography variant="body2" color="text.secondary" fontWeight={600}>
-                            Faça login para deixar uma avaliação
-                        </Typography>
-                    </Paper>
-                ) : (
-                    <Box sx={{ mb: 4 }}>
-                        {/* Evaluation form could go here */}
-                        <Typography variant="body2" color="text.secondary">
-                            Você está logado. Implementar formulário de avaliação em breve.
-                        </Typography>
-                    </Box>
-                )}
-
-                <Box sx={{ mt: 4, textAlign: 'center' }}>
-                    <Typography variant="body1" color="text.secondary" sx={{ opacity: 0.7 }}>
-                        Ainda não há avaliações. Seja o primeiro!
-                    </Typography>
-                </Box>
             </DialogContent>
         </Dialog>
     );

@@ -51,8 +51,13 @@ public class SecurityConfig {
                                 "/swagger-ui/**",
                                 "/swagger-ui.html")
                         .permitAll()
+                        // Rotas de listagem pública
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/estabelecimentos",
+                                "/api/profissionais")
+                        .permitAll()
                         // Proteger rotas ADMIN
-                        .requestMatchers("/api/administradores/**").hasRole("ADMIN")
+                        .requestMatchers("/api/administradores/**", "/api/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/usuarios/**").hasRole("ADMIN")
                         // Qualquer outra rota precisa de autenticação
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
