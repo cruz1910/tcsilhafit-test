@@ -1,7 +1,9 @@
 package com.example.ilhafit.mapper;
 
 import com.example.ilhafit.dto.EstabelecimentoDTO;
+import com.example.ilhafit.dto.GradeAtividadeDTO;
 import com.example.ilhafit.entity.Estabelecimento;
+import com.example.ilhafit.entity.GradeAtividade;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -22,8 +24,17 @@ public class EstabelecimentoMapper {
         est.setRazaoSocial(dto.getRazaoSocial());
         est.setEndereco(enderecoMapper.toEntity(dto.getEndereco()));
         est.setExclusivoMulheres(dto.getExclusivoMulheres());
-        est.setAtividadesOferecidas(dto.getAtividadesOferecidas());
+        if (dto.getGradeAtividades() != null) {
+            est.setGradeAtividades(dto.getGradeAtividades().stream().map(g -> {
+                GradeAtividade entity = new GradeAtividade();
+                entity.setAtividade(g.getAtividade());
+                entity.setDiasSemana(g.getDiasSemana());
+                entity.setPeriodos(g.getPeriodos());
+                return entity;
+            }).toList());
+        }
         est.setFotosUrl(dto.getFotosUrl());
+        est.setOutrosAtividade(dto.getOutrosAtividade());
         return est;
     }
 
@@ -38,8 +49,17 @@ public class EstabelecimentoMapper {
         dto.setRazaoSocial(est.getRazaoSocial());
         dto.setEndereco(enderecoMapper.toDTO(est.getEndereco()));
         dto.setExclusivoMulheres(est.getExclusivoMulheres());
-        dto.setAtividadesOferecidas(est.getAtividadesOferecidas());
+        if (est.getGradeAtividades() != null) {
+            dto.setGradeAtividades(est.getGradeAtividades().stream().map(g -> {
+                GradeAtividadeDTO d = new GradeAtividadeDTO();
+                d.setAtividade(g.getAtividade());
+                d.setDiasSemana(g.getDiasSemana());
+                d.setPeriodos(g.getPeriodos());
+                return d;
+            }).toList());
+        }
         dto.setFotosUrl(est.getFotosUrl());
+        dto.setOutrosAtividade(est.getOutrosAtividade());
         dto.setRole(est.getRole());
         return dto;
     }

@@ -25,6 +25,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { authService, avaliacaoService } from "../../services";
 import { toast } from "react-toastify";
+import MapComponent from "../MapComponent";
 
 const ModalDetalhesEstabelecimento = ({ open, onClose, estabelecimento }) => {
     const theme = useTheme();
@@ -251,22 +252,21 @@ const ModalDetalhesEstabelecimento = ({ open, onClose, estabelecimento }) => {
                                 </Box>
                             </Box>
 
-                            {/* Placeholder Mapa */}
+                            {/* Mapa Real com MapTiler */}
                             <Paper sx={{
                                 width: '100%',
                                 height: 300,
                                 bgcolor: '#F8FAFC',
                                 borderRadius: 4,
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                border: '2px dashed',
+                                overflow: 'hidden',
+                                border: '1px solid',
                                 borderColor: 'divider',
                             }} elevation={0}>
-                                <FaMapMarkerAlt size={60} color="#FF0000" style={{ opacity: 0.2, marginBottom: 16 }} />
-                                <Typography variant="h6" fontWeight={800} color="text.secondary">Mapa integrado aqui</Typography>
-                                <Typography variant="body2" color="text.secondary">(Google Maps ou OpenStreetMap)</Typography>
+                                <MapComponent
+                                    lat={-27.5948}
+                                    lng={-48.5482}
+                                    markerTitle={estabelecimento.nome}
+                                />
                             </Paper>
                         </Box>
                     </Grid>
@@ -276,20 +276,27 @@ const ModalDetalhesEstabelecimento = ({ open, onClose, estabelecimento }) => {
                         <Box sx={{ mb: 6 }}>
                             <Typography variant="h5" fontWeight={800} sx={{ mb: 2 }}>Horário de Funcionamento</Typography>
                             <Paper variant="outlined" sx={{ p: 4, borderRadius: 4, bgcolor: '#F8FAFC', border: 'none' }}>
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
-                                    <FaClock color="#FF0000" size={20} />
-                                    <Box>
-                                        <Typography variant="body1" fontWeight={700}>Segunda a Sexta</Typography>
-                                        <Typography variant="h6" fontWeight={800} color="primary">05:30 - 23:30</Typography>
-                                    </Box>
-                                </Box>
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                    <FaClock color="#FF0000" size={20} />
-                                    <Box>
-                                        <Typography variant="body1" fontWeight={700}>Sábado e Domingo</Typography>
-                                        <Typography variant="h6" fontWeight={800} color="primary">08:00 - 20:00</Typography>
-                                    </Box>
-                                </Box>
+                                {Array.isArray(estabelecimento?.gradeAtividades) && estabelecimento.gradeAtividades.length > 0 ? (
+                                    estabelecimento.gradeAtividades.map((grade, idx) => (
+                                        <Box key={idx} sx={{ mb: idx !== estabelecimento.gradeAtividades.length - 1 ? 3 : 0 }}>
+                                            <Typography variant="subtitle1" fontWeight={800} color="primary" sx={{ mb: 0.5 }}>
+                                                {grade.atividade}
+                                            </Typography>
+                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
+                                                <FaClock color="#FF0000" size={16} />
+                                                <Typography variant="body2" fontWeight={700}>
+                                                    {grade.diasSemana?.join(", ") || "Todos os dias"}
+                                                </Typography>
+                                            </Box>
+                                            <Typography variant="body2" color="text.secondary" sx={{ ml: 4 }}>
+                                                Períodos: {grade.periodos?.join(", ") || "Indeterminado"}
+                                            </Typography>
+                                            {idx !== estabelecimento.gradeAtividades.length - 1 && <Divider sx={{ mt: 2, opacity: 0.5 }} />}
+                                        </Box>
+                                    ))
+                                ) : (
+                                    <Typography color="text.secondary">Horários não informados.</Typography>
+                                )}
                             </Paper>
                         </Box>
 

@@ -58,10 +58,12 @@ public class Profissional {
     @Column(name = "exclusivo_mulheres")
     private Boolean exclusivoMulheres = false;
 
-    @ElementCollection
-    @CollectionTable(name = "profissional_atividades", joinColumns = @JoinColumn(name = "profissional_id"))
-    @Column(name = "atividade")
-    private List<String> atividadesOferecidas;
+    @Column(name = "outros_atividade")
+    private String outrosAtividade;
+
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "profissional_id")
+    private List<GradeAtividade> gradeAtividades;
 
     @Column(name = "foto_url")
     private String fotoUrl;

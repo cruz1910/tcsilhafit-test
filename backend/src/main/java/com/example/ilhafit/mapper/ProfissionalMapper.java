@@ -1,6 +1,8 @@
 package com.example.ilhafit.mapper;
 
+import com.example.ilhafit.dto.GradeAtividadeDTO;
 import com.example.ilhafit.dto.ProfissionalDTO;
+import com.example.ilhafit.entity.GradeAtividade;
 import com.example.ilhafit.entity.Profissional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -22,8 +24,17 @@ public class ProfissionalMapper {
         pro.setRegistroCref(dto.getRegistroCref());
         pro.setEndereco(enderecoMapper.toEntity(dto.getEndereco()));
         pro.setExclusivoMulheres(dto.getExclusivoMulheres());
-        pro.setAtividadesOferecidas(dto.getAtividadesOferecidas());
+        if (dto.getGradeAtividades() != null) {
+            pro.setGradeAtividades(dto.getGradeAtividades().stream().map(g -> {
+                GradeAtividade entity = new GradeAtividade();
+                entity.setAtividade(g.getAtividade());
+                entity.setDiasSemana(g.getDiasSemana());
+                entity.setPeriodos(g.getPeriodos());
+                return entity;
+            }).toList());
+        }
         pro.setFotoUrl(dto.getFotoUrl());
+        pro.setOutrosAtividade(dto.getOutrosAtividade());
         return pro;
     }
 
@@ -38,8 +49,17 @@ public class ProfissionalMapper {
         dto.setRegistroCref(pro.getRegistroCref());
         dto.setEndereco(enderecoMapper.toDTO(pro.getEndereco()));
         dto.setExclusivoMulheres(pro.getExclusivoMulheres());
-        dto.setAtividadesOferecidas(pro.getAtividadesOferecidas());
+        if (pro.getGradeAtividades() != null) {
+            dto.setGradeAtividades(pro.getGradeAtividades().stream().map(g -> {
+                GradeAtividadeDTO d = new GradeAtividadeDTO();
+                d.setAtividade(g.getAtividade());
+                d.setDiasSemana(g.getDiasSemana());
+                d.setPeriodos(g.getPeriodos());
+                return d;
+            }).toList());
+        }
         dto.setFotoUrl(pro.getFotoUrl());
+        dto.setOutrosAtividade(pro.getOutrosAtividade());
         dto.setRole(pro.getRole());
         return dto;
     }

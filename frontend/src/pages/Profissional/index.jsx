@@ -17,8 +17,9 @@ const Profissional = () => {
                 const mappedData = data.map(item => ({
                     ...item,
                     Imagem: item.fotoUrl || "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=500&auto=format&fit=crop&q=60",
-                    especialidades: item.especializacao ? item.especializacao.split(", ") : (item.atividadesOferecidas || []),
-                    avaliacao: 4.8, 
+                    especialidades: item.especializacao ? item.especializacao.split(", ") : (Array.isArray(item.atividadesOferecidas) ? item.atividadesOferecidas : []),
+                    gradeAtividades: Array.isArray(item.gradeAtividades) ? item.gradeAtividades : [],
+                    avaliacao: 4.8,
                 }));
                 setProfissionais(mappedData);
             } catch (error) {

@@ -21,6 +21,7 @@ import {
 } from "@mui/material";
 import { FaSearch, FaMapMarkerAlt, FaPhone, FaClock, FaChevronRight, FaStar, FaFilter, FaTimes } from "react-icons/fa";
 import { estabelecimentoService } from "../../services";
+import MapComponent from "../../components/MapComponent";
 
 const categories = ["Academy", "CrossFit", "Funcional", "Pilates", "Yoga", "Dança", "Basquete", "Natação"];
 
@@ -43,22 +44,27 @@ const Mapa = () => {
         const fetchAll = async () => {
             try {
                 const data = await estabelecimentoService.getAll();
-                // Florianópolis roughly -27.59 km² range for percentage simulation if using static map
-                // For now, if lat/lng are missing, we'll give them a default dummy position
-                const mapped = data.map(est => ({
-                    id: est.id,
-                    nome: est.nomeFantasia || est.nome,
-                    categoria: est.atividadesOferecidas?.[0] || "Academia",
-                    lat: est.endereco?.latitude ? ((est.endereco.latitude + 27.65) * 500) % 100 : Math.random() * 80 + 10,
-                    lng: est.endereco?.longitude ? ((est.endereco.longitude + 48.60) * 500) % 100 : Math.random() * 80 + 10,
-                    avaliacao: est.avaliacao || 0,
-                    distancia: (Math.random() * 5).toFixed(1), // Simulated distance
-                    imagem: est.fotosUrl?.[0] || "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=500&auto=format&fit=crop&q=60",
-                    telefone: est.telefone,
-                    horario: "06:00 - 22:00",
-                    aberto: true,
-                    atividades: est.atividadesOferecidas || []
-                }));
+
+                const mapped = data.map(est => {
+                    // Coordenadas reais ou fallback para Florianópolis centro
+                    const lat = est.endereco?.latitude || (-27.59 + (Math.random() - 0.5) * 0.1);
+                    const lng = est.endereco?.longitude || (-48.54 + (Math.random() - 0.5) * 0.1);
+
+                    return {
+                        id: est.id,
+                        nome: est.nomeFantasia || est.nome,
+                        categoria: est.atividadesOferecidas?.[0] || "Academia",
+                        lat,
+                        lng,
+                        avaliacao: est.avaliacao || 0,
+                        distancia: (Math.random() * 5).toFixed(1), // Simulated distance
+                        imagem: est.fotosUrl?.[0] || "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=500&auto=format&fit=crop&q=60",
+                        telefone: est.telefone,
+                        horario: "06:00 - 22:00",
+                        aberto: true,
+                        atividades: est.atividadesOferecidas || []
+                    };
+                });
                 setDbEstablishments(mapped);
             } catch (err) {
                 console.error("Erro ao buscar dados do mapa:", err);
@@ -286,41 +292,15 @@ const Mapa = () => {
                         height: isMobile ? 400 : '100%',
                         flexShrink: 0
                     }}>
-                        <Box sx={{
-                            width: '100%',
-                            height: '100%',
-                            backgroundImage: `url("https://api.mapbox.com/styles/v1/mapbox/${theme.palette.mode === 'dark' ? 'dark-v10' : 'light-v10'}/static/-48.5482,-27.5948,12,0/1000x600?access_token=pk.eyJ1IjoiYW50aWdyYXZpdHkiLCJhIjoiY2x4eHh4eHh4eHh4eHh4eHh4eHh4eHh4In0")`,
-                            backgroundSize: 'cover',
-                            backgroundPosition: 'center',
-                            position: 'relative',
-                            filter: theme.palette.mode === 'dark' ? 'brightness(0.8)' : 'none'
-                        }}>
-                            {/* Simulated Map Markers */}
-                            {filteredEstablishments.map((est) => (
-                                <Tooltip key={est.id} title={est.nome} arrow>
-                                    <Box
-                                        onClick={() => setSelectedId(est.id)}
-                                        sx={{
-                                            position: 'absolute',
-                                            top: `${est.lat}%`,
-                                            left: `${est.lng}%`,
-                                            color: selectedId === est.id ? theme.palette.error.main : theme.palette.primary.main,
-                                            cursor: 'pointer',
-                                            transition: 'all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
-                                            filter: selectedId === est.id ? `drop-shadow(0 8px 12px ${alpha(theme.palette.error.main, 0.4)})` : 'drop-shadow(0 4px 6px rgba(0, 0, 0, 0.2))',
-                                            transform: selectedId === est.id ? 'scale(1.5) translateY(-8px)' : 'scale(1)',
-                                            zIndex: selectedId === est.id ? 10 : 1,
-                                            '&:hover': {
-                                                transform: 'scale(1.3) translateY(-5px)',
-                                                color: selectedId === est.id ? theme.palette.error.main : theme.palette.primary.dark,
-                                            }
-                                        }}
-                                    >
-                                        <FaMapMarkerAlt size={24} />
-                                    </Box>
-                                </Tooltip>
-                            ))}
-                        </Box>
+                        <MapComponent
+                            markers={filteredEstablishments.map(e => ({
+                                id: e.id,
+                                lat: e.lat,
+                                lng: e.lng,
+                                title: e.nome
+                            }))}
+                            onMarkerClick={(id) => setSelectedId(id)}
+                        />
                     </Box>
 
                     {/* Sidebar Area */}

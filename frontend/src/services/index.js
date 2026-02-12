@@ -56,12 +56,12 @@ export const authService = {
                 nomeFantasia: formData.nomeFantasia || formData.nome,
                 razaoSocial: formData.razaoSocial || formData.nome,
                 telefone: formData.telefone,
-                atividadesOferecidas: formData.atividadesOferecidas,
+                gradeAtividades: formData.gradeAtividades || [],
                 exclusivoMulheres: formData.exclusivoMulheres,
                 fotosUrl: formData.fotosUrl,
                 endereco: formData.endereco ? {
                     ...formData.endereco,
-                    rua: formData.endereco.logradouro,
+                    rua: formData.endereco.rua,
                     latitude: formData.endereco.latitude,
                     longitude: formData.endereco.longitude
                 } : null
@@ -72,15 +72,17 @@ export const authService = {
                 ...payload,
                 cpf: formData.cpf,
                 telefone: formData.telefone,
-                especializacao: formData.atividadesOferecidas.join(", "),
+                especializacao: (formData.gradeAtividades || []).map(g => g.atividade).join(", "),
                 registroCref: formData.registroCref,
                 descricao: formData.descricao,
-                atividadesOferecidas: formData.atividadesOferecidas,
+                gradeAtividades: formData.gradeAtividades || [],
                 exclusivoMulheres: formData.exclusivoMulheres,
                 fotoUrl: formData.fotoUrl,
                 endereco: formData.endereco ? {
                     ...formData.endereco,
-                    rua: formData.endereco.logradouro
+                    rua: formData.endereco.rua,
+                    latitude: formData.endereco.latitude,
+                    longitude: formData.endereco.longitude
                 } : null
             };
         } else if (type === 'admin') {
@@ -162,7 +164,12 @@ export const estabelecimentoService = {
 
     // Atualizar estabelecimento
     update: async (id, estabelecimentoData) => {
-        const response = await api.put(`/estabelecimentos/${id}`, estabelecimentoData);
+        const payload = {
+            ...estabelecimentoData,
+            nomeFantasia: estabelecimentoData.nomeFantasia || estabelecimentoData.nome,
+            razaoSocial: estabelecimentoData.razaoSocial || estabelecimentoData.nome,
+        };
+        const response = await api.put(`/estabelecimentos/${id}`, payload);
         return response.data;
     },
 
@@ -196,7 +203,11 @@ export const profissionalService = {
 
     // Atualizar profissional
     update: async (id, profissionalData) => {
-        const response = await api.put(`/profissionais/${id}`, profissionalData);
+        const payload = {
+            ...profissionalData,
+            especializacao: (profissionalData.gradeAtividades || []).map(g => g.atividade).join(", "),
+        };
+        const response = await api.put(`/profissionais/${id}`, payload);
         return response.data;
     },
 

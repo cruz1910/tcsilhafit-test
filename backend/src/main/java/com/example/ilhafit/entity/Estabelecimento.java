@@ -54,10 +54,12 @@ public class Estabelecimento {
     @Column(name = "exclusivo_mulheres")
     private Boolean exclusivoMulheres = false;
 
-    @ElementCollection
-    @CollectionTable(name = "estabelecimento_atividades", joinColumns = @JoinColumn(name = "estabelecimento_id"))
-    @Column(name = "atividade")
-    private List<String> atividadesOferecidas;
+    @Column(name = "outros_atividade")
+    private String outrosAtividade;
+
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "estabelecimento_id")
+    private List<GradeAtividade> gradeAtividades;
 
     @ElementCollection
     @CollectionTable(name = "estabelecimento_fotos", joinColumns = @JoinColumn(name = "estabelecimento_id"))
