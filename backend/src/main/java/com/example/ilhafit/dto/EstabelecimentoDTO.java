@@ -20,7 +20,6 @@ public class EstabelecimentoDTO {
         @Email(message = "Email deve ser válido")
         private String email;
 
-        @NotBlank(message = "Senha é obrigatória")
         private String senha;
 
         @NotBlank(message = "Telefone é obrigatório")

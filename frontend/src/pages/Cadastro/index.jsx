@@ -77,16 +77,65 @@ const Cadastro = () => {
         }
     };
 
+
+    // Funções de máscara
+    const maskCPF = (value) => {
+        return value
+            .replace(/\D/g, '')
+            .replace(/(\d{3})(\d)/, '$1.$2')
+            .replace(/(\d{3})(\d)/, '$1.$2')
+            .replace(/(\d{3})(\d{1,2})/, '$1-$2')
+            .replace(/(-\d{2})\d+?$/, '$1');
+    };
+
+    const maskCNPJ = (value) => {
+        return value
+            .replace(/\D/g, '')
+            .replace(/(\d{2})(\d)/, '$1.$2')
+            .replace(/(\d{3})(\d)/, '$1.$2')
+            .replace(/(\d{3})(\d)/, '$1/$2')
+            .replace(/(\d{4})(\d)/, '$1-$2')
+            .replace(/(-\d{2})\d+?$/, '$1');
+    };
+
+    const maskPhone = (value) => {
+        return value
+            .replace(/\D/g, '')
+            .replace(/(\d{2})(\d)/, '($1) $2')
+            .replace(/(\d{5})(\d)/, '$1-$2')
+            .replace(/(-\d{4})\d+?$/, '$1');
+    };
+
+    const maskCEP = (value) => {
+        return value
+            .replace(/\D/g, '')
+            .replace(/(\d{5})(\d)/, '$1-$2')
+            .replace(/(-\d{3})\d+?$/, '$1');
+    };
+
     const handleInputChange = (e) => {
         const { name, value } = e.target;
+        let newValue = value;
+
+        // Aplicar máscaras
+        if (name === "cpf") {
+            newValue = maskCPF(value);
+        } else if (name === "cnpj") {
+            newValue = maskCNPJ(value);
+        } else if (name === "telefone") {
+            newValue = maskPhone(value);
+        } else if (name === "endereco.cep") {
+            newValue = maskCEP(value);
+        }
+
         if (name.includes('.')) {
             const [parent, child] = name.split('.');
             setFormData(prev => ({
                 ...prev,
-                [parent]: { ...prev[parent], [child]: value }
+                [parent]: { ...prev[parent], [child]: newValue }
             }));
         } else {
-            setFormData(prev => ({ ...prev, [name]: value }));
+            setFormData(prev => ({ ...prev, [name]: newValue }));
         }
     };
 
@@ -270,7 +319,8 @@ const Cadastro = () => {
                 toast.success("Cadastro realizado com sucesso! Faça login para continuar.");
             }
 
-            navigate("/");
+            // Força o recarregamento da página para atualizar o estado de autenticação (NavBar)
+            window.location.href = "/";
         } catch (error) {
             console.error("Erro no cadastro:", error);
         }

@@ -177,6 +177,9 @@ public class AuthService {
     }
 
     public EstabelecimentoDTO.Resposta registerEstabelecimento(EstabelecimentoDTO.Registro dto) {
+        if (dto.getSenha() == null || dto.getSenha().trim().isEmpty()) {
+            throw new IllegalArgumentException("Senha é obrigatória");
+        }
         if (estabelecimentoRepository.existsByEmail(dto.getEmail())) {
             throw new RuntimeException("Email já cadastrado");
         }
@@ -205,6 +208,9 @@ public class AuthService {
     }
 
     public ProfissionalDTO.Resposta registerProfissional(ProfissionalDTO.Registro dto) {
+        if (dto.getSenha() == null || dto.getSenha().trim().isEmpty()) {
+            throw new IllegalArgumentException("Senha é obrigatória");
+        }
         if (profissionalRepository.existsByEmail(dto.getEmail())) {
             throw new RuntimeException("Email já cadastrado");
         }

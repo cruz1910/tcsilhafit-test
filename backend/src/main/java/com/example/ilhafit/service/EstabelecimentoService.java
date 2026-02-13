@@ -8,6 +8,7 @@ import com.example.ilhafit.repository.EstabelecimentoRepository;
 import com.example.ilhafit.repository.AvaliacaoRepository;
 import com.example.ilhafit.entity.Avaliacao;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +23,7 @@ public class EstabelecimentoService {
     private final EstabelecimentoRepository estabelecimentoRepository;
     private final EstabelecimentoMapper estabelecimentoMapper;
     private final AvaliacaoRepository avaliacaoRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Transactional
     public EstabelecimentoDTO.Resposta cadastrar(EstabelecimentoDTO.Registro dto) {
@@ -72,11 +74,49 @@ public class EstabelecimentoService {
         Estabelecimento estabelecimento = estabelecimentoRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Estabelecimento não encontrado"));
 
-        Estabelecimento atualizado = estabelecimentoMapper.toEntity(dto);
-        atualizado.setId(id);
-        atualizado.setRole(estabelecimento.getRole());
+        // Atualiza campos simples
+        estabelecimento.setNome(dto.getNome());
+        estabelecimento.setEmail(dto.getEmail());
+        estabelecimento.setTelefone(dto.getTelefone());
+        estabelecimento.setCnpj(dto.getCnpj());
+        estabelecimento.setNomeFantasia(dto.getNomeFantasia());
+        estabelecimento.setRazaoSocial(dto.getRazaoSocial());
+        estabelecimento.setExclusivoMulheres(dto.getExclusivoMulheres());
+        estabelecimento.setFotosUrl(dto.getFotosUrl());
+        estabelecimento.setOutrosAtividade(dto.getOutrosAtividade());
 
-        return estabelecimentoMapper.toDTO(estabelecimentoRepository.save(atualizado));
+        // Atualiza endereço
+        if (dto.getEndereco() != null) {
+            // Se o estabelecimento já tem endereço, atualizamos os campos
+            // Se não tem, teríamos que criar. O Mapper cria novo.
+            // Aqui assumimos que Endereco é @Embedded ou Cascade All.
+            // EstabelecimentoMapper usa enderecoMapper.toEntity(dto.getEndereco())
+            // Vamos usar o mapper auxiliar se possível ou setar manualmente
+            // Como Endereco é @Embedded (verificado na Entity), setEndereco substitui os
+            // valores.
+            // Precisamos do EnderecoMapper injetado no Service?
+            // O Service já tem EstabelecimentoMapper que tem EnderecoMapper.
+            // Mas o EstabelecimentoMapper.toEntity cria um novo objeto Estabelecimento.
+            // Vamos adicionar um método auxiliar aqui ou usar o mapper de forma criativa?
+            // Melhor simplificar: Recriar o objeto Endereco via DTO (assumindo que
+            // EnderecoDTO tem todos os campos)
+            // Ou melhor, delegar para o Mapper APENAS a criação do EnderecoEntity
+            estabelecimento.setEndereco(estabelecimentoMapper.toEntity(dto).getEndereco());
+        }
+
+        // Atualiza Grade
+        if (dto.getGradeAtividades() != null) {
+            // Limpa lista atual e adiciona novas (orphanRemoval cuida do resto)
+            estabelecimento.getGradeAtividades().clear();
+            estabelecimento.getGradeAtividades().addAll(estabelecimentoMapper.toEntity(dto).getGradeAtividades());
+        }
+
+        // Senha
+        if (dto.getSenha() != null && !dto.getSenha().trim().isEmpty()) {
+            estabelecimento.setSenha(passwordEncoder.encode(dto.getSenha()));
+        }
+
+        return estabelecimentoMapper.toDTO(estabelecimentoRepository.save(estabelecimento));
     }
 
     @Transactional
@@ -84,6 +124,8 @@ public class EstabelecimentoService {
         if (!estabelecimentoRepository.existsById(id)) {
             throw new IllegalArgumentException("Estabelecimento não encontrado");
         }
+        // Deleta avaliações antes de deletar o estabelecimento
+        avaliacaoRepository.deleteByEstabelecimentoId(id);
         estabelecimentoRepository.deleteById(id);
     }
 }

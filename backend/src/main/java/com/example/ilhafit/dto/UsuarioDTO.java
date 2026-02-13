@@ -15,7 +15,6 @@ public class UsuarioDTO {
         @Email(message = "Email deve ser válido")
         private String email;
 
-        @NotBlank(message = "Senha é obrigatória")
         private String senha;
 
         private String cpf;

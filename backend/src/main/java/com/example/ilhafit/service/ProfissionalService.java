@@ -6,6 +6,7 @@ import com.example.ilhafit.entity.Role;
 import com.example.ilhafit.mapper.ProfissionalMapper;
 import com.example.ilhafit.repository.ProfissionalRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,6 +20,7 @@ public class ProfissionalService {
 
     private final ProfissionalRepository profissionalRepository;
     private final ProfissionalMapper profissionalMapper;
+    private final PasswordEncoder passwordEncoder;
 
     @Transactional
     public ProfissionalDTO.Resposta cadastrar(ProfissionalDTO.Registro dto) {
@@ -59,12 +61,34 @@ public class ProfissionalService {
         Profissional profissional = profissionalRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Profissional não encontrado"));
 
-        Profissional atualizado = profissionalMapper.toEntity(dto);
-        // Preserve ID and potentially other fields if not in DTO or handled by mapper
-        atualizado.setId(id);
-        atualizado.setRole(profissional.getRole()); // Preserve existing role or set default
+        // Atualiza campos simples
+        profissional.setNome(dto.getNome());
+        profissional.setEmail(dto.getEmail());
+        profissional.setTelefone(dto.getTelefone());
+        profissional.setCpf(dto.getCpf());
+        profissional.setEspecializacao(dto.getEspecializacao());
+        profissional.setRegistroCref(dto.getRegistroCref());
+        profissional.setExclusivoMulheres(dto.getExclusivoMulheres());
+        profissional.setFotoUrl(dto.getFotoUrl()); // String direta
+        profissional.setOutrosAtividade(dto.getOutrosAtividade());
 
-        return profissionalMapper.toDTO(profissionalRepository.save(atualizado));
+        // Atualiza Endereço
+        if (dto.getEndereco() != null) {
+            profissional.setEndereco(profissionalMapper.toEntity(dto).getEndereco());
+        }
+
+        // Atualiza Grade
+        if (dto.getGradeAtividades() != null) {
+            profissional.getGradeAtividades().clear();
+            profissional.getGradeAtividades().addAll(profissionalMapper.toEntity(dto).getGradeAtividades());
+        }
+
+        // Senha
+        if (dto.getSenha() != null && !dto.getSenha().trim().isEmpty()) {
+            profissional.setSenha(passwordEncoder.encode(dto.getSenha()));
+        }
+
+        return profissionalMapper.toDTO(profissionalRepository.save(profissional));
     }
 
     @Transactional

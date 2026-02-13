@@ -28,17 +28,19 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, String>> handleDataIntegrityViolationException(
             DataIntegrityViolationException ex) {
         String message = "Erro de integridade de dados.";
-        String detail = ex.getMostSpecificCause().getMessage().toLowerCase();
+        String detail = ex.getMostSpecificCause().getMessage();
 
-        if (detail.contains("uk_") || detail.contains("duplicate key")
-                || detail.contains("violação de restrição unique")) {
-            if (detail.contains("cpf")) {
+        if (detail != null) {
+            String lowerDetail = detail.toLowerCase();
+            if (lowerDetail.contains("cpf")) {
                 message = "Este CPF já está cadastrado no sistema.";
-            } else if (detail.contains("email")) {
+            } else if (lowerDetail.contains("email")) {
                 message = "Este e-mail já está sendo utilizado.";
-            } else if (detail.contains("cnpj")) {
+            } else if (lowerDetail.contains("cnpj")) {
                 message = "Este CNPJ já está cadastrado no sistema.";
-            } else {
+            } else if (lowerDetail.contains("telefone")) {
+                message = "Este telefone já está cadastrado.";
+            } else if (lowerDetail.contains("duplicate key") || lowerDetail.contains("violates unique constraint")) {
                 message = "Um dos dados informados já existe em nossa base.";
             }
         }

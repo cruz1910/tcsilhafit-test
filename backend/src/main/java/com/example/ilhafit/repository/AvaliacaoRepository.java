@@ -9,4 +9,8 @@ import java.util.List;
 @Repository
 public interface AvaliacaoRepository extends JpaRepository<Avaliacao, Long> {
     List<Avaliacao> findByEstabelecimentoIdOrderByDataAvaliacaoDesc(Long estabelecimentoId);
+
+    void deleteByEstabelecimentoId(Long estabelecimentoId);
+
+    void deleteByAutorId(Long autorId);
 }

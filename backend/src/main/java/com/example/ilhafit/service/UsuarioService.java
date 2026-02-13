@@ -6,6 +6,8 @@ import com.example.ilhafit.entity.Usuario;
 import com.example.ilhafit.mapper.UsuarioMapper;
 import com.example.ilhafit.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
+import com.example.ilhafit.repository.AvaliacaoRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,6 +21,8 @@ public class UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
     private final UsuarioMapper usuarioMapper;
+    private final AvaliacaoRepository avaliacaoRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Transactional
     public UsuarioDTO.Resposta cadastrar(UsuarioDTO.Registro dto) {
@@ -30,6 +34,7 @@ public class UsuarioService {
         }
         Usuario usuario = usuarioMapper.toEntity(dto);
         usuario.setRole(Role.USER);
+        usuario.setSenha(passwordEncoder.encode(dto.getSenha())); // Encode password on registration
         return usuarioMapper.toDTO(usuarioRepository.save(usuario));
     }
 
@@ -54,14 +59,17 @@ public class UsuarioService {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado"));
 
-        // Update fields individually to allow partial updates or controlling what
-        // changes
-        // For simplicity, we might remap, but we must preserve ID and Role
-        Usuario atualizado = usuarioMapper.toEntity(dto);
-        atualizado.setId(id);
-        atualizado.setRole(usuario.getRole());
+        // Update fields manually
+        usuario.setNome(dto.getNome());
+        usuario.setEmail(dto.getEmail());
+        usuario.setCpf(dto.getCpf());
 
-        return usuarioMapper.toDTO(usuarioRepository.save(atualizado));
+        // Password update logic
+        if (dto.getSenha() != null && !dto.getSenha().trim().isEmpty()) {
+            usuario.setSenha(passwordEncoder.encode(dto.getSenha()));
+        }
+
+        return usuarioMapper.toDTO(usuarioRepository.save(usuario));
     }
 
     @Transactional
@@ -69,6 +77,7 @@ public class UsuarioService {
         if (!usuarioRepository.existsById(id)) {
             throw new IllegalArgumentException("Usuário não encontrado");
         }
+        avaliacaoRepository.deleteByAutorId(id); // Cascade delete reviews
         usuarioRepository.deleteById(id);
     }
 }
