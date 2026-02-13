@@ -35,16 +35,14 @@ api.interceptors.response.use(
       // Erro de resposta do servidor
       console.error('Erro na resposta:', error.response.data);
 
-      // Tenta extrair mensagem de erro do backend (formato comum: { erro: "..." } ou { message: "..." })
+      // Tenta extrair mensagem de erro do backend (formato padronizado: { erro: "..." })
       errorMessage = error.response.data?.erro || error.response.data?.message || errorMessage;
 
       // Se for erro 401 (não autorizado), redirecionar para login
       if (error.response.status === 401) {
         localStorage.removeItem('token');
         window.location.href = '/login';
-        // Não exibe toast se for redirecionar, ou exibe "Sessão expirada"
-        toast.error("Sessão expirada. Faça login novamente.");
-        return Promise.reject(error);
+        errorMessage = "Sessão expirada. Faça login novamente.";
       }
     } else if (error.request) {
       // Erro de requisição (sem resposta)
@@ -56,7 +54,7 @@ api.interceptors.response.use(
       errorMessage = error.message;
     }
 
-    // Exibe o toast com a mensagem de erro
+    // Exibe o toast com a mensagem de erro (exceto se for tratado especificamente)
     toast.error(errorMessage);
 
     return Promise.reject(error);

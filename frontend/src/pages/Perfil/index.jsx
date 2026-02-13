@@ -80,6 +80,7 @@ const Perfil = () => {
     const [loading, setLoading] = useState(true);
     const [selectedTab, setSelectedTab] = useState(0);
     const [openDelete, setOpenDelete] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
 
     const [formData, setFormData] = useState({
         nome: '',
@@ -291,9 +292,19 @@ const Perfil = () => {
             localStorage.setItem('user', JSON.stringify(updatedUser));
 
             toast.success("Perfil atualizado com sucesso! ✨");
+            setIsEditing(false);
         } catch (error) {
             console.error("Erro ao atualizar perfil:", error);
             toast.error("Erro ao atualizar perfil");
+        }
+    };
+
+    const toggleEdit = () => {
+        if (isEditing) {
+            handleSave();
+        } else {
+            setIsEditing(true);
+            toast.info("Modo de edição ativado.");
         }
     };
 
@@ -450,13 +461,14 @@ const Perfil = () => {
                                 <label htmlFor="photo-upload">
                                     <IconButton
                                         component="span"
+                                        disabled={!isEditing}
                                         sx={{
                                             position: 'absolute',
                                             bottom: 10,
                                             right: 10,
-                                            bgcolor: 'primary.main',
+                                            bgcolor: isEditing ? 'primary.main' : alpha(theme.palette.text.disabled, 0.5),
                                             color: 'white',
-                                            '&:hover': { bgcolor: 'primary.dark', transform: 'scale(1.1)' },
+                                            '&:hover': { bgcolor: isEditing ? 'primary.dark' : alpha(theme.palette.text.disabled, 0.5), transform: isEditing ? 'scale(1.1)' : 'none' },
                                             transition: 'all 0.2s',
                                             boxShadow: '0 4px 8px rgba(0,0,0,0.2)'
                                         }}
@@ -482,11 +494,12 @@ const Perfil = () => {
                                             <IconButton
                                                 size="small"
                                                 onClick={() => setFormData(prev => ({ ...prev, fotosUrl: prev.fotosUrl.filter((_, i) => i !== idx) }))}
+                                                disabled={!isEditing}
                                                 sx={{
                                                     position: 'absolute',
                                                     top: -8,
                                                     right: -8,
-                                                    bgcolor: 'error.main',
+                                                    bgcolor: isEditing ? 'error.main' : alpha(theme.palette.text.disabled, 0.5),
                                                     color: 'white',
                                                     '&:hover': { bgcolor: 'error.dark' },
                                                     p: 0.3,
@@ -516,6 +529,7 @@ const Perfil = () => {
                                     value={user.role === 'ESTABELECIMENTO' ? formData.nomeFantasia : formData.nome}
                                     onChange={handleChange}
                                     placeholder={user.role === 'ESTABELECIMENTO' ? "Ex: Academia Fit" : "Seu nome"}
+                                    autoComplete="off"
                                     InputProps={{
                                         startAdornment: (
                                             <InputAdornment position="start">
@@ -524,6 +538,7 @@ const Perfil = () => {
                                         ),
                                     }}
                                     sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
+                                    disabled={!isEditing}
                                 />
                             </Grid>
 
@@ -535,6 +550,7 @@ const Perfil = () => {
                                         name="razaoSocial"
                                         value={formData.razaoSocial}
                                         onChange={handleChange}
+                                        autoComplete="off"
                                         InputProps={{
                                             startAdornment: (
                                                 <InputAdornment position="start">
@@ -543,6 +559,7 @@ const Perfil = () => {
                                             ),
                                         }}
                                         sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
+                                        disabled={!isEditing}
                                     />
                                 </Grid>
                             )}
@@ -554,6 +571,7 @@ const Perfil = () => {
                                     name="email"
                                     value={formData.email}
                                     disabled
+                                    autoComplete="off"
                                     InputProps={{
                                         startAdornment: (
                                             <InputAdornment position="start">
@@ -574,6 +592,7 @@ const Perfil = () => {
                                     name={user.role === 'ESTABELECIMENTO' ? 'cnpj' : 'cpf'}
                                     value={user.role === 'ESTABELECIMENTO' ? formData.cnpj : formData.cpf}
                                     onChange={handleChange}
+                                    autoComplete="off"
                                     InputProps={{
                                         startAdornment: (
                                             <InputAdornment position="start">
@@ -582,6 +601,7 @@ const Perfil = () => {
                                         ),
                                     }}
                                     sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
+                                    disabled={!isEditing}
                                 />
                             </Grid>
 
@@ -592,6 +612,7 @@ const Perfil = () => {
                                     name="telefone"
                                     value={formData.telefone}
                                     onChange={handleChange}
+                                    autoComplete="off"
                                     InputProps={{
                                         startAdornment: (
                                             <InputAdornment position="start">
@@ -600,6 +621,7 @@ const Perfil = () => {
                                         ),
                                     }}
                                     sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
+                                    disabled={!isEditing}
                                 />
                             </Grid>
                         </Grid>
@@ -626,6 +648,7 @@ const Perfil = () => {
                                         ),
                                     }}
                                     sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
+                                    disabled={!isEditing}
                                 />
                             </Grid>
 
@@ -637,6 +660,7 @@ const Perfil = () => {
                                     value={formData.endereco.rua}
                                     onChange={handleChange}
                                     sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
+                                    disabled={!isEditing}
                                 />
                             </Grid>
 
@@ -648,6 +672,7 @@ const Perfil = () => {
                                     value={formData.endereco.bairro}
                                     onChange={handleChange}
                                     sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
+                                    disabled={!isEditing}
                                 />
                             </Grid>
 
@@ -659,6 +684,7 @@ const Perfil = () => {
                                     value={formData.endereco.numero}
                                     onChange={handleChange}
                                     sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
+                                    disabled={!isEditing}
                                 />
                             </Grid>
 
@@ -689,11 +715,11 @@ const Perfil = () => {
                         <Box sx={{ mt: 8, pt: 4, borderTop: '1px solid', borderColor: 'divider', display: 'flex', justifyContent: 'flex-end' }}>
                             <Button
                                 variant="contained"
-                                startIcon={<FaSave />}
-                                onClick={handleSave}
+                                startIcon={isEditing ? <FaSave /> : <FaUser />}
+                                onClick={toggleEdit}
                                 sx={{
-                                    bgcolor: 'primary.main',
-                                    '&:hover': { bgcolor: 'primary.dark', transform: 'translateY(-2px)' },
+                                    bgcolor: isEditing ? 'success.main' : 'primary.main',
+                                    '&:hover': { bgcolor: isEditing ? 'success.dark' : 'primary.dark', transform: 'translateY(-2px)' },
                                     borderRadius: 4,
                                     px: 6,
                                     py: 2,
@@ -704,7 +730,7 @@ const Perfil = () => {
                                     transition: 'all 0.3s'
                                 }}
                             >
-                                Salvar Alterações
+                                {isEditing ? "Confirmar Alterações" : "Editar Perfil"}
                             </Button>
                         </Box>
                     </Box>
@@ -730,6 +756,7 @@ const Perfil = () => {
                                     onChange={handleChange}
                                     disabled={!!crefOriginal}
                                     placeholder="000000-G/SC"
+                                    autoComplete="off"
                                     helperText={crefOriginal ? "O registro CREF não pode ser alterado após cadastrado." : "Obrigatório para atividades técnicas."}
                                     sx={{
                                         '& .MuiOutlinedInput-root': {
@@ -770,6 +797,7 @@ const Perfil = () => {
                                     }
                                     setFormData(prev => ({ ...prev, gradeAtividades: newGrade }));
                                 }}
+                                disabled={!isEditing}
                                 renderInput={(params) => (
                                     <TextField
                                         {...params}
@@ -802,6 +830,7 @@ const Perfil = () => {
                                     value={formData.outrosAtividade}
                                     onChange={handleChange}
                                     placeholder="Ex: Tênis de Mesa, Surf..."
+                                    autoComplete="off"
                                     sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
                                 />
                             </Box>
@@ -940,21 +969,21 @@ const Perfil = () => {
                         <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
                             <Button
                                 variant="contained"
-                                startIcon={<FaSave />}
-                                onClick={handleSave}
+                                startIcon={isEditing ? <FaSave /> : <FaUser />}
+                                onClick={toggleEdit}
                                 sx={{
-                                    bgcolor: 'primary.main',
+                                    bgcolor: isEditing ? 'success.main' : 'primary.main',
                                     borderRadius: 4,
                                     px: 8,
                                     py: 2,
                                     fontWeight: 800,
                                     textTransform: 'none',
                                     boxShadow: '0 8px 16px rgba(16, 185, 129, 0.2)',
-                                    '&:hover': { bgcolor: 'primary.dark', transform: 'translateY(-2px)' },
+                                    '&:hover': { bgcolor: isEditing ? 'success.dark' : 'primary.dark', transform: 'translateY(-2px)' },
                                     transition: 'all 0.3s'
                                 }}
                             >
-                                Salvar Alterações
+                                {isEditing ? "Confirmar Alterações" : "Editar Perfil"}
                             </Button>
                         </Box>
                     </Box>

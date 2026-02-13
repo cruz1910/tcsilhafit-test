@@ -273,8 +273,6 @@ const Cadastro = () => {
             navigate("/");
         } catch (error) {
             console.error("Erro no cadastro:", error);
-            const errorMsg = error.response?.data?.erro || error.message || "Erro desconhecido";
-            toast.error("Erro ao cadastrar: " + errorMsg);
         }
     };
 

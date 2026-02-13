@@ -40,8 +40,6 @@ const Login = () => {
       navigate("/");
     } catch (error) {
       console.error("Erro no login:", error);
-      const errorMsg = error.response?.data?.erro || "Credenciais inválidas";
-      toast.error(errorMsg);
     } finally {
       setLoading(false);
     }

@@ -10,13 +10,13 @@ import ThemeModeProvider from "./contexts/ThemeModeProvider.jsx";
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <BrowserRouter>
-     <div className="app-container">
-       <ThemeModeProvider>
-      <NavBar />
-        <main>
-          <App />
-        </main>
-        <ToastContainer position='top-center'/>
+      <div className="app-container">
+        <ThemeModeProvider>
+          <NavBar />
+          <main>
+            <App />
+          </main>
+          <ToastContainer position='top-right' limit={1} />
         </ThemeModeProvider>
       </div>
     </BrowserRouter>

@@ -13,6 +13,7 @@ import {
     Avatar,
     useTheme,
     alpha,
+    TextField,
 } from "@mui/material";
 import {
     FaChevronLeft,
@@ -22,11 +23,59 @@ import {
     FaMapMarkerAlt,
     FaClock,
     FaWhatsapp,
+    FaPaperPlane,
 } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
+import { authService, avaliacaoService } from "../../services";
+import { toast } from "react-toastify";
 import MapComponent from "../MapComponent";
 
 const ModalProfissional = ({ open, onClose, profissional }) => {
     const theme = useTheme();
+    const navigate = useNavigate();
+    const [avaliacoes, setAvaliacoes] = useState([]);
+    const [novaAvaliacao, setNovaAvaliacao] = useState({ nota: 5, comentario: "" });
+    const [loading, setLoading] = useState(false);
+    const isAuthenticated = authService.isAuthenticated();
+
+    useEffect(() => {
+        if (open && profissional?.id) {
+            loadAvaliacoes();
+        }
+    }, [open, profissional]);
+
+    const loadAvaliacoes = async () => {
+        try {
+            // TODO: Implementar endpoint de avaliações para profissionais
+            // const data = await avaliacaoService.getByProfissional(profissional.id);
+            // setAvaliacoes(data);
+            setAvaliacoes([]);
+        } catch (error) {
+            console.error("Erro ao carregar avaliações:", error);
+        }
+    };
+
+    const handleEnviarAvaliacao = async () => {
+        if (!novaAvaliacao.comentario.trim()) {
+            toast.warning("Por favor, escreva um comentário.");
+            return;
+        }
+        setLoading(true);
+        try {
+            // TODO: Implementar endpoint de avaliações para profissionais
+            // await avaliacaoService.avaliarProfissional({
+            //     ...novaAvaliacao,
+            //     profissionalId: profissional.id
+            // });
+            toast.success("Avaliação enviada com sucesso!");
+            setNovaAvaliacao({ nota: 5, comentario: "" });
+            loadAvaliacoes();
+        } catch (error) {
+            toast.error("Erro ao enviar avaliação.");
+        } finally {
+            setLoading(false);
+        }
+    };
 
     if (!profissional) return null;
 
@@ -208,6 +257,115 @@ const ModalProfissional = ({ open, onClose, profissional }) => {
                             )}
                         </Box>
                     </Paper>
+                </Box>
+
+                {/* Seção de Avaliações */}
+                <Divider sx={{ my: 4 }} />
+
+                <Typography variant="h6" fontWeight={800} sx={{ mb: 3 }}>Avaliações</Typography>
+
+                {isAuthenticated ? (
+                    <Paper elevation={0} sx={{ mb: 4, p: 4, bgcolor: '#F8FAFC', borderRadius: 4 }}>
+                        <Typography variant="h6" fontWeight={800} sx={{ mb: 2 }}>Sua avaliação</Typography>
+                        <Box sx={{ display: 'flex', gap: 1, mb: 3 }}>
+                            {[1, 2, 3, 4, 5].map((star) => (
+                                <FaStar
+                                    key={star}
+                                    size={28}
+                                    color={star <= novaAvaliacao.nota ? "#FFD700" : "#E2E8F0"}
+                                    style={{ cursor: 'pointer', transition: '0.2s' }}
+                                    onClick={() => setNovaAvaliacao({ ...novaAvaliacao, nota: star })}
+                                />
+                            ))}
+                        </Box>
+                        <TextField
+                            fullWidth
+                            multiline
+                            rows={4}
+                            placeholder="Como foi sua experiência com este profissional?"
+                            value={novaAvaliacao.comentario}
+                            onChange={(e) => setNovaAvaliacao({ ...novaAvaliacao, comentario: e.target.value })}
+                            sx={{
+                                mb: 3,
+                                bgcolor: 'white',
+                                '& .MuiOutlinedInput-root': { borderRadius: 3 }
+                            }}
+                        />
+                        <Button
+                            fullWidth
+                            variant="contained"
+                            onClick={handleEnviarAvaliacao}
+                            disabled={loading}
+                            sx={{
+                                borderRadius: 3,
+                                textTransform: 'none',
+                                fontWeight: 800,
+                                bgcolor: '#FF0000',
+                                '&:hover': { bgcolor: '#D00000' },
+                                height: 56,
+                                fontSize: '1.1rem',
+                                boxShadow: '0 8px 16px rgba(255, 0, 0, 0.15)'
+                            }}
+                        >
+                            {loading ? "Enviando..." : "Enviar avaliação"}
+                        </Button>
+                    </Paper>
+                ) : (
+                    <Paper elevation={0} sx={{ mb: 4, p: 4, bgcolor: '#F8FAFC', borderRadius: 4, textAlign: 'center' }}>
+                        <Box sx={{ mb: 3 }}>
+                            <FaStar size={48} color={alpha(theme.palette.primary.main, 0.3)} />
+                        </Box>
+                        <Typography variant="h6" fontWeight={800} sx={{ mb: 1 }}>
+                            Cadastre-se para avaliar
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                            Faça parte da comunidade IlhaFit e compartilhe sua experiência com este profissional
+                        </Typography>
+                        <Button
+                            fullWidth
+                            variant="contained"
+                            startIcon={<FaPaperPlane />}
+                            onClick={() => navigate('/cadastro')}
+                            sx={{
+                                borderRadius: 3,
+                                textTransform: 'none',
+                                fontWeight: 800,
+                                bgcolor: theme.palette.primary.main,
+                                '&:hover': { bgcolor: theme.palette.primary.dark },
+                                height: 56,
+                                fontSize: '1.1rem',
+                                boxShadow: `0 8px 16px ${alpha(theme.palette.primary.main, 0.3)}`
+                            }}
+                        >
+                            Cadastrar-se para avaliar
+                        </Button>
+                    </Paper>
+                )}
+
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mb: 4 }}>
+                    {avaliacoes.length > 0 ? (
+                        avaliacoes.map((av) => (
+                            <Paper key={av.id} elevation={0} sx={{ p: 3, borderRadius: 3, border: '1px solid', borderColor: 'divider' }}>
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                                    <Typography variant="subtitle1" fontWeight={800}>{av.nomeAutor}</Typography>
+                                    <Box sx={{ display: 'flex', gap: 0.5 }}>
+                                        {[...Array(5)].map((_, i) => (
+                                            <FaStar key={i} size={14} color={i < av.nota ? "#FFD700" : "#E2E8F0"} />
+                                        ))}
+                                    </Box>
+                                </Box>
+                                <Typography variant="body1" color="text.secondary" sx={{ lineHeight: 1.6 }}>
+                                    {av.comentario}
+                                </Typography>
+                            </Paper>
+                        ))
+                    ) : (
+                        <Box sx={{ py: 6, textAlign: 'center', bgcolor: '#F8FAFC', borderRadius: 4, border: '1px dashed', borderColor: 'divider' }}>
+                            <Typography variant="body1" color="text.secondary" fontWeight={500}>
+                                Seja o primeiro a avaliar!
+                            </Typography>
+                        </Box>
+                    )}
                 </Box>
 
                 {/* Botão de Contato */}

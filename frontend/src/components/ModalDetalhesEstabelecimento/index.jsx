@@ -305,7 +305,7 @@ const ModalDetalhesEstabelecimento = ({ open, onClose, estabelecimento }) => {
                         {/* Seção de Avaliações */}
                         <Typography variant="h5" fontWeight={800} sx={{ mb: 3 }}>Avaliações</Typography>
 
-                        {isAuthenticated && (
+                        {isAuthenticated ? (
                             <Paper elevation={0} sx={{ mb: 4, p: 4, bgcolor: '#F8FAFC', borderRadius: 4 }}>
                                 <Typography variant="h6" fontWeight={800} sx={{ mb: 2 }}>Sua avaliação</Typography>
                                 <Box sx={{ display: 'flex', gap: 1, mb: 3 }}>
@@ -349,6 +349,36 @@ const ModalDetalhesEstabelecimento = ({ open, onClose, estabelecimento }) => {
                                     }}
                                 >
                                     {loading ? "Enviando..." : "Enviar avaliação"}
+                                </Button>
+                            </Paper>
+                        ) : (
+                            <Paper elevation={0} sx={{ mb: 4, p: 4, bgcolor: '#F8FAFC', borderRadius: 4, textAlign: 'center' }}>
+                                <Box sx={{ mb: 3 }}>
+                                    <FaStar size={48} color={alpha(theme.palette.primary.main, 0.3)} />
+                                </Box>
+                                <Typography variant="h6" fontWeight={800} sx={{ mb: 1 }}>
+                                    Cadastre-se para avaliar
+                                </Typography>
+                                <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                                    Faça parte da comunidade IlhaFit e compartilhe sua experiência neste estabelecimento
+                                </Typography>
+                                <Button
+                                    fullWidth
+                                    variant="contained"
+                                    startIcon={<FaPaperPlane />}
+                                    onClick={() => navigate('/cadastro')}
+                                    sx={{
+                                        borderRadius: 3,
+                                        textTransform: 'none',
+                                        fontWeight: 800,
+                                        bgcolor: theme.palette.primary.main,
+                                        '&:hover': { bgcolor: theme.palette.primary.dark },
+                                        height: 56,
+                                        fontSize: '1.1rem',
+                                        boxShadow: `0 8px 16px ${alpha(theme.palette.primary.main, 0.3)}`
+                                    }}
+                                >
+                                    Cadastrar-se para avaliar
                                 </Button>
                             </Paper>
                         )}
