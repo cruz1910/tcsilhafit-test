@@ -77,6 +77,15 @@ const Cadastro = () => {
         }
     };
 
+    const convertToBase64 = (file) => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = error => reject(error);
+        });
+    };
+
 
     // Funções de máscara
     const maskCPF = (value) => {
@@ -175,16 +184,24 @@ const Cadastro = () => {
         }));
     };
 
-    const handleFileChange = (e) => {
+    const handleFileChange = async (e) => {
         if (e.target.files && e.target.files.length > 0) {
-            if (accountType === "estabelecimento") {
-                const newPhotos = Array.from(e.target.files).map(file => URL.createObjectURL(file));
-                setFormData(prev => ({
-                    ...prev,
-                    fotosUrl: [...(prev.fotosUrl || []), ...newPhotos]
-                }));
-            } else {
-                setFormData(prev => ({ ...prev, fotoUrl: URL.createObjectURL(e.target.files[0]) }));
+            try {
+                if (accountType === "estabelecimento") {
+                    const files = Array.from(e.target.files);
+                    const base64Files = await Promise.all(files.map(file => convertToBase64(file)));
+                    setFormData(prev => ({
+                        ...prev,
+                        fotosUrl: [...(prev.fotosUrl || []), ...base64Files]
+                    }));
+                } else {
+                    const file = e.target.files[0];
+                    const base64 = await convertToBase64(file);
+                    setFormData(prev => ({ ...prev, fotoUrl: base64 }));
+                }
+            } catch (error) {
+                console.error("Erro ao converter imagem:", error);
+                toast.error("Erro ao processar a imagem. Tente novamente.");
             }
         }
     };

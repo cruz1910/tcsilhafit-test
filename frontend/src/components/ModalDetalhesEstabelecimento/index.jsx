@@ -16,6 +16,7 @@ import {
 } from "@mui/material";
 import {
     FaChevronLeft,
+    FaChevronRight,
     FaStar,
     FaMapMarkerAlt,
     FaClock,
@@ -33,11 +34,13 @@ const ModalDetalhesEstabelecimento = ({ open, onClose, estabelecimento }) => {
     const [avaliacoes, setAvaliacoes] = useState([]);
     const [novaAvaliacao, setNovaAvaliacao] = useState({ nota: 5, comentario: "" });
     const [loading, setLoading] = useState(false);
+    const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const isAuthenticated = authService.isAuthenticated();
 
     useEffect(() => {
         if (open && estabelecimento?.id) {
             loadAvaliacoes();
+            setCurrentImageIndex(0);
         }
     }, [open, estabelecimento]);
 
@@ -94,17 +97,21 @@ const ModalDetalhesEstabelecimento = ({ open, onClose, estabelecimento }) => {
                 }
             }}
         >
-            {/* Cabeçalho Fixo com Imagem */}
-            <Box sx={{ position: 'relative', width: '100%', height: { xs: 200, md: 350 }, flexShrink: 0 }}>
+        >
+            {/* Cabeçalho Fixo com Carrossel de Imagens */}
+            <Box sx={{ position: 'relative', width: '100%', height: { xs: 200, md: 350 }, flexShrink: 0, bgcolor: 'black' }}>
                 <Box
                     sx={{
                         width: '100%',
                         height: '100%',
-                        backgroundImage: `url(${estabelecimento.Imagem || "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=1470&auto=format&fit=crop"})`,
+                        backgroundImage: `url(${estabelecimento.fotosUrl?.[currentImageIndex] || estabelecimento.Imagem || "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=1470&auto=format&fit=crop"})`,
                         backgroundSize: 'cover',
                         backgroundPosition: 'center',
+                        transition: 'background-image 0.5s ease-in-out'
                     }}
                 />
+
+                {/* Botão Fechar */}
                 <IconButton
                     onClick={onClose}
                     sx={{
@@ -121,6 +128,71 @@ const ModalDetalhesEstabelecimento = ({ open, onClose, estabelecimento }) => {
                 >
                     <FaChevronLeft size={18} color="#000" />
                 </IconButton>
+
+                {/* Setas de Navegação do Carrossel */}
+                {estabelecimento.fotosUrl?.length > 1 && (
+                    <>
+                        <IconButton
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setCurrentImageIndex(prev => prev === 0 ? estabelecimento.fotosUrl.length - 1 : prev - 1);
+                            }}
+                            sx={{
+                                position: 'absolute',
+                                left: 16,
+                                top: '50%',
+                                transform: 'translateY(-50%)',
+                                bgcolor: 'rgba(0,0,0,0.5)',
+                                color: 'white',
+                                '&:hover': { bgcolor: 'rgba(0,0,0,0.7)' },
+                                zIndex: 5
+                            }}
+                        >
+                            <FaChevronLeft size={24} />
+                        </IconButton>
+                        <IconButton
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setCurrentImageIndex(prev => prev === estabelecimento.fotosUrl.length - 1 ? 0 : prev + 1);
+                            }}
+                            sx={{
+                                position: 'absolute',
+                                right: 16, // Ajuste para não sobrepor o botão de fechar se estiver muito perto, mas o fechar está no topo
+                                top: '50%',
+                                transform: 'translateY(-50%)',
+                                bgcolor: 'rgba(0,0,0,0.5)',
+                                color: 'white',
+                                '&:hover': { bgcolor: 'rgba(0,0,0,0.7)' },
+                                zIndex: 5
+                            }}
+                        >
+                            <FaChevronRight size={24} />
+                        </IconButton>
+
+                        {/* Indicadores (Dots) */}
+                        <Box sx={{
+                            position: 'absolute',
+                            bottom: 16,
+                            left: '50%',
+                            transform: 'translateX(-50%)',
+                            display: 'flex',
+                            gap: 1
+                        }}>
+                            {estabelecimento.fotosUrl.map((_, idx) => (
+                                <Box
+                                    key={idx}
+                                    sx={{
+                                        width: 8,
+                                        height: 8,
+                                        borderRadius: '50%',
+                                        bgcolor: idx === currentImageIndex ? 'primary.main' : 'rgba(255,255,255,0.5)',
+                                        transition: 'all 0.3s'
+                                    }}
+                                />
+                            ))}
+                        </Box>
+                    </>
+                )}
             </Box>
 
             <DialogContent sx={{ p: { xs: 3, md: 6 }, overflowY: 'auto' }}>

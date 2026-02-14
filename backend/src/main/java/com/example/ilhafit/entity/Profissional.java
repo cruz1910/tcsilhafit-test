@@ -65,7 +65,7 @@ public class Profissional {
     @JoinColumn(name = "profissional_id")
     private List<GradeAtividade> gradeAtividades;
 
-    @Column(name = "foto_url")
+    @Column(name = "foto_url", columnDefinition = "TEXT")
     private String fotoUrl;
 
     @Column(name = "data_cadastro", nullable = false, updatable = false)

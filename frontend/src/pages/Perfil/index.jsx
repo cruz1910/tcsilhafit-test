@@ -429,91 +429,93 @@ const Perfil = () => {
                 {selectedTab === 0 && (
                     <Box sx={{ p: { xs: 3, md: 6 } }}>
                         {/* Avatar Section */}
-                        <Box sx={{ mb: 6, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                            <Box sx={{ position: 'relative' }}>
-                                <Box sx={{
-                                    p: 0.5,
-                                    borderRadius: '50%',
-                                    background: 'linear-gradient(45deg, #10B981, #34D399)',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    boxShadow: '0 8px 16px rgba(16, 185, 129, 0.2)'
-                                }}>
-                                    <Avatar
-                                        src={user?.role === 'ESTABELECIMENTO' ? formData.fotosUrl[0] : formData.fotoUrl}
-                                        sx={{
-                                            width: 140,
-                                            height: 140,
-                                            border: '4px solid',
-                                            borderColor: 'background.paper'
-                                        }}
+                        {user.role !== 'USER' && (
+                            <Box sx={{ mb: 6, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                <Box sx={{ position: 'relative' }}>
+                                    <Box sx={{
+                                        p: 0.5,
+                                        borderRadius: '50%',
+                                        background: 'linear-gradient(45deg, #10B981, #34D399)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        boxShadow: '0 8px 16px rgba(16, 185, 129, 0.2)'
+                                    }}>
+                                        <Avatar
+                                            src={user?.role === 'ESTABELECIMENTO' ? formData.fotosUrl[0] : formData.fotoUrl}
+                                            sx={{
+                                                width: 140,
+                                                height: 140,
+                                                border: '4px solid',
+                                                borderColor: 'background.paper'
+                                            }}
+                                        />
+                                    </Box>
+                                    <input
+                                        type="file"
+                                        id="photo-upload"
+                                        hidden
+                                        accept="image/*"
+                                        multiple={user.role === 'ESTABELECIMENTO'}
+                                        onChange={handleFileChange}
                                     />
+                                    <label htmlFor="photo-upload">
+                                        <IconButton
+                                            component="span"
+                                            disabled={!isEditing}
+                                            sx={{
+                                                position: 'absolute',
+                                                bottom: 10,
+                                                right: 10,
+                                                bgcolor: isEditing ? 'primary.main' : alpha(theme.palette.text.disabled, 0.5),
+                                                color: 'white',
+                                                '&:hover': { bgcolor: isEditing ? 'primary.dark' : alpha(theme.palette.text.disabled, 0.5), transform: isEditing ? 'scale(1.1)' : 'none' },
+                                                transition: 'all 0.2s',
+                                                boxShadow: '0 4px 8px rgba(0,0,0,0.2)'
+                                            }}
+                                            size="medium"
+                                        >
+                                            <FaUpload size={16} />
+                                        </IconButton>
+                                    </label>
                                 </Box>
-                                <input
-                                    type="file"
-                                    id="photo-upload"
-                                    hidden
-                                    accept="image/*"
-                                    multiple={user.role === 'ESTABELECIMENTO'}
-                                    onChange={handleFileChange}
-                                />
-                                <label htmlFor="photo-upload">
-                                    <IconButton
-                                        component="span"
-                                        disabled={!isEditing}
-                                        sx={{
-                                            position: 'absolute',
-                                            bottom: 10,
-                                            right: 10,
-                                            bgcolor: isEditing ? 'primary.main' : alpha(theme.palette.text.disabled, 0.5),
-                                            color: 'white',
-                                            '&:hover': { bgcolor: isEditing ? 'primary.dark' : alpha(theme.palette.text.disabled, 0.5), transform: isEditing ? 'scale(1.1)' : 'none' },
-                                            transition: 'all 0.2s',
-                                            boxShadow: '0 4px 8px rgba(0,0,0,0.2)'
-                                        }}
-                                        size="medium"
-                                    >
-                                        <FaUpload size={16} />
-                                    </IconButton>
-                                </label>
-                            </Box>
-                            <Typography variant="caption" color="text.secondary" fontWeight={700} sx={{ mt: 2, letterSpacing: 1 }}>
-                                {user.role === 'ESTABELECIMENTO' ? 'FOTOS DO ESTABELECIMENTO' : 'ALTERAR FOTO DE PERFIL'}
-                            </Typography>
+                                <Typography variant="caption" color="text.secondary" fontWeight={700} sx={{ mt: 2, letterSpacing: 1 }}>
+                                    {user.role === 'ESTABELECIMENTO' ? 'FOTOS DO ESTABELECIMENTO' : 'ALTERAR FOTO DE PERFIL'}
+                                </Typography>
 
-                            {user.role === 'ESTABELECIMENTO' && formData.fotosUrl.length > 0 && (
-                                <Box sx={{ display: 'flex', gap: 1.5, mt: 3, flexWrap: 'wrap', justifyContent: 'center' }}>
-                                    {formData.fotosUrl.map((url, idx) => (
-                                        <Box key={idx} sx={{ position: 'relative', transition: 'transform 0.2s', '&:hover': { transform: 'translateY(-4px)' } }}>
-                                            <Avatar
-                                                src={url}
-                                                variant="rounded"
-                                                sx={{ width: 60, height: 60, border: '2px solid', borderColor: 'divider' }}
-                                            />
-                                            <IconButton
-                                                size="small"
-                                                onClick={() => setFormData(prev => ({ ...prev, fotosUrl: prev.fotosUrl.filter((_, i) => i !== idx) }))}
-                                                disabled={!isEditing}
-                                                sx={{
-                                                    position: 'absolute',
-                                                    top: -8,
-                                                    right: -8,
-                                                    bgcolor: isEditing ? 'error.main' : alpha(theme.palette.text.disabled, 0.5),
-                                                    color: 'white',
-                                                    '&:hover': { bgcolor: 'error.dark' },
-                                                    p: 0.3,
-                                                    width: 20,
-                                                    height: 20
-                                                }}
-                                            >
-                                                <FaTimes size={10} />
-                                            </IconButton>
-                                        </Box>
-                                    ))}
-                                </Box>
-                            )}
-                        </Box>
+                                {user.role === 'ESTABELECIMENTO' && formData.fotosUrl.length > 0 && (
+                                    <Box sx={{ display: 'flex', gap: 1.5, mt: 3, flexWrap: 'wrap', justifyContent: 'center' }}>
+                                        {formData.fotosUrl.map((url, idx) => (
+                                            <Box key={idx} sx={{ position: 'relative', transition: 'transform 0.2s', '&:hover': { transform: 'translateY(-4px)' } }}>
+                                                <Avatar
+                                                    src={url}
+                                                    variant="rounded"
+                                                    sx={{ width: 60, height: 60, border: '2px solid', borderColor: 'divider' }}
+                                                />
+                                                <IconButton
+                                                    size="small"
+                                                    onClick={() => setFormData(prev => ({ ...prev, fotosUrl: prev.fotosUrl.filter((_, i) => i !== idx) }))}
+                                                    disabled={!isEditing}
+                                                    sx={{
+                                                        position: 'absolute',
+                                                        top: -8,
+                                                        right: -8,
+                                                        bgcolor: isEditing ? 'error.main' : alpha(theme.palette.text.disabled, 0.5),
+                                                        color: 'white',
+                                                        '&:hover': { bgcolor: 'error.dark' },
+                                                        p: 0.3,
+                                                        width: 20,
+                                                        height: 20
+                                                    }}
+                                                >
+                                                    <FaTimes size={10} />
+                                                </IconButton>
+                                            </Box>
+                                        ))}
+                                    </Box>
+                                )}
+                            </Box>
+                        )}
 
                         <Typography variant="h6" fontWeight={800} sx={{ mb: 4, display: 'flex', alignItems: 'center', gap: 1.5 }}>
                             <Box sx={{ width: 4, height: 24, bgcolor: 'primary.main', borderRadius: 2 }} />

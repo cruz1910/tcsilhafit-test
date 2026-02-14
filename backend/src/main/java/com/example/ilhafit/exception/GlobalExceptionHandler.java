@@ -40,6 +40,8 @@ public class GlobalExceptionHandler {
                 message = "Este CNPJ já está cadastrado no sistema.";
             } else if (lowerDetail.contains("telefone")) {
                 message = "Este telefone já está cadastrado.";
+            } else if (lowerDetail.contains("value too long")) {
+                message = "A imagem ou texto enviado é muito grande. Tente reduzir o tamanho.";
             } else if (lowerDetail.contains("duplicate key") || lowerDetail.contains("violates unique constraint")) {
                 message = "Um dos dados informados já existe em nossa base.";
             }

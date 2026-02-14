@@ -63,7 +63,7 @@ public class Estabelecimento {
 
     @ElementCollection
     @CollectionTable(name = "estabelecimento_fotos", joinColumns = @JoinColumn(name = "estabelecimento_id"))
-    @Column(name = "foto_url")
+    @Column(name = "foto_url", columnDefinition = "TEXT")
     private List<String> fotosUrl;
 
     @Enumerated(EnumType.STRING)
