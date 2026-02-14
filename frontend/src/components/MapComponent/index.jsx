@@ -6,7 +6,8 @@ const MapComponent = ({
     lng = -48.5482,
     zoom = 13,
     markers = [], // Array de { id, lat, lng, title }
-    onMarkerClick = null
+    onMarkerClick = null,
+    autoFit = true
 }) => {
     const mapRef = useRef(null);
     const mapInstance = useRef(null);
@@ -55,14 +56,19 @@ const MapComponent = ({
                 }
             });
 
-            // Se tiver múltiplos marcadores, ajusta o zoom para caber todos
-            if (markers.length > 1) {
-                const group = new L.featureGroup(
-                    markers.filter(m => m.lat && m.lng).map(m => L.marker([m.lat, m.lng]))
-                );
-                mapInstance.current.fitBounds(group.getBounds().pad(0.1));
-            } else if (markers.length === 1) {
-                mapInstance.current.setView([markers[0].lat, markers[0].lng], zoom);
+            // Se tiver múltiplos marcadores e autoFit estiver ativo, ajusta o zoom para caber todos
+            if (autoFit) {
+                if (markers.length > 1) {
+                    const group = new L.featureGroup(
+                        markers.filter(m => m.lat && m.lng).map(m => L.marker([m.lat, m.lng]))
+                    );
+                    mapInstance.current.fitBounds(group.getBounds().pad(0.1));
+                } else if (markers.length === 1) {
+                    mapInstance.current.setView([markers[0].lat, markers[0].lng], zoom);
+                }
+            } else {
+                // Se autoFit for falso, mantém a visualização nas coordenadas passadas
+                mapInstance.current.setView([lat, lng], zoom);
             }
         } else {
             // Caso de marcador único via props lat/lng (compatibilidade com modais)

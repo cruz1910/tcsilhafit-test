@@ -22,6 +22,7 @@ import {
 import { FaSearch, FaMapMarkerAlt, FaPhone, FaClock, FaChevronRight, FaStar, FaFilter, FaTimes } from "react-icons/fa";
 import { estabelecimentoService } from "../../services";
 import MapComponent from "../../components/MapComponent";
+import ModalDetalhesEstabelecimento from "../../components/ModalDetalhesEstabelecimento";
 
 const categories = ["Academy", "CrossFit", "Funcional", "Pilates", "Yoga", "Dança", "Basquete", "Natação"];
 
@@ -39,6 +40,8 @@ const Mapa = () => {
     const [maxDistance, setMaxDistance] = useState(10);
     const [onlyOpen, setOnlyOpen] = useState(false);
     const [showFilters, setShowFilters] = useState(false);
+    const [modalOpen, setModalOpen] = useState(false);
+    const [estabelecimentoParaModal, setEstabelecimentoParaModal] = useState(null);
 
     useEffect(() => {
         const fetchAll = async () => {
@@ -99,6 +102,10 @@ const Mapa = () => {
             return matchesSearch && matchesCategory && matchesRating && matchesDistance && matchesStatus;
         });
     }, [search, selectedCategories, minRating, maxDistance, onlyOpen, dbEstablishments]);
+
+    // Configurações para Grande Florianópolis
+    const FLORIPA_COORDS = { lat: -27.5948, lng: -48.5482 };
+    const DEFAULT_ZOOM = 11;
 
     const selectedEstablishment = dbEstablishments.find((e) => e.id === selectedId);
 
@@ -293,6 +300,10 @@ const Mapa = () => {
                         flexShrink: 0
                     }}>
                         <MapComponent
+                            lat={FLORIPA_COORDS.lat}
+                            lng={FLORIPA_COORDS.lng}
+                            zoom={DEFAULT_ZOOM}
+                            autoFit={false}
                             markers={filteredEstablishments.map(e => ({
                                 id: e.id,
                                 lat: e.lat,
@@ -362,6 +373,15 @@ const Mapa = () => {
                                     <Button
                                         fullWidth
                                         variant="contained"
+                                        onClick={async () => {
+                                            try {
+                                                const fullData = await estabelecimentoService.getById(selectedId);
+                                                setEstabelecimentoParaModal(fullData);
+                                                setModalOpen(true);
+                                            } catch (err) {
+                                                console.error("Erro ao buscar detalhes:", err);
+                                            }
+                                        }}
                                         sx={{
                                             py: 1.5,
                                             borderRadius: 3,
@@ -445,6 +465,13 @@ const Mapa = () => {
                     </Box>
                 </Box>
             )}
+
+            {/* Modal de Detalhes */}
+            <ModalDetalhesEstabelecimento
+                open={modalOpen}
+                onClose={() => setModalOpen(false)}
+                estabelecimento={estabelecimentoParaModal}
+            />
         </Box>
     );
 };
