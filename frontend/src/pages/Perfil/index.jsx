@@ -567,10 +567,11 @@ const Perfil = () => {
                             <Grid item xs={12} md={6}>
                                 <TextField
                                     fullWidth
-                                    label="Email (Não alterável)"
+                                    label="Email"
                                     name="email"
                                     value={formData.email}
-                                    disabled
+                                    onChange={handleChange}
+                                    disabled={user.role !== 'USER' || !isEditing}
                                     autoComplete="off"
                                     InputProps={{
                                         startAdornment: (
@@ -580,137 +581,145 @@ const Perfil = () => {
                                         ),
                                     }}
                                     sx={{
-                                        '& .MuiOutlinedInput-root': { borderRadius: 3, bgcolor: alpha(theme.palette.divider, 0.05) }
+                                        '& .MuiOutlinedInput-root': { borderRadius: 3, bgcolor: (user.role !== 'USER') ? alpha(theme.palette.divider, 0.05) : 'inherit' }
                                     }}
                                 />
                             </Grid>
 
-                            <Grid item xs={12} md={6}>
-                                <TextField
-                                    fullWidth
-                                    label={user.role === 'ESTABELECIMENTO' ? 'CNPJ' : 'CPF'}
-                                    name={user.role === 'ESTABELECIMENTO' ? 'cnpj' : 'cpf'}
-                                    value={user.role === 'ESTABELECIMENTO' ? formData.cnpj : formData.cpf}
-                                    onChange={handleChange}
-                                    autoComplete="off"
-                                    InputProps={{
-                                        startAdornment: (
-                                            <InputAdornment position="start">
-                                                <FaBriefcase size={14} color={theme.palette.primary.main} />
-                                            </InputAdornment>
-                                        ),
-                                    }}
-                                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
-                                    disabled={!isEditing}
-                                />
-                            </Grid>
+                            {user.role !== 'USER' && (
+                                <>
+                                    <Grid item xs={12} md={6}>
+                                        <TextField
+                                            fullWidth
+                                            label={user.role === 'ESTABELECIMENTO' ? 'CNPJ' : 'CPF'}
+                                            name={user.role === 'ESTABELECIMENTO' ? 'cnpj' : 'cpf'}
+                                            value={user.role === 'ESTABELECIMENTO' ? formData.cnpj : formData.cpf}
+                                            onChange={handleChange}
+                                            autoComplete="off"
+                                            InputProps={{
+                                                startAdornment: (
+                                                    <InputAdornment position="start">
+                                                        <FaBriefcase size={14} color={theme.palette.primary.main} />
+                                                    </InputAdornment>
+                                                ),
+                                            }}
+                                            sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
+                                            disabled={!isEditing}
+                                        />
+                                    </Grid>
 
-                            <Grid item xs={12} md={6}>
-                                <TextField
-                                    fullWidth
-                                    label="Telefone / WhatsApp"
-                                    name="telefone"
-                                    value={formData.telefone}
-                                    onChange={handleChange}
-                                    autoComplete="off"
-                                    InputProps={{
-                                        startAdornment: (
-                                            <InputAdornment position="start">
-                                                <FaPhoneAlt size={14} color={theme.palette.primary.main} />
-                                            </InputAdornment>
-                                        ),
-                                    }}
-                                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
-                                    disabled={!isEditing}
-                                />
-                            </Grid>
+                                    <Grid item xs={12} md={6}>
+                                        <TextField
+                                            fullWidth
+                                            label="Telefone / WhatsApp"
+                                            name="telefone"
+                                            value={formData.telefone}
+                                            onChange={handleChange}
+                                            autoComplete="off"
+                                            InputProps={{
+                                                startAdornment: (
+                                                    <InputAdornment position="start">
+                                                        <FaPhoneAlt size={14} color={theme.palette.primary.main} />
+                                                    </InputAdornment>
+                                                ),
+                                            }}
+                                            sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
+                                            disabled={!isEditing}
+                                        />
+                                    </Grid>
+                                </>
+                            )}
                         </Grid>
 
-                        <Typography variant="h6" fontWeight={800} sx={{ mt: 6, mb: 4, display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                            <Box sx={{ width: 4, height: 24, bgcolor: 'primary.main', borderRadius: 2 }} />
-                            Localização
-                        </Typography>
+                        {user.role !== 'USER' && (
+                            <>
+                                <Typography variant="h6" fontWeight={800} sx={{ mt: 6, mb: 4, display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                                    <Box sx={{ width: 4, height: 24, bgcolor: 'primary.main', borderRadius: 2 }} />
+                                    Localização
+                                </Typography>
 
-                        <Grid container spacing={3}>
-                            <Grid item xs={12} md={4}>
-                                <TextField
-                                    fullWidth
-                                    label="CEP"
-                                    name="endereco.cep"
-                                    value={formData.endereco.cep}
-                                    onChange={handleChange}
-                                    onBlur={handleCepBlur}
-                                    InputProps={{
-                                        startAdornment: (
-                                            <InputAdornment position="start">
-                                                <FaMapMarkerAlt size={14} color={theme.palette.primary.main} />
-                                            </InputAdornment>
-                                        ),
-                                    }}
-                                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
-                                    disabled={!isEditing}
-                                />
-                            </Grid>
+                                <Grid container spacing={3}>
+                                    <Grid item xs={12} md={4}>
+                                        <TextField
+                                            fullWidth
+                                            label="CEP"
+                                            name="endereco.cep"
+                                            value={formData.endereco.cep}
+                                            onChange={handleChange}
+                                            onBlur={handleCepBlur}
+                                            InputProps={{
+                                                startAdornment: (
+                                                    <InputAdornment position="start">
+                                                        <FaMapMarkerAlt size={14} color={theme.palette.primary.main} />
+                                                    </InputAdornment>
+                                                ),
+                                            }}
+                                            sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
+                                            disabled={!isEditing}
+                                        />
+                                    </Grid>
 
-                            <Grid item xs={12} md={8}>
-                                <TextField
-                                    fullWidth
-                                    label="Rua / Logradouro"
-                                    name="endereco.rua"
-                                    value={formData.endereco.rua}
-                                    onChange={handleChange}
-                                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
-                                    disabled={!isEditing}
-                                />
-                            </Grid>
+                                    <Grid item xs={12} md={8}>
+                                        <TextField
+                                            fullWidth
+                                            label="Rua / Logradouro"
+                                            name="endereco.rua"
+                                            value={formData.endereco.rua}
+                                            onChange={handleChange}
+                                            sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
+                                            disabled={!isEditing}
+                                        />
+                                    </Grid>
 
-                            <Grid item xs={12} md={5}>
-                                <TextField
-                                    fullWidth
-                                    label="Bairro"
-                                    name="endereco.bairro"
-                                    value={formData.endereco.bairro}
-                                    onChange={handleChange}
-                                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
-                                    disabled={!isEditing}
-                                />
-                            </Grid>
+                                    <Grid item xs={12} md={5}>
+                                        <TextField
+                                            fullWidth
+                                            label="Bairro"
+                                            name="endereco.bairro"
+                                            value={formData.endereco.bairro}
+                                            onChange={handleChange}
+                                            sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
+                                            disabled={!isEditing}
+                                        />
+                                    </Grid>
 
-                            <Grid item xs={6} md={3}>
-                                <TextField
-                                    fullWidth
-                                    label="Número"
-                                    name="endereco.numero"
-                                    value={formData.endereco.numero}
-                                    onChange={handleChange}
-                                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
-                                    disabled={!isEditing}
-                                />
-                            </Grid>
+                                    <Grid item xs={6} md={3}>
+                                        <TextField
+                                            fullWidth
+                                            label="Número"
+                                            name="endereco.numero"
+                                            value={formData.endereco.numero}
+                                            onChange={handleChange}
+                                            sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
+                                            disabled={!isEditing}
+                                        />
+                                    </Grid>
 
-                            <Grid item xs={6} md={4}>
-                                <TextField
-                                    fullWidth
-                                    label="Complemento"
-                                    name="endereco.complemento"
-                                    value={formData.endereco.complemento}
-                                    onChange={handleChange}
-                                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
-                                />
-                            </Grid>
+                                    <Grid item xs={6} md={4}>
+                                        <TextField
+                                            fullWidth
+                                            label="Complemento"
+                                            name="endereco.complemento"
+                                            value={formData.endereco.complemento}
+                                            onChange={handleChange}
+                                            sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
+                                        />
+                                    </Grid>
 
-                            <Grid item xs={12} md={12}>
-                                <TextField
-                                    fullWidth
-                                    label="Cidade"
-                                    name="endereco.cidade"
-                                    value={formData.endereco.cidade}
-                                    disabled
-                                    variant="filled"
-                                    sx={{ '& .MuiFilledInput-root': { borderRadius: 3 } }}
-                                />
-                            </Grid>
-                        </Grid>
+                                    <Grid item xs={12} md={12}>
+                                        <TextField
+                                            fullWidth
+                                            label="Cidade"
+                                            name="endereco.cidade"
+                                            value={formData.endereco.cidade}
+                                            disabled
+                                            variant="filled"
+                                            sx={{ '& .MuiFilledInput-root': { borderRadius: 3 } }}
+                                        />
+                                    </Grid>
+                                </Grid>
+                            </>
+                        )}
 
                         <Box sx={{ mt: 8, pt: 4, borderTop: '1px solid', borderColor: 'divider', display: 'flex', justifyContent: 'flex-end' }}>
                             <Button

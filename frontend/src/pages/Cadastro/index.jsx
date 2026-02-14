@@ -287,6 +287,14 @@ const Cadastro = () => {
         try {
             const dataToSend = { ...formData };
 
+            // Sanitização de campos (remover caracteres não numéricos)
+            if (dataToSend.telefone) dataToSend.telefone = dataToSend.telefone.replace(/\D/g, "");
+            if (dataToSend.cpf) dataToSend.cpf = dataToSend.cpf.replace(/\D/g, "");
+            if (dataToSend.cnpj) dataToSend.cnpj = dataToSend.cnpj.replace(/\D/g, "");
+            if (dataToSend.endereco && dataToSend.endereco.cep) {
+                dataToSend.endereco.cep = dataToSend.endereco.cep.replace(/\D/g, "");
+            }
+
             // Geocoding para Estabelecimentos e Profissionais
             if ((accountType === "estabelecimento" || accountType === "profissional") && dataToSend.endereco) {
                 if (!GRANDE_FLORIANOPOLIS.includes(dataToSend.endereco.cidade)) {
