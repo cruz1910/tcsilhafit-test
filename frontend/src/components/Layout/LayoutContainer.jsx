@@ -1,11 +1,11 @@
 import { Container } from "@mui/material";
 
-const LayoutContainer = ({ children }) => {
+const LayoutContainer = ({ children, maxWidth = "xl" }) => {
   return (
     <Container
-      maxWidth="xl"
+      maxWidth={maxWidth}
       sx={{
-        px: { xs: 2, sm: 3, md: 4 }, 
+        px: { xs: 2, sm: 3, md: 4 },
       }}
     >
       {children}

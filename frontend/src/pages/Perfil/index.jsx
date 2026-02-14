@@ -36,7 +36,13 @@ import {
     FaChevronDown,
     FaUpload,
     FaTimes,
-    FaBuilding
+    FaBuilding,
+    FaWhatsapp,
+    FaRoad,
+    FaCity,
+    FaHashtag,
+    FaInfoCircle,
+    FaHome
 } from "react-icons/fa";
 import {
     Collapse,
@@ -110,6 +116,41 @@ const Perfil = () => {
         outrosAtividade: '',
     });
 
+    // Funções de máscara
+    const maskCPF = (value) => {
+        return value
+            .replace(/\D/g, '')
+            .replace(/(\d{3})(\d)/, '$1.$2')
+            .replace(/(\d{3})(\d)/, '$1.$2')
+            .replace(/(\d{3})(\d{1,2})/, '$1-$2')
+            .replace(/(-\d{2})\d+?$/, '$1');
+    };
+
+    const maskCNPJ = (value) => {
+        return value
+            .replace(/\D/g, '')
+            .replace(/(\d{2})(\d)/, '$1.$2')
+            .replace(/(\d{3})(\d)/, '$1.$2')
+            .replace(/(\d{3})(\d)/, '$1/$2')
+            .replace(/(\d{4})(\d)/, '$1-$2')
+            .replace(/(-\d{2})\d+?$/, '$1');
+    };
+
+    const maskPhone = (value) => {
+        return value
+            .replace(/\D/g, '')
+            .replace(/(\d{2})(\d)/, '($1) $2')
+            .replace(/(\d{5})(\d)/, '$1-$2')
+            .replace(/(-\d{4})\d+?$/, '$1');
+    };
+
+    const maskCEP = (value) => {
+        return value
+            .replace(/\D/g, '')
+            .replace(/(\d{5})(\d)/, '$1-$2')
+            .replace(/(-\d{3})\d+?$/, '$1');
+    };
+
     const [crefOriginal, setCrefOriginal] = useState('');
 
     const [expandedActivities, setExpandedActivities] = useState(new Set());
@@ -174,14 +215,27 @@ const Perfil = () => {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
+        let newValue = value;
+
+        // Aplicar máscaras
+        if (name === "cpf") {
+            newValue = maskCPF(value);
+        } else if (name === "cnpj") {
+            newValue = maskCNPJ(value);
+        } else if (name === "telefone") {
+            newValue = maskPhone(value);
+        } else if (name === "endereco.cep") {
+            newValue = maskCEP(value);
+        }
+
         if (name.includes('.')) {
             const [parent, child] = name.split('.');
             setFormData(prev => ({
                 ...prev,
-                [parent]: { ...prev[parent], [child]: value }
+                [parent]: { ...prev[parent], [child]: newValue }
             }));
         } else {
-            setFormData(prev => ({ ...prev, [name]: value }));
+            setFormData(prev => ({ ...prev, [name]: newValue }));
         }
     };
 
@@ -328,24 +382,45 @@ const Perfil = () => {
     if (loading) return null;
 
     return (
-        <Container maxWidth="lg" sx={{ py: 6 }}>
+        <Container maxWidth="xl" sx={{ py: 6, px: { xs: 2, md: 3 } }}>
             {/* Header */}
-            <Box mb={5}>
-                <Typography variant="h4" fontWeight={900} sx={{
-                    color: 'text.primary',
-                    mb: 1,
-                    letterSpacing: '-0.02em',
-                    background: theme.palette.mode === 'dark'
-                        ? 'linear-gradient(45deg, #10B981 30%, #34D399 90%)'
-                        : 'linear-gradient(45deg, #059669 30%, #10B981 90%)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent'
-                }}>
-                    Configurações
-                </Typography>
-                <Typography variant="body1" color="text.secondary" fontWeight={500}>
-                    Personalize sua experiência e gerencie seus dados no IlhaFit.
-                </Typography>
+            <Box mb={5} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Box>
+                    <Typography variant="h4" fontWeight={900} sx={{
+                        color: 'text.primary',
+                        mb: 1,
+                        letterSpacing: '-0.02em',
+                        background: theme.palette.mode === 'dark'
+                            ? 'linear-gradient(45deg, #10B981 30%, #34D399 90%)'
+                            : 'linear-gradient(45deg, #059669 30%, #10B981 90%)',
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent'
+                    }}>
+                        Configurações
+                    </Typography>
+                    <Typography variant="body1" color="text.secondary" fontWeight={500}>
+                        Personalize sua experiência e gerencie seus dados no IlhaFit.
+                    </Typography>
+                </Box>
+                <Button
+                    variant="contained"
+                    startIcon={isEditing ? <FaSave /> : <FaUser />}
+                    onClick={toggleEdit}
+                    sx={{
+                        bgcolor: isEditing ? 'success.main' : 'primary.main',
+                        '&:hover': { bgcolor: isEditing ? 'success.dark' : 'primary.dark', transform: 'translateY(-2px)' },
+                        borderRadius: 4,
+                        px: 4,
+                        py: 1.5,
+                        fontWeight: 800,
+                        textTransform: 'none',
+                        fontSize: '1rem',
+                        boxShadow: '0 8px 16px rgba(16, 185, 129, 0.2)',
+                        transition: 'all 0.3s'
+                    }}
+                >
+                    {isEditing ? "Salvar" : "Editar"}
+                </Button>
             </Box>
 
             {/* Custom Tabs */}
@@ -392,25 +467,24 @@ const Perfil = () => {
                 )}
                 <Button
                     onClick={() => setSelectedTab(2)}
-                    startIcon={<FaExclamationTriangle size={14} />}
+                    startIcon={<FaUpload size={14} />}
                     sx={{
                         borderRadius: 10,
                         textTransform: 'none',
                         px: 3,
                         fontWeight: 700,
                         bgcolor: selectedTab === 2 ? 'primary.main' : 'transparent',
-                        color: selectedTab === 2 ? '#334155' : 'text.primary',
+                        color: selectedTab === 2 ? 'white' : 'text.primary',
                         border: '1px solid',
-                        borderColor: 'divider',
+                        borderColor: selectedTab === 2 ? 'primary.main' : 'divider',
                         '&:hover': {
-                            bgcolor: alpha(theme.palette.error.main, 0.05),
-                            borderColor: theme.palette.error.main,
-                            color: theme.palette.error.main
+                            bgcolor: selectedTab === 2 ? 'primary.main' : alpha(theme.palette.divider, 0.1),
                         }
                     }}
                 >
-                    Zona Perigosa
+                    Fotos
                 </Button>
+
             </Box>
 
             {/* Main Content Card */}
@@ -422,113 +496,26 @@ const Perfil = () => {
                     borderColor: 'divider',
                     bgcolor: 'background.paper',
                     minHeight: 400,
+                    width: '100%',
                     overflow: 'hidden',
                     boxShadow: isDark ? '0 10px 30px rgba(0,0,0,0.5)' : '0 10px 30px rgba(16, 185, 129, 0.05)',
                 }}
             >
                 {selectedTab === 0 && (
                     <Box sx={{ p: { xs: 3, md: 6 } }}>
-                        {/* Avatar Section */}
-                        {user.role !== 'USER' && (
-                            <Box sx={{ mb: 6, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                <Box sx={{ position: 'relative' }}>
-                                    <Box sx={{
-                                        p: 0.5,
-                                        borderRadius: '50%',
-                                        background: 'linear-gradient(45deg, #10B981, #34D399)',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        boxShadow: '0 8px 16px rgba(16, 185, 129, 0.2)'
-                                    }}>
-                                        <Avatar
-                                            src={user?.role === 'ESTABELECIMENTO' ? formData.fotosUrl[0] : formData.fotoUrl}
-                                            sx={{
-                                                width: 140,
-                                                height: 140,
-                                                border: '4px solid',
-                                                borderColor: 'background.paper'
-                                            }}
-                                        />
-                                    </Box>
-                                    <input
-                                        type="file"
-                                        id="photo-upload"
-                                        hidden
-                                        accept="image/*"
-                                        multiple={user.role === 'ESTABELECIMENTO'}
-                                        onChange={handleFileChange}
-                                    />
-                                    <label htmlFor="photo-upload">
-                                        <IconButton
-                                            component="span"
-                                            disabled={!isEditing}
-                                            sx={{
-                                                position: 'absolute',
-                                                bottom: 10,
-                                                right: 10,
-                                                bgcolor: isEditing ? 'primary.main' : alpha(theme.palette.text.disabled, 0.5),
-                                                color: 'white',
-                                                '&:hover': { bgcolor: isEditing ? 'primary.dark' : alpha(theme.palette.text.disabled, 0.5), transform: isEditing ? 'scale(1.1)' : 'none' },
-                                                transition: 'all 0.2s',
-                                                boxShadow: '0 4px 8px rgba(0,0,0,0.2)'
-                                            }}
-                                            size="medium"
-                                        >
-                                            <FaUpload size={16} />
-                                        </IconButton>
-                                    </label>
-                                </Box>
-                                <Typography variant="caption" color="text.secondary" fontWeight={700} sx={{ mt: 2, letterSpacing: 1 }}>
-                                    {user.role === 'ESTABELECIMENTO' ? 'FOTOS DO ESTABELECIMENTO' : 'ALTERAR FOTO DE PERFIL'}
-                                </Typography>
-
-                                {user.role === 'ESTABELECIMENTO' && formData.fotosUrl.length > 0 && (
-                                    <Box sx={{ display: 'flex', gap: 1.5, mt: 3, flexWrap: 'wrap', justifyContent: 'center' }}>
-                                        {formData.fotosUrl.map((url, idx) => (
-                                            <Box key={idx} sx={{ position: 'relative', transition: 'transform 0.2s', '&:hover': { transform: 'translateY(-4px)' } }}>
-                                                <Avatar
-                                                    src={url}
-                                                    variant="rounded"
-                                                    sx={{ width: 60, height: 60, border: '2px solid', borderColor: 'divider' }}
-                                                />
-                                                <IconButton
-                                                    size="small"
-                                                    onClick={() => setFormData(prev => ({ ...prev, fotosUrl: prev.fotosUrl.filter((_, i) => i !== idx) }))}
-                                                    disabled={!isEditing}
-                                                    sx={{
-                                                        position: 'absolute',
-                                                        top: -8,
-                                                        right: -8,
-                                                        bgcolor: isEditing ? 'error.main' : alpha(theme.palette.text.disabled, 0.5),
-                                                        color: 'white',
-                                                        '&:hover': { bgcolor: 'error.dark' },
-                                                        p: 0.3,
-                                                        width: 20,
-                                                        height: 20
-                                                    }}
-                                                >
-                                                    <FaTimes size={10} />
-                                                </IconButton>
-                                            </Box>
-                                        ))}
-                                    </Box>
-                                )}
-                            </Box>
-                        )}
-
                         <Typography variant="h6" fontWeight={800} sx={{ mb: 4, display: 'flex', alignItems: 'center', gap: 1.5 }}>
                             <Box sx={{ width: 4, height: 24, bgcolor: 'primary.main', borderRadius: 2 }} />
                             Informações Básicas
                         </Typography>
 
-                        <Grid container spacing={3}>
-                            <Grid item xs={12} md={6}>
+                        <Grid container spacing={2}>
+                            <Grid item xs={12} md={4}>
                                 <TextField
                                     fullWidth
+                                    variant="outlined"
                                     label={user.role === 'ESTABELECIMENTO' ? "Nome Fantasia" : "Nome Completo"}
                                     name={user.role === 'ESTABELECIMENTO' ? 'nomeFantasia' : 'nome'}
-                                    value={user.role === 'ESTABELECIMENTO' ? formData.nomeFantasia : formData.nome}
+                                    value={(user.role === 'ESTABELECIMENTO' ? formData.nomeFantasia : formData.nome) || ''}
                                     onChange={handleChange}
                                     placeholder={user.role === 'ESTABELECIMENTO' ? "Ex: Academia Fit" : "Seu nome"}
                                     autoComplete="off"
@@ -545,12 +532,13 @@ const Perfil = () => {
                             </Grid>
 
                             {user.role === 'ESTABELECIMENTO' && (
-                                <Grid item xs={12} md={6}>
+                                <Grid item xs={12} md={4}>
                                     <TextField
                                         fullWidth
+                                        variant="outlined"
                                         label="Razão Social"
                                         name="razaoSocial"
-                                        value={formData.razaoSocial}
+                                        value={formData.razaoSocial || ''}
                                         onChange={handleChange}
                                         autoComplete="off"
                                         InputProps={{
@@ -566,36 +554,36 @@ const Perfil = () => {
                                 </Grid>
                             )}
 
-                            <Grid item xs={12} md={6}>
+                            <Grid item xs={12} md={4}>
                                 <TextField
                                     fullWidth
+                                    variant="outlined"
                                     label="Email"
                                     name="email"
-                                    value={formData.email}
+                                    value={formData.email || ''}
                                     onChange={handleChange}
-                                    disabled={user.role !== 'USER' || !isEditing}
+                                    disabled={!isEditing}
                                     autoComplete="off"
                                     InputProps={{
                                         startAdornment: (
                                             <InputAdornment position="start">
-                                                <FaEnvelope size={14} color={theme.palette.text.disabled} />
+                                                <FaEnvelope size={14} color={theme.palette.primary.main} />
                                             </InputAdornment>
                                         ),
                                     }}
-                                    sx={{
-                                        '& .MuiOutlinedInput-root': { borderRadius: 3, bgcolor: (user.role !== 'USER') ? alpha(theme.palette.divider, 0.05) : 'inherit' }
-                                    }}
+                                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
                                 />
                             </Grid>
 
                             {user.role !== 'USER' && (
                                 <>
-                                    <Grid item xs={12} md={6}>
+                                    <Grid item xs={12} md={4}>
                                         <TextField
                                             fullWidth
+                                            variant="outlined"
                                             label={user.role === 'ESTABELECIMENTO' ? 'CNPJ' : 'CPF'}
                                             name={user.role === 'ESTABELECIMENTO' ? 'cnpj' : 'cpf'}
-                                            value={user.role === 'ESTABELECIMENTO' ? formData.cnpj : formData.cpf}
+                                            value={(user.role === 'ESTABELECIMENTO' ? (formData.cnpj || '') : (formData.cpf || ''))}
                                             onChange={handleChange}
                                             autoComplete="off"
                                             InputProps={{
@@ -610,18 +598,19 @@ const Perfil = () => {
                                         />
                                     </Grid>
 
-                                    <Grid item xs={12} md={6}>
+                                    <Grid item xs={12} md={4}>
                                         <TextField
                                             fullWidth
+                                            variant="outlined"
                                             label="Telefone / WhatsApp"
                                             name="telefone"
-                                            value={formData.telefone}
+                                            value={formData.telefone || ''}
                                             onChange={handleChange}
                                             autoComplete="off"
                                             InputProps={{
                                                 startAdornment: (
                                                     <InputAdornment position="start">
-                                                        <FaPhoneAlt size={14} color={theme.palette.primary.main} />
+                                                        <FaWhatsapp size={14} color={theme.palette.success.main} />
                                                     </InputAdornment>
                                                 ),
                                             }}
@@ -633,20 +622,21 @@ const Perfil = () => {
                             )}
                         </Grid>
 
-                        {user.role !== 'USER' && (
+                        {(user.role === 'ESTABELECIMENTO' || user.role === 'PROFISSIONAL') && (
                             <>
                                 <Typography variant="h6" fontWeight={800} sx={{ mt: 6, mb: 4, display: 'flex', alignItems: 'center', gap: 1.5 }}>
                                     <Box sx={{ width: 4, height: 24, bgcolor: 'primary.main', borderRadius: 2 }} />
                                     Localização
                                 </Typography>
 
-                                <Grid container spacing={3}>
+                                <Grid container spacing={2}>
                                     <Grid item xs={12} md={4}>
                                         <TextField
                                             fullWidth
+                                            variant="outlined"
                                             label="CEP"
                                             name="endereco.cep"
-                                            value={formData.endereco.cep}
+                                            value={formData.endereco.cep || ''}
                                             onChange={handleChange}
                                             onBlur={handleCepBlur}
                                             InputProps={{
@@ -661,87 +651,123 @@ const Perfil = () => {
                                         />
                                     </Grid>
 
-                                    <Grid item xs={12} md={8}>
+                                    <Grid item xs={12} md={4}>
                                         <TextField
                                             fullWidth
-                                            label="Rua / Logradouro"
+                                            variant="outlined"
+                                            label="Rua"
                                             name="endereco.rua"
-                                            value={formData.endereco.rua}
+                                            value={formData.endereco.rua || ''}
                                             onChange={handleChange}
+                                            InputProps={{
+                                                startAdornment: (
+                                                    <InputAdornment position="start">
+                                                        <FaRoad size={14} color={theme.palette.primary.main} />
+                                                    </InputAdornment>
+                                                ),
+                                            }}
                                             sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
                                             disabled={!isEditing}
                                         />
                                     </Grid>
 
-                                    <Grid item xs={12} md={5}>
+                                    <Grid item xs={12} md={4}>
                                         <TextField
                                             fullWidth
+                                            variant="outlined"
                                             label="Bairro"
                                             name="endereco.bairro"
-                                            value={formData.endereco.bairro}
+                                            value={formData.endereco.bairro || ''}
                                             onChange={handleChange}
+                                            InputProps={{
+                                                startAdornment: (
+                                                    <InputAdornment position="start">
+                                                        <FaHome size={14} color={theme.palette.primary.main} />
+                                                    </InputAdornment>
+                                                ),
+                                            }}
                                             sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
                                             disabled={!isEditing}
                                         />
                                     </Grid>
 
-                                    <Grid item xs={6} md={3}>
+                                    <Grid item xs={12} md={4}>
                                         <TextField
                                             fullWidth
+                                            variant="outlined"
                                             label="Número"
                                             name="endereco.numero"
-                                            value={formData.endereco.numero}
+                                            value={formData.endereco.numero || ''}
                                             onChange={handleChange}
+                                            InputProps={{
+                                                startAdornment: (
+                                                    <InputAdornment position="start">
+                                                        <FaHashtag size={14} color={theme.palette.primary.main} />
+                                                    </InputAdornment>
+                                                ),
+                                            }}
                                             sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
                                             disabled={!isEditing}
                                         />
                                     </Grid>
 
-                                    <Grid item xs={6} md={4}>
+                                    <Grid item xs={12} md={4}>
                                         <TextField
                                             fullWidth
+                                            variant="outlined"
                                             label="Complemento"
                                             name="endereco.complemento"
-                                            value={formData.endereco.complemento}
+                                            value={formData.endereco.complemento || ''}
                                             onChange={handleChange}
+                                            InputProps={{
+                                                startAdornment: (
+                                                    <InputAdornment position="start">
+                                                        <FaInfoCircle size={14} color={theme.palette.primary.main} />
+                                                    </InputAdornment>
+                                                ),
+                                            }}
                                             sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
+                                            disabled={!isEditing}
                                         />
                                     </Grid>
 
-                                    <Grid item xs={12} md={12}>
+                                    <Grid item xs={12} md={4}>
                                         <TextField
                                             fullWidth
+                                            variant="outlined"
                                             label="Cidade"
                                             name="endereco.cidade"
-                                            value={formData.endereco.cidade}
-                                            disabled
-                                            variant="filled"
-                                            sx={{ '& .MuiFilledInput-root': { borderRadius: 3 } }}
+                                            value={formData.endereco.cidade || ''}
+                                            onChange={handleChange}
+                                            InputProps={{
+                                                startAdornment: (
+                                                    <InputAdornment position="start">
+                                                        <FaCity size={14} color={theme.palette.primary.main} />
+                                                    </InputAdornment>
+                                                ),
+                                            }}
+                                            disabled={!isEditing}
+                                            sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
                                         />
                                     </Grid>
                                 </Grid>
                             </>
                         )}
 
-                        <Box sx={{ mt: 8, pt: 4, borderTop: '1px solid', borderColor: 'divider', display: 'flex', justifyContent: 'flex-end' }}>
+                        <Box sx={{ mt: 8, display: 'flex', justifyContent: 'flex-end', borderTop: '1px solid', borderColor: 'divider', pt: 4 }}>
                             <Button
-                                variant="contained"
-                                startIcon={isEditing ? <FaSave /> : <FaUser />}
-                                onClick={toggleEdit}
+                                color="error"
+                                onClick={() => setOpenDelete(true)}
+                                startIcon={<FaTrash />}
                                 sx={{
-                                    bgcolor: isEditing ? 'success.main' : 'primary.main',
-                                    '&:hover': { bgcolor: isEditing ? 'success.dark' : 'primary.dark', transform: 'translateY(-2px)' },
-                                    borderRadius: 4,
-                                    px: 6,
-                                    py: 2,
-                                    fontWeight: 800,
                                     textTransform: 'none',
-                                    fontSize: '1.1rem',
-                                    boxShadow: '0 8px 16px rgba(16, 185, 129, 0.2)',
-                                    transition: 'all 0.3s'
+                                    fontWeight: 700,
+                                    borderRadius: 3,
+                                    color: 'error.main',
+                                    '&:hover': { bgcolor: alpha(theme.palette.error.main, 0.05) }
                                 }}
                             >
-                                {isEditing ? "Confirmar Alterações" : "Editar Perfil"}
+                                Excluir minha conta
                             </Button>
                         </Box>
                     </Box>
@@ -750,84 +776,64 @@ const Perfil = () => {
 
                 {selectedTab === 1 && (
                     <Box sx={{ p: { xs: 3, md: 6 } }}>
-                        <Typography variant="h6" fontWeight={900} sx={{ mb: 1, letterSpacing: '-0.01em' }}>
-                            {user?.role === "ESTABELECIMENTO" ? "Atividades Oferecidas" : "Suas Especialidades"}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary" sx={{ mb: 5, fontWeight: 500 }}>
-                            Gerencie quais atividades você oferece e seus horários de disponibilidade para os alunos.
+                        <Typography variant="h6" fontWeight={800} sx={{ mb: 4, display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                            <Box sx={{ width: 4, height: 24, bgcolor: 'primary.main', borderRadius: 2 }} />
+                            Atividades & Especialidades
                         </Typography>
 
                         {user.role === "PROFISSIONAL" && (
-                            <Box sx={{ mb: 5, maxWidth: 400 }}>
+                            <Box sx={{ mb: 5 }}>
+                                <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 1.5, color: "text.secondary" }}>
+                                    Registro CREF (Opcional)
+                                </Typography>
                                 <TextField
                                     fullWidth
-                                    label={`Registro CREF ${formData.gradeAtividades.some(g => crefRequiredActivities.includes(g.atividade)) ? '*' : '(Opcional)'}`}
                                     name="registroCref"
                                     value={formData.registroCref}
                                     onChange={handleChange}
-                                    disabled={!!crefOriginal}
+                                    disabled={!isEditing}
                                     placeholder="000000-G/SC"
-                                    autoComplete="off"
-                                    helperText={crefOriginal ? "O registro CREF não pode ser alterado após cadastrado." : "Obrigatório para atividades técnicas."}
-                                    sx={{
-                                        '& .MuiOutlinedInput-root': {
-                                            borderRadius: 3,
-                                            bgcolor: crefOriginal ? alpha(theme.palette.divider, 0.05) : 'transparent'
-                                        }
-                                    }}
+                                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
                                 />
                             </Box>
                         )}
 
-                        <Box sx={{ mb: 4 }}>
+                        <Box sx={{ mb: 5 }}>
                             <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 1, color: "text.secondary" }}>
                                 {user?.role === 'ESTABELECIMENTO' ? 'Selecione as Atividades Oferecidas' : 'Selecione suas Especialidades / Profissão'}
                             </Typography>
                             <Autocomplete
                                 multiple
-                                options={atividadesList.sort()}
+                                options={atividadesList}
                                 value={formData.gradeAtividades.map(g => g.atividade)}
-                                onChange={(event, newValue) => {
-                                    const currentActivities = formData.gradeAtividades.map(g => g.atividade);
-                                    const added = newValue.filter(v => !currentActivities.includes(v));
-                                    const removed = currentActivities.filter(v => !newValue.includes(v));
-
-                                    let newGrade = [...formData.gradeAtividades];
-                                    added.forEach(atividade => {
-                                        newGrade.push({ atividade, diasSemana: [], periodos: [] });
-                                        setExpandedActivities(prev => new Set(prev).add(atividade));
-                                    });
-
-                                    if (removed.length > 0) {
-                                        newGrade = newGrade.filter(g => !removed.includes(g.atividade));
-                                        setExpandedActivities(prev => {
-                                            const next = new Set(prev);
-                                            removed.forEach(r => next.delete(r));
-                                            return next;
-                                        });
-                                    }
-                                    setFormData(prev => ({ ...prev, gradeAtividades: newGrade }));
-                                }}
+                                onChange={handleAtividadeToggle}
                                 disabled={!isEditing}
                                 renderInput={(params) => (
                                     <TextField
                                         {...params}
-                                        placeholder="Pesquisar atividades..."
+                                        placeholder="Selecione as atividades"
                                         sx={{
-                                            '& .MuiOutlinedInput-root': { borderRadius: 3, bgcolor: alpha(theme.palette.primary.main, 0.03) }
+                                            '& .MuiOutlinedInput-root': { borderRadius: 3 }
                                         }}
                                     />
                                 )}
-                                renderTags={(value, getTagProps) =>
-                                    value.map((option, index) => (
-                                        <Chip
-                                            label={option}
-                                            {...getTagProps({ index })}
-                                            sx={{ borderRadius: 1.5, fontWeight: 700, bgcolor: 'primary.main', color: 'white' }}
-                                        />
-                                    ))
-                                }
+                                renderTags={() => null} // Oculta as tags dentro do input
                             />
+
+                            {/* Tags fora do input */}
+                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 2 }}>
+                                {formData.gradeAtividades.map((g, index) => (
+                                    <Chip
+                                        key={index}
+                                        label={g.atividade}
+                                        onDelete={isEditing ? () => {
+                                            const newGrade = formData.gradeAtividades.filter(item => item.atividade !== g.atividade);
+                                            setFormData(prev => ({ ...prev, gradeAtividades: newGrade }));
+                                        } : undefined}
+                                        sx={{ borderRadius: 1.5, fontWeight: 700, bgcolor: 'primary.main', color: 'white' }}
+                                    />
+                                ))}
+                            </Box>
                         </Box>
 
                         {formData.gradeAtividades.some(g => g.atividade === 'Outros') && (
@@ -849,15 +855,19 @@ const Perfil = () => {
 
                         {formData.gradeAtividades.length > 0 && (
                             <>
-                                <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 1, color: "text.secondary" }}>
-                                    Configurar Horários
-                                </Typography>
+                                <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', mb: 2 }}>
+                                    <Typography variant="subtitle2" fontWeight={700} sx={{ color: "text.secondary" }}>
+                                        Configurar Horários e Modalidades
+                                    </Typography>
+                                </Box>
                                 <Paper variant="outlined" sx={{
-                                    p: { xs: 2, md: 0 }, mb: 5, borderRadius: 5, overflow: 'hidden',
+                                    p: 0, mb: 5, borderRadius: 5, overflow: 'hidden',
                                     borderColor: 'divider',
-                                    bgcolor: isDark ? alpha('#fff', 0.01) : alpha(theme.palette.primary.main, 0.01)
+                                    bgcolor: isDark ? alpha('#fff', 0.01) : alpha(theme.palette.primary.main, 0.01),
+                                    width: '100%',
+                                    mx: 0
                                 }}>
-                                    <Grid container>
+                                    <Grid container sx={{ width: '100%', m: 0 }}>
                                         {formData.gradeAtividades.map((grade, index) => {
                                             const atividade = grade.atividade;
                                             return (
@@ -865,9 +875,10 @@ const Perfil = () => {
                                                     borderBottom: index === formData.gradeAtividades.length - 1 ? 'none' : '1px solid',
                                                     borderColor: 'divider',
                                                     transition: 'all 0.2s',
+                                                    width: '100%',
                                                     '&:hover': { bgcolor: alpha(theme.palette.primary.main, 0.02) }
                                                 }}>
-                                                    <Box sx={{ p: 2, px: 3, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                                    <Box sx={{ p: 2, pl: 2, pr: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
                                                         <Typography variant="body1" fontWeight={800} sx={{ color: 'primary.main', display: 'flex', alignItems: 'center', gap: 1.5 }}>
                                                             <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: 'primary.main', boxShadow: '0 0 8px rgba(16, 185, 129, 0.4)' }} />
                                                             {atividade === 'Outros' ? `Outros (${formData.outrosAtividade || '...'})` : atividade}
@@ -879,7 +890,9 @@ const Perfil = () => {
                                                                 bgcolor: expandedActivities.has(atividade) ? 'primary.main' : alpha(theme.palette.primary.main, 0.1),
                                                                 color: expandedActivities.has(atividade) ? 'white' : 'primary.main',
                                                                 '&:hover': { bgcolor: 'primary.main', color: 'white' },
-                                                                transition: 'all 0.3s'
+                                                                transition: 'all 0.3s',
+                                                                width: 32,
+                                                                height: 32
                                                             }}
                                                         >
                                                             <FaChevronDown size={14} style={{ transform: expandedActivities.has(atividade) ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.3s' }} />
@@ -887,9 +900,9 @@ const Perfil = () => {
                                                     </Box>
 
                                                     <Collapse in={expandedActivities.has(atividade)}>
-                                                        <Box sx={{ p: 3, pt: 0, ml: 6 }}>
-                                                            <Grid container spacing={4}>
-                                                                <Grid item xs={12} md={6}>
+                                                        <Box sx={{ pl: 2, pr: 0, pb: 3, width: '100%' }}>
+                                                            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, justifyContent: 'space-between', gap: 3, width: '100%' }}>
+                                                                <Box sx={{ flex: 1 }}>
                                                                     <Typography variant="caption" fontWeight={800} color="text.secondary" sx={{ mb: 1.5, display: 'block', letterSpacing: 0.5 }}>DIAS DA SEMANA</Typography>
                                                                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                                                                         {["Seg", "Ter", "Qua", "Qui", "Sex", "Sab", "Dom"].map(dia => (
@@ -898,15 +911,16 @@ const Perfil = () => {
                                                                                 value={dia}
                                                                                 selected={grade?.diasSemana?.includes(dia)}
                                                                                 onChange={() => {
-                                                                                    const newDias = grade.diasSemana?.includes(dia)
+                                                                                    const newDias = (grade.diasSemana || []).includes(dia)
                                                                                         ? grade.diasSemana.filter(d => d !== dia)
                                                                                         : [...(grade.diasSemana || []), dia];
                                                                                     handleGradeUpdate(atividade, 'diasSemana', newDias);
                                                                                 }}
                                                                                 size="small"
                                                                                 sx={{
-                                                                                    borderRadius: 2,
+                                                                                    borderRadius: 2.5,
                                                                                     px: 2,
+                                                                                    minWidth: 48,
                                                                                     border: '1px solid',
                                                                                     borderColor: 'divider',
                                                                                     '&.Mui-selected': { bgcolor: 'primary.main', color: 'white', '&:hover': { bgcolor: 'primary.dark' } }
@@ -916,26 +930,27 @@ const Perfil = () => {
                                                                             </ToggleButton>
                                                                         ))}
                                                                     </Box>
-                                                                </Grid>
-                                                                <Grid item xs={12} md={6}>
-                                                                    <Typography variant="caption" fontWeight={800} color="text.secondary" sx={{ mb: 1.5, display: 'block', letterSpacing: 0.5 }}>PERÍODOS</Typography>
-                                                                    <Box sx={{ display: 'flex', gap: 1 }}>
+                                                                </Box>
+                                                                <Box sx={{ textAlign: { xs: 'left', md: 'right' }, minWidth: { md: 300 } }}>
+                                                                    <Typography variant="caption" fontWeight={800} color="text.secondary" sx={{ mb: 1.5, display: 'block', letterSpacing: 0.5, pr: 1 }}>PERÍODOS</Typography>
+                                                                    <Box sx={{ display: 'flex', gap: 1, justifyContent: { xs: 'flex-start', md: 'flex-end' }, pr: 0.5 }}>
                                                                         {["Manhã", "Tarde", "Noite"].map(periodo => (
                                                                             <ToggleButton
                                                                                 key={periodo}
                                                                                 value={periodo}
                                                                                 selected={grade?.periodos?.includes(periodo)}
                                                                                 onChange={() => {
-                                                                                    const newPeriodos = grade.periodos?.includes(periodo)
+                                                                                    const newPeriodos = (grade.periodos || []).includes(periodo)
                                                                                         ? grade.periodos.filter(p => p !== periodo)
                                                                                         : [...(grade.periodos || []), periodo];
                                                                                     handleGradeUpdate(atividade, 'periodos', newPeriodos);
                                                                                 }}
                                                                                 size="small"
                                                                                 sx={{
-                                                                                    borderRadius: 2,
+                                                                                    borderRadius: 2.5,
                                                                                     px: 2,
                                                                                     flex: 1,
+                                                                                    maxWidth: 90,
                                                                                     border: '1px solid',
                                                                                     borderColor: 'divider',
                                                                                     '&.Mui-selected': { bgcolor: 'primary.main', color: 'white', '&:hover': { bgcolor: 'primary.dark' } }
@@ -945,8 +960,26 @@ const Perfil = () => {
                                                                             </ToggleButton>
                                                                         ))}
                                                                     </Box>
-                                                                </Grid>
-                                                            </Grid>
+                                                                </Box>
+                                                            </Box>
+
+                                                            <Box sx={{ mt: 3, pt: 2, borderTop: '1px dashed', borderColor: 'divider' }}>
+                                                                <FormControlLabel
+                                                                    control={
+                                                                        <Checkbox
+                                                                            checked={grade.exclusivoMulheres || false}
+                                                                            onChange={(e) => handleGradeUpdate(atividade, 'exclusivoMulheres', e.target.checked)}
+                                                                            disabled={!isEditing}
+                                                                            sx={{ color: '#ec4899', '&.Mui-checked': { color: '#ec4899' } }}
+                                                                        />
+                                                                    }
+                                                                    label={
+                                                                        <Typography variant="body2" fontWeight={700} sx={{ color: '#ec4899' }}>
+                                                                            Oferecer aula para mulheres nesta atividade
+                                                                        </Typography>
+                                                                    }
+                                                                />
+                                                            </Box>
                                                         </Box>
                                                     </Collapse>
                                                 </Grid>
@@ -956,108 +989,99 @@ const Perfil = () => {
                                 </Paper>
                             </>
                         )}
-
-                        <Paper elevation={0} sx={{
-                            p: 3, mb: 6, borderRadius: 4,
-                            bgcolor: isDark ? alpha('#fff', 0.03) : alpha('#000', 0.02),
-                            border: '1px dashed',
-                            borderColor: 'divider',
-                            display: 'flex',
-                            alignItems: 'center'
-                        }}>
-                            <FormControlLabel
-                                control={
-                                    <Checkbox
-                                        checked={formData.exclusivoMulheres}
-                                        onChange={(e) => setFormData(prev => ({ ...prev, exclusivoMulheres: e.target.checked }))}
-                                        sx={{ color: theme.palette.primary.main }}
-                                    />
-                                }
-                                label={<Typography variant="body1" fontWeight={700}>Ofereço aulas exclusivas para mulheres</Typography>}
-                            />
-                        </Paper>
-
-                        <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-                            <Button
-                                variant="contained"
-                                startIcon={isEditing ? <FaSave /> : <FaUser />}
-                                onClick={toggleEdit}
-                                sx={{
-                                    bgcolor: isEditing ? 'success.main' : 'primary.main',
-                                    borderRadius: 4,
-                                    px: 8,
-                                    py: 2,
-                                    fontWeight: 800,
-                                    textTransform: 'none',
-                                    boxShadow: '0 8px 16px rgba(16, 185, 129, 0.2)',
-                                    '&:hover': { bgcolor: isEditing ? 'success.dark' : 'primary.dark', transform: 'translateY(-2px)' },
-                                    transition: 'all 0.3s'
-                                }}
-                            >
-                                {isEditing ? "Confirmar Alterações" : "Editar Perfil"}
-                            </Button>
-                        </Box>
                     </Box>
                 )}
 
+                {/* Nova Aba de Fotos */}
                 {selectedTab === 2 && (
-                    <Box sx={{ p: { xs: 3, md: 6 } }}>
-                        <Typography variant="h6" fontWeight={900} color="error.main" sx={{ mb: 1, letterSpacing: '-0.01em' }}>
-                            Gerenciar Conta
+                    <Box sx={{ p: { xs: 3, md: 6 }, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                        <Typography variant="h6" fontWeight={800} sx={{ mb: 4, alignSelf: 'flex-start', display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                            <Box sx={{ width: 4, height: 24, bgcolor: 'primary.main', borderRadius: 2 }} />
+                            Gerenciar Fotos
                         </Typography>
-                        <Typography variant="body2" color="text.secondary" sx={{ mb: 5, fontWeight: 500 }}>
-                            Ações irreversíveis relacionadas à sua conta e seus dados.
-                        </Typography>
-
-                        <Paper
-                            variant="outlined"
-                            sx={{
-                                p: 4,
-                                borderRadius: 5,
-                                borderColor: alpha(theme.palette.error.main, 0.2),
-                                bgcolor: alpha(theme.palette.error.main, 0.02),
-                                transition: 'all 0.3s',
-                                '&:hover': { borderColor: theme.palette.error.main }
-                            }}
-                        >
-                            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 3 }}>
-                                <Box sx={{
-                                    p: 2,
-                                    borderRadius: 3,
-                                    bgcolor: alpha(theme.palette.error.main, 0.1),
-                                    color: 'error.main',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center'
-                                }}>
-                                    <FaTrash size={24} />
-                                </Box>
-                                <Box sx={{ flex: 1 }}>
-                                    <Typography variant="h6" fontWeight={800} gutterBottom>
-                                        Excluir Conta Permanentemente
-                                    </Typography>
-                                    <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                                        Ao excluir sua conta, todos os seus dados, preferências e histórico serão removidos permanentemente. Esta ação não pode ser desfeita.
-                                    </Typography>
-                                    <Button
-                                        variant="outlined"
-                                        color="error"
-                                        onClick={() => setOpenDelete(true)}
-                                        sx={{
-                                            borderRadius: 3,
-                                            textTransform: 'none',
-                                            fontWeight: 800,
-                                            px: 3,
-                                            py: 1,
-                                            borderWidth: 2,
-                                            '&:hover': { borderWidth: 2, bgcolor: alpha(theme.palette.error.main, 0.05) }
-                                        }}
-                                    >
-                                        Excluir minha conta
-                                    </Button>
-                                </Box>
+                        <Box sx={{ position: 'relative', mb: 4 }}>
+                            <Box sx={{
+                                p: 0.5,
+                                borderRadius: '50%',
+                                background: 'linear-gradient(45deg, #10B981, #34D399)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                boxShadow: '0 8px 16px rgba(16, 185, 129, 0.2)'
+                            }}>
+                                <Avatar
+                                    src={user?.role === 'ESTABELECIMENTO' ? formData.fotosUrl[0] : formData.fotoUrl}
+                                    sx={{
+                                        width: 200,
+                                        height: 200,
+                                        border: '4px solid',
+                                        borderColor: 'background.paper'
+                                    }}
+                                />
                             </Box>
-                        </Paper>
+                            <input
+                                type="file"
+                                id="photo-upload-tab"
+                                hidden
+                                accept="image/*"
+                                multiple={user.role === 'ESTABELECIMENTO'}
+                                onChange={handleFileChange}
+                            />
+                            <label htmlFor="photo-upload-tab">
+                                <Button
+                                    component="span"
+                                    disabled={!isEditing}
+                                    variant="contained"
+                                    startIcon={<FaUpload />}
+                                    sx={{
+                                        mt: 3,
+                                        borderRadius: 3,
+                                        textTransform: 'none',
+                                        fontWeight: 700
+                                    }}
+                                >
+                                    Carregar Nova Foto
+                                </Button>
+                            </label>
+                        </Box>
+
+                        {user.role === 'ESTABELECIMENTO' && (
+                            <Box sx={{ width: '100%', mt: 4 }}>
+                                <Typography variant="subtitle1" fontWeight={800} sx={{ mb: 2 }}>Galeria de Fotos</Typography>
+                                {formData.fotosUrl.length > 0 ? (
+                                    <Grid container spacing={2}>
+                                        {formData.fotosUrl.map((url, idx) => (
+                                            <Grid item xs={6} sm={4} md={3} key={idx}>
+                                                <Box sx={{ position: 'relative', transition: 'transform 0.2s', '&:hover': { transform: 'translateY(-4px)' } }}>
+                                                    <Avatar
+                                                        src={url}
+                                                        variant="rounded"
+                                                        sx={{ width: '100%', height: 150, border: '2px solid', borderColor: 'divider' }}
+                                                    />
+                                                    <IconButton
+                                                        size="small"
+                                                        onClick={() => setFormData(prev => ({ ...prev, fotosUrl: prev.fotosUrl.filter((_, i) => i !== idx) }))}
+                                                        disabled={!isEditing}
+                                                        sx={{
+                                                            position: 'absolute',
+                                                            top: 5,
+                                                            right: 5,
+                                                            bgcolor: isEditing ? 'error.main' : alpha(theme.palette.text.disabled, 0.5),
+                                                            color: 'white',
+                                                            '&:hover': { bgcolor: 'error.dark' },
+                                                        }}
+                                                    >
+                                                        <FaTimes size={14} />
+                                                    </IconButton>
+                                                </Box>
+                                            </Grid>
+                                        ))}
+                                    </Grid>
+                                ) : (
+                                    <Typography color="text.secondary">Nenhuma foto adicional cadastrada.</Typography>
+                                )}
+                            </Box>
+                        )}
                     </Box>
                 )}
             </Paper>
@@ -1091,7 +1115,7 @@ const Perfil = () => {
                     </Button>
                 </DialogActions>
             </Dialog>
-        </Container>
+        </Container >
     );
 };
 

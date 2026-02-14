@@ -97,7 +97,6 @@ const ModalDetalhesEstabelecimento = ({ open, onClose, estabelecimento }) => {
                 }
             }}
         >
-        >
             {/* Cabeçalho Fixo com Carrossel de Imagens */}
             <Box sx={{ position: 'relative', width: '100%', height: { xs: 200, md: 350 }, flexShrink: 0, bgcolor: 'black' }}>
                 <Box

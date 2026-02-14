@@ -1,10 +1,10 @@
 import { Box } from "@mui/material";
 import LayoutContainer from "./LayoutContainer";
 
-const AppLayout = ({ children }) => {
+const AppLayout = ({ children, ...props }) => {
   return (
     <Box sx={{ bgcolor: "background.default", flex: 1 }}>
-      <LayoutContainer>
+      <LayoutContainer {...props}>
         <Box sx={{ pt: 14 }}>
           {children}
         </Box>

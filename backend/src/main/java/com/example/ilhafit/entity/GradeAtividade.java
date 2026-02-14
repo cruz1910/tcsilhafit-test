@@ -20,6 +20,9 @@ public class GradeAtividade {
 
     private String atividade;
 
+    @Column(name = "exclusivo_mulheres")
+    private Boolean exclusivoMulheres = false;
+
     @ElementCollection
     @CollectionTable(name = "grade_atividade_dias", joinColumns = @JoinColumn(name = "grade_id"))
     @Column(name = "dia_semana")

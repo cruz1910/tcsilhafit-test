@@ -14,16 +14,19 @@ import {
 } from "@mui/material";
 import { Link, useNavigate } from "react-router-dom";
 import Menu from "./Menu";
-import Entrar from "./Entrar";
+import LoginButton from "./AuthButtons/Login";
+import CadastroButton from "./AuthButtons/Cadastro";
 import ToggleThemeButton from "../ToggleThemeButton";
 import { authService } from "../../services";
 import { FaUserCircle, FaSignOutAlt, FaCog, FaUserShield } from "react-icons/fa";
+import { useTheme, alpha } from "@mui/material/styles";
 
 
 const NavBar = () => {
   const [user, setUser] = useState(null);
   const [anchorEl, setAnchorEl] = useState(null);
   const navigate = useNavigate();
+  const theme = useTheme();
 
   useEffect(() => {
     const checkUser = () => {
@@ -49,24 +52,28 @@ const NavBar = () => {
       <Container maxWidth="xl">
         <Toolbar sx={{ py: 1 }}>
           {/* Logo e Nome */}
-          <Box sx={{ display: "flex", alignItems: "center" }}>
+          <Box
+            component={Link}
+            to="/"
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              textDecoration: 'none',
+              color: 'inherit',
+              '&:hover': { opacity: 0.8 }
+            }}
+          >
             <Box
               component="img"
               src="src/assets/logo.svg"
               alt="Logo IlhaFit"
-              sx={{ width: 48, borderRadius: 2, mr: 3 }}
+              sx={{ width: 48, borderRadius: theme.shape.borderRadius / 4, mr: 3 }}
             />
             <Box>
-              <Typography variant="h6" fontWeight={700} lineHeight={1.1}>
-                <ListItemButton
-                  component={Link}
-                  to="/"
-                  sx={{ px: 0, py: 0.5, minWidth: "auto" }}
-                >
-                  IlhaFit
-                </ListItemButton>
+              <Typography variant="h6" fontWeight={900} lineHeight={1.1}>
+                IlhaFit
               </Typography>
-              <Typography variant="caption" sx={{ color: "primary.main", fontWeight: 500 }}>
+              <Typography variant="caption" sx={{ color: "primary.main", fontWeight: 700 }}>
                 Seu bem-estar começa aqui
               </Typography>
             </Box>
@@ -94,10 +101,10 @@ const NavBar = () => {
                     p: 0.5,
                     pr: 1.5,
                     borderRadius: 10,
-                    '&:hover': { bgcolor: 'action.hover' }
+                    '&:hover': { bgcolor: theme.palette.action.hover }
                   }}
                 >
-                  <Avatar sx={{ bgcolor: 'primary.main', width: 32, height: 32 }}>
+                  <Avatar sx={{ bgcolor: theme.palette.primary.main, width: 32, height: 32 }}>
                     {user.nome?.charAt(0).toUpperCase() || "U"}
                   </Avatar>
                   <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
@@ -116,12 +123,15 @@ const NavBar = () => {
                   onClose={handleMenuClose}
                   transformOrigin={{ horizontal: 'right', vertical: 'top' }}
                   anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-                  PaperProps={{ sx: { mt: 1.5, borderRadius: 3, minWidth: 180 } }}
+                  PaperProps={{
+                    sx: {
+                      mt: 1.5,
+                      borderRadius: theme.shape.borderRadius >= 8 ? 3 : 2,
+                      minWidth: 180,
+                      boxShadow: theme.shadows[3]
+                    }
+                  }}
                 >
-                  <MenuItem component={Link} to="/perfil" onClick={handleMenuClose}>
-                    <ListItemIcon><FaUserCircle size={18} /></ListItemIcon>
-                    Meu Perfil
-                  </MenuItem>
                   {user.role === 'ADMIN' && (
                     <MenuItem component={Link} to="/admin" onClick={handleMenuClose}>
                       <ListItemIcon><FaUserShield size={18} /></ListItemIcon>
@@ -140,7 +150,10 @@ const NavBar = () => {
                 </MuiMenu>
               </>
             ) : (
-              <Entrar onClick={() => navigate("/login")} />
+              <Box sx={{ display: 'flex', gap: 1.5, ml: 2 }}>
+                <LoginButton onClick={() => navigate("/login")} />
+                <CadastroButton onClick={() => navigate("/cadastro")} />
+              </Box>
             )}
           </Box>
         </Toolbar>
