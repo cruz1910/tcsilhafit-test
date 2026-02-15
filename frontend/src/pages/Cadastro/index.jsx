@@ -55,10 +55,11 @@ const Cadastro = () => {
         telefone: "",
         cnpj: "",
         cpf: "",
+        sexo: "",
         especializacao: "",
         registroCref: "",
         descricao: "",
-        gradeAtividades: [], // [{ atividade, diasSemana: [], periodos: [] }]
+        gradeAtividades: [], // [{ atividade, diasSemana: [], periodos: [], exclusivoMulheres: false }]
         exclusivoMulheres: false,
         fotoUrl: "",
         fotosUrl: [],
@@ -118,6 +119,20 @@ const Cadastro = () => {
             .replace(/(-\d{3})\d+?$/, '$1');
     };
 
+    const maskCREF = (value) => {
+        return value
+            .toUpperCase()
+            .replace(/[^0-9A-Z/-]/g, '')
+            .replace(/^(\d{6})([a-zA-Z])/, '$1-$2')
+            .replace(/(-[a-zA-Z])([a-zA-Z]{2})/, '$1/$2')
+            .substring(0, 11);
+    };
+
+    const validatePassword = (password) => {
+        const regex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+        return regex.test(password);
+    };
+
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         let newValue = value;
@@ -131,6 +146,8 @@ const Cadastro = () => {
             newValue = maskPhone(value);
         } else if (name === "endereco.cep") {
             newValue = maskCEP(value);
+        } else if (name === "registroCref") {
+            newValue = maskCREF(value);
         }
 
         if (name.includes('.')) {
@@ -154,7 +171,7 @@ const Cadastro = () => {
                 nextGrade = prev.gradeAtividades.filter(g => g.atividade !== atividade);
                 nextExpanded.delete(atividade);
             } else {
-                nextGrade = [...prev.gradeAtividades, { atividade, diasSemana: [], periodos: [] }];
+                nextGrade = [...prev.gradeAtividades, { atividade, diasSemana: [], periodos: [], exclusivoMulheres: false }];
                 nextExpanded.add(atividade);
             }
             setExpandedActivities(nextExpanded);
@@ -200,6 +217,13 @@ const Cadastro = () => {
                 toast.error("Erro ao processar a imagem. Tente novamente.");
             }
         }
+    };
+
+    const handleRemoveFoto = (index) => {
+        setFormData(prev => ({
+            ...prev,
+            fotosUrl: prev.fotosUrl.filter((_, i) => i !== index)
+        }));
     };
 
     const handleCepBlur = async (e) => {
@@ -262,6 +286,10 @@ const Cadastro = () => {
         if (step === 1) {
             if (formData.senha !== formData.confirmarSenha) {
                 toast.error("As senhas não coincidem!");
+                return;
+            }
+            if (!validatePassword(formData.senha)) {
+                toast.error("Senha deve ter no mínimo 8 dígitos, 1 maiúscula, 1 caractere especial e 1 número.");
                 return;
             }
             if (accountType === "aluno") {
@@ -598,111 +626,120 @@ const Cadastro = () => {
                                         </Grid>
                                     </Grid>
 
-                                    <Grid container spacing={2}>
-                                        <Grid item xs={12} sm={8}>
-                                            <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 0.5, color: "text.secondary" }}>
-                                                Cidade
-                                            </Typography>
-                                            <TextField
-                                                fullWidth
-                                                name="endereco.cidade"
-                                                value={formData.endereco.cidade}
-                                                onChange={handleInputChange}
-                                                placeholder="Ex: Florianópolis"
-                                                sx={inputStyles}
-                                                required
-                                            />
-                                        </Grid>
-                                        <Grid item xs={12} sm={4}>
-                                            <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 0.5, color: "text.secondary" }}>
-                                                Estado
-                                            </Typography>
-                                            <TextField
-                                                fullWidth
-                                                name="endereco.estado"
-                                                value={formData.endereco.estado}
-                                                onChange={handleInputChange}
-                                                placeholder="SC"
-                                                sx={inputStyles}
-                                                required
-                                            />
-                                        </Grid>
-                                    </Grid>
+                                    <Box sx={{ mb: 2 }}>
+                                        <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 0.5, color: "text.secondary" }}>
+                                            Cidade
+                                        </Typography>
+                                        <TextField
+                                            fullWidth
+                                            name="endereco.cidade"
+                                            value={formData.endereco.cidade}
+                                            onChange={handleInputChange}
+                                            placeholder="Ex: Florianópolis"
+                                            sx={inputStyles}
+                                            required
+                                        />
+                                    </Box>
                                 </>
                             )}
 
-                            <Grid container spacing={2} sx={{ mb: 2 }}>
-                                <Grid item xs={12}>
-                                    <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 0.5, color: "text.secondary" }}>
-                                        WhatsApp / Telefone
-                                    </Typography>
-                                    <TextField
-                                        fullWidth
-                                        name="telefone"
-                                        value={formData.telefone}
-                                        onChange={handleInputChange}
-                                        placeholder="5548999999999"
-                                        sx={inputStyles}
-                                        required
-                                    />
+                            {accountType !== "aluno" && (
+                                <Grid container spacing={2} sx={{ mb: 2 }}>
+                                    <Grid item xs={12}>
+                                        <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 0.5, color: "text.secondary" }}>
+                                            WhatsApp / Telefone
+                                        </Typography>
+                                        <TextField
+                                            fullWidth
+                                            name="telefone"
+                                            value={formData.telefone}
+                                            onChange={handleInputChange}
+                                            placeholder="5548999999999"
+                                            sx={inputStyles}
+                                            required
+                                        />
+                                    </Grid>
+                                    <Grid item xs={12}>
+                                        <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 0.5, color: "text.secondary" }}>
+                                            {accountType === "estabelecimento" ? "CNPJ" : "CPF"}
+                                        </Typography>
+                                        <TextField
+                                            fullWidth
+                                            name={accountType === "estabelecimento" ? "cnpj" : "cpf"}
+                                            value={accountType === "estabelecimento" ? formData.cnpj : formData.cpf}
+                                            onChange={handleInputChange}
+                                            placeholder={accountType === "estabelecimento" ? "00.000.000/0000-00" : "000.000.000-00"}
+                                            sx={inputStyles}
+                                            required
+                                        />
+                                    </Grid>
                                 </Grid>
-                                <Grid item xs={12}>
-                                    <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 0.5, color: "text.secondary" }}>
-                                        {accountType === "estabelecimento" ? "CNPJ" : "CPF"}
-                                    </Typography>
-                                    <TextField
-                                        fullWidth
-                                        name={accountType === "estabelecimento" ? "cnpj" : "cpf"}
-                                        value={accountType === "estabelecimento" ? formData.cnpj : formData.cpf}
-                                        onChange={handleInputChange}
-                                        placeholder={accountType === "estabelecimento" ? "00.000.000/0000-00" : "000.000.000-00"}
-                                        sx={inputStyles}
-                                        required
-                                    />
-                                </Grid>
-                            </Grid>
+                            )}
 
-                            <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 1, color: "text.secondary" }}>
-                                {accountType === "estabelecimento" ? "Foto do Estabelecimento" : "Foto de Perfil"}
-                            </Typography>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
-                                <Avatar
-                                    src={formData.fotoUrl}
-                                    variant={accountType === "estabelecimento" ? "rounded" : "circular"}
-                                    sx={{
-                                        width: 80,
-                                        height: 80,
-                                        border: '2px solid',
-                                        borderColor: 'primary.main',
-                                        borderRadius: accountType === "estabelecimento" ? 2 : "50%"
-                                    }}
-                                />
-                                {accountType === "estabelecimento" && formData.fotosUrl?.length > 0 && (
-                                    <Box sx={{ display: 'flex', gap: 1 }}>
-                                        {formData.fotosUrl.slice(0, 3).map((url, i) => (
-                                            <Avatar key={i} src={url} variant="rounded" sx={{ width: 40, height: 40 }} />
-                                        ))}
-                                        {formData.fotosUrl.length > 3 && (
-                                            <Typography variant="caption">+{formData.fotosUrl.length - 3}</Typography>
+                            {accountType !== "aluno" && (
+                                <>
+                                    <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 1, color: "text.secondary" }}>
+                                        {accountType === "estabelecimento" ? "Fotos do Estabelecimento" : "Foto de Perfil"}
+                                    </Typography>
+                                    <Box sx={{ mb: 3 }}>
+                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                                            <Avatar
+                                                src={formData.fotoUrl}
+                                                sx={{
+                                                    width: 80,
+                                                    height: 80,
+                                                    border: '2px solid',
+                                                    borderColor: 'primary.main',
+                                                }}
+                                            />
+                                            <Button
+                                                variant="outlined"
+                                                component="label"
+                                                startIcon={<FaUpload />}
+                                                sx={{ textTransform: 'none', borderRadius: 2 }}
+                                            >
+                                                {accountType === "estabelecimento" ? "Adicionar Mais Fotos" : "Upload"}
+                                                <input
+                                                    type="file"
+                                                    hidden
+                                                    accept="image/*"
+                                                    multiple={accountType === "estabelecimento"}
+                                                    onChange={handleFileChange}
+                                                />
+                                            </Button>
+                                        </Box>
+
+                                        {accountType === "estabelecimento" && formData.fotosUrl?.length > 0 && (
+                                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, mt: 2 }}>
+                                                {formData.fotosUrl.map((url, i) => (
+                                                    <Box key={i} sx={{ position: 'relative' }}>
+                                                        <Avatar
+                                                            src={url}
+                                                            sx={{ width: 60, height: 60, border: '1px solid', borderColor: 'divider' }}
+                                                        />
+                                                        <IconButton
+                                                            size="small"
+                                                            onClick={() => handleRemoveFoto(i)}
+                                                            sx={{
+                                                                position: 'absolute',
+                                                                top: -8,
+                                                                right: -8,
+                                                                bgcolor: 'error.main',
+                                                                color: 'white',
+                                                                width: 20,
+                                                                height: 20,
+                                                                '&:hover': { bgcolor: 'error.dark' }
+                                                            }}
+                                                        >
+                                                            <FaTimes size={10} />
+                                                        </IconButton>
+                                                    </Box>
+                                                ))}
+                                            </Box>
                                         )}
                                     </Box>
-                                )}
-                                <Button
-                                    variant="outlined"
-                                    component="label"
-                                    startIcon={<FaUpload />}
-                                    sx={{ textTransform: 'none', borderRadius: 2 }}
-                                >
-                                    {accountType === "estabelecimento" ? "Adicionar Fotos" : "Upload"}
-                                    <input
-                                        type="file"
-                                        hidden
-                                        accept="image/*"
-                                        multiple={accountType === "estabelecimento"}
-                                        onChange={handleFileChange}
-                                    />
-                                </Button>
-                            </Box>
+                                </>
+                            )}
                         </>
                     ) : (
                         <>
@@ -715,7 +752,7 @@ const Cadastro = () => {
                                 </Typography>
                             </Box>
 
-                            {accountType === "profissional" && (
+                            {showCref && (
                                 <Box sx={{ mb: 3 }}>
                                     <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 0.5, color: "text.secondary" }}>
                                         Registro CREF (Opcional)
@@ -728,6 +765,40 @@ const Cadastro = () => {
                                         placeholder="000000-G/SC"
                                         sx={inputStyles}
                                     />
+                                </Box>
+                            )}
+
+                            {accountType === "profissional" && (
+                                <Box sx={{ mb: 3 }}>
+                                    <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 0.5, color: "text.secondary" }}>
+                                        Sexo
+                                    </Typography>
+                                    <ToggleButtonGroup
+                                        value={formData.sexo}
+                                        exclusive
+                                        onChange={(e, val) => val && setFormData(prev => ({ ...prev, sexo: val }))}
+                                        fullWidth
+                                        sx={{
+                                            gap: 1,
+                                            "& .MuiToggleButton-root": {
+                                                border: "1px solid !important",
+                                                borderColor: "divider !important",
+                                                borderRadius: "12px !important",
+                                                color: "text.secondary",
+                                                textTransform: "none",
+                                                fontWeight: 600,
+                                                py: 1,
+                                                "&.Mui-selected": {
+                                                    bgcolor: "primary.main",
+                                                    color: "white",
+                                                    "&:hover": { bgcolor: "primary.dark" }
+                                                }
+                                            }
+                                        }}
+                                    >
+                                        <ToggleButton value="Feminino">Feminino</ToggleButton>
+                                        <ToggleButton value="Masculino">Masculino</ToggleButton>
+                                    </ToggleButtonGroup>
                                 </Box>
                             )}
 
@@ -752,7 +823,7 @@ const Cadastro = () => {
 
                                     // Adicionar novos modelos de grade
                                     added.forEach(atividade => {
-                                        newGrade.push({ atividade, diasSemana: [], periodos: [] });
+                                        newGrade.push({ atividade, diasSemana: [], periodos: [], exclusivoMulheres: false });
                                         setExpandedActivities(prev => new Set(prev).add(atividade));
                                     });
 
@@ -877,6 +948,22 @@ const Cadastro = () => {
                                                                         </ToggleButton>
                                                                     ))}
                                                                 </Box>
+
+                                                                {/* Novo: Opção exclusiva mulheres por atividade */}
+                                                                {(accountType === "estabelecimento" || formData.sexo === "Feminino") && (
+                                                                    <Box sx={{ mt: 1.5 }}>
+                                                                        <FormControlLabel
+                                                                            control={
+                                                                                <Checkbox
+                                                                                    size="small"
+                                                                                    checked={grade.exclusivoMulheres || false}
+                                                                                    onChange={(e) => handleGradeUpdate(atividade, 'exclusivoMulheres', e.target.checked)}
+                                                                                />
+                                                                            }
+                                                                            label={<Typography variant="caption" fontWeight={600}>Oferecer aula apenas para mulheres</Typography>}
+                                                                        />
+                                                                    </Box>
+                                                                )}
                                                             </Box>
                                                         </Collapse>
                                                         <Divider sx={{ mt: 1, opacity: 0.3 }} />
@@ -887,21 +974,6 @@ const Cadastro = () => {
                                     </Paper>
                                 </>
                             )}
-
-                            <Paper variant="outlined" sx={{
-                                p: 1, mb: 3, borderRadius: 2,
-                                bgcolor: isDark ? "rgba(255, 255, 255, 0.02)" : "rgba(16, 185, 129, 0.02)",
-                            }}>
-                                <FormControlLabel
-                                    control={
-                                        <Checkbox
-                                            checked={formData.exclusivoMulheres}
-                                            onChange={(e) => setFormData(prev => ({ ...prev, exclusivoMulheres: e.target.checked }))}
-                                        />
-                                    }
-                                    label={<Typography variant="body2" fontWeight={600}>Oferece aulas exclusivas para mulheres</Typography>}
-                                />
-                            </Paper>
 
                             <Button onClick={() => setStep(1)} sx={{ mb: 2, textTransform: 'none' }}>
                                 Voltar para dados básicos

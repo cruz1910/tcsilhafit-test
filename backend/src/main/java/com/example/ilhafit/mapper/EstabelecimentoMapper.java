@@ -28,6 +28,7 @@ public class EstabelecimentoMapper {
             est.setGradeAtividades(dto.getGradeAtividades().stream().map(g -> {
                 GradeAtividade entity = new GradeAtividade();
                 entity.setAtividade(g.getAtividade());
+                entity.setExclusivoMulheres(g.getExclusivoMulheres());
                 entity.setDiasSemana(g.getDiasSemana());
                 entity.setPeriodos(g.getPeriodos());
                 return entity;
@@ -53,6 +54,7 @@ public class EstabelecimentoMapper {
             dto.setGradeAtividades(est.getGradeAtividades().stream().map(g -> {
                 GradeAtividadeDTO d = new GradeAtividadeDTO();
                 d.setAtividade(g.getAtividade());
+                d.setExclusivoMulheres(g.getExclusivoMulheres());
                 d.setDiasSemana(g.getDiasSemana());
                 d.setPeriodos(g.getPeriodos());
                 return d;

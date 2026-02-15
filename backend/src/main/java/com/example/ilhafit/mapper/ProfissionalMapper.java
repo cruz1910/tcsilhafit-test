@@ -20,6 +20,7 @@ public class ProfissionalMapper {
         pro.setSenha(dto.getSenha());
         pro.setTelefone(dto.getTelefone());
         pro.setCpf(dto.getCpf());
+        pro.setSexo(dto.getSexo());
         pro.setEspecializacao(dto.getEspecializacao());
         pro.setRegistroCref(dto.getRegistroCref());
         pro.setEndereco(enderecoMapper.toEntity(dto.getEndereco()));
@@ -28,6 +29,7 @@ public class ProfissionalMapper {
             pro.setGradeAtividades(dto.getGradeAtividades().stream().map(g -> {
                 GradeAtividade entity = new GradeAtividade();
                 entity.setAtividade(g.getAtividade());
+                entity.setExclusivoMulheres(g.getExclusivoMulheres());
                 entity.setDiasSemana(g.getDiasSemana());
                 entity.setPeriodos(g.getPeriodos());
                 return entity;
@@ -45,6 +47,7 @@ public class ProfissionalMapper {
         dto.setEmail(pro.getEmail());
         dto.setTelefone(pro.getTelefone());
         dto.setCpf(pro.getCpf());
+        dto.setSexo(pro.getSexo());
         dto.setEspecializacao(pro.getEspecializacao());
         dto.setRegistroCref(pro.getRegistroCref());
         dto.setEndereco(enderecoMapper.toDTO(pro.getEndereco()));
@@ -53,6 +56,7 @@ public class ProfissionalMapper {
             dto.setGradeAtividades(pro.getGradeAtividades().stream().map(g -> {
                 GradeAtividadeDTO d = new GradeAtividadeDTO();
                 d.setAtividade(g.getAtividade());
+                d.setExclusivoMulheres(g.getExclusivoMulheres());
                 d.setDiasSemana(g.getDiasSemana());
                 d.setPeriodos(g.getPeriodos());
                 return d;

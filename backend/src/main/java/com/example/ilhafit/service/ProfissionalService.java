@@ -66,6 +66,7 @@ public class ProfissionalService {
         profissional.setEmail(dto.getEmail());
         profissional.setTelefone(dto.getTelefone());
         profissional.setCpf(dto.getCpf());
+        profissional.setSexo(dto.getSexo());
         profissional.setEspecializacao(dto.getEspecializacao());
         profissional.setRegistroCref(dto.getRegistroCref());
         profissional.setExclusivoMulheres(dto.getExclusivoMulheres());

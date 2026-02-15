@@ -26,6 +26,8 @@ public class ProfissionalDTO {
         @NotBlank(message = "CPF é obrigatório")
         private String cpf;
 
+        private String sexo;
+
         private String especializacao;
         private String registroCref;
         private EnderecoDTO endereco;
@@ -42,6 +44,7 @@ public class ProfissionalDTO {
         private String email;
         private String telefone;
         private String cpf;
+        private String sexo;
         private String especializacao;
         private String registroCref;
         private EnderecoDTO endereco;

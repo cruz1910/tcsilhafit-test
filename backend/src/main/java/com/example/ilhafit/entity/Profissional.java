@@ -43,8 +43,11 @@ public class Profissional {
     private String telefone;
 
     @NotBlank(message = "CPF é obrigatório")
-    @Column(nullable = false, unique = true)
+    @Column(name = "cpf", nullable = false, unique = true)
     private String cpf;
+
+    @Column(name = "sexo")
+    private String sexo;
 
     @Column(length = 500)
     private String especializacao;
