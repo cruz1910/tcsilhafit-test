@@ -25,11 +25,7 @@ import { toast } from "react-toastify";
 
 import { authService } from "../../services";
 
-const GRANDE_FLORIANOPOLIS = [
-    "Florianópolis", "São José", "Palhoça", "Biguaçu",
-    "Santo Amaro da Imperatriz", "Governador Celso Ramos",
-    "Antônio Carlos", "Águas Mornas", "São Pedro de Alcântara"
-];
+
 
 const Cadastro = () => {
     const theme = useTheme();
@@ -214,10 +210,6 @@ const Cadastro = () => {
                 const data = await response.json();
                 if (!data.erro) {
                     const cidade = data.localidade;
-                    if (!GRANDE_FLORIANOPOLIS.includes(cidade)) {
-                        toast.error(`Atendemos apenas a região da Grande Florianópolis. ${cidade} não é permitido.`);
-                        return;
-                    }
 
                     setFormData(prev => ({
                         ...prev,
@@ -254,22 +246,7 @@ const Cadastro = () => {
             const data = await response.json();
 
             if (data.features && data.features.length > 0) {
-                // Validação extra: verificar se o resultado retornado pelo MapTiler também está na Grande Florianópolis
                 const feature = data.features[0];
-                const context = feature.context || [];
-                const cityContext = context.find(c => c.id.startsWith('place.'));
-                const cityName = cityContext ? cityContext.text : "";
-
-                // Se o MapTiler achar algo fora da lista, barramos (medida de segurança)
-                const isFloripaRegion = GRANDE_FLORIANOPOLIS.some(city =>
-                    feature.place_name.includes(city) || cityName.includes(city)
-                );
-
-                if (!isFloripaRegion) {
-                    console.warn("Geocodificação fora da Grande Florianópolis:", feature.place_name);
-                    return null;
-                }
-
                 const [lon, lat] = feature.center;
                 return { lat, lon };
             }
@@ -312,12 +289,8 @@ const Cadastro = () => {
                 dataToSend.endereco.cep = dataToSend.endereco.cep.replace(/\D/g, "");
             }
 
-            // Geocoding para Estabelecimentos e Profissionais
-            if ((accountType === "estabelecimento" || accountType === "profissional") && dataToSend.endereco) {
-                if (!GRANDE_FLORIANOPOLIS.includes(dataToSend.endereco.cidade)) {
-                    toast.error("Cadastro permitido apenas para a Grande Florianópolis.");
-                    return;
-                }
+            // Geocoding para Estabelecimentos
+            if (accountType === "estabelecimento" && dataToSend.endereco) {
 
                 toast.info("Garantindo sua localização exata no mapa...", { autoClose: 2000 });
                 const coords = await fetchCoordinates(dataToSend.endereco);
@@ -328,7 +301,7 @@ const Cadastro = () => {
                         longitude: coords.lon
                     };
                 } else {
-                    toast.error("Não conseguimos validar seu endereço na Grande Florianópolis. Verifique os dados.");
+                    toast.error("Não conseguimos validar seu endereço. Verifique os dados.");
                     return;
                 }
             }
@@ -560,7 +533,7 @@ const Cadastro = () => {
                                 </Box>
                             </Box>
 
-                            {(accountType === "estabelecimento" || accountType === "profissional") && (
+                            {accountType === "estabelecimento" && (
                                 <>
                                     <Grid container spacing={2}>
                                         <Grid item xs={12} sm={4}>
@@ -655,81 +628,81 @@ const Cadastro = () => {
                                             />
                                         </Grid>
                                     </Grid>
-
-                                    <Grid container spacing={2}>
-                                        <Grid item xs={12} sm={6}>
-                                            <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 0.5, color: "text.secondary" }}>
-                                                WhatsApp / Telefone
-                                            </Typography>
-                                            <TextField
-                                                fullWidth
-                                                name="telefone"
-                                                value={formData.telefone}
-                                                onChange={handleInputChange}
-                                                placeholder="5548999999999"
-                                                sx={inputStyles}
-                                                required
-                                            />
-                                        </Grid>
-                                        <Grid item xs={12} sm={6}>
-                                            <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 0.5, color: "text.secondary" }}>
-                                                {accountType === "estabelecimento" ? "CNPJ" : "CPF"}
-                                            </Typography>
-                                            <TextField
-                                                fullWidth
-                                                name={accountType === "estabelecimento" ? "cnpj" : "cpf"}
-                                                value={accountType === "estabelecimento" ? formData.cnpj : formData.cpf}
-                                                onChange={handleInputChange}
-                                                placeholder={accountType === "estabelecimento" ? "00.000.000/0000-00" : "000.000.000-00"}
-                                                sx={inputStyles}
-                                                required
-                                            />
-                                        </Grid>
-                                    </Grid>
-
-                                    <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 1, color: "text.secondary" }}>
-                                        {accountType === "estabelecimento" ? "Foto do Estabelecimento" : "Foto de Perfil"}
-                                    </Typography>
-                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
-                                        <Avatar
-                                            src={formData.fotoUrl}
-                                            variant={accountType === "estabelecimento" ? "rounded" : "circular"}
-                                            sx={{
-                                                width: 80,
-                                                height: 80,
-                                                border: '2px solid',
-                                                borderColor: 'primary.main',
-                                                borderRadius: accountType === "estabelecimento" ? 2 : "50%"
-                                            }}
-                                        />
-                                        {accountType === "estabelecimento" && formData.fotosUrl?.length > 0 && (
-                                            <Box sx={{ display: 'flex', gap: 1 }}>
-                                                {formData.fotosUrl.slice(0, 3).map((url, i) => (
-                                                    <Avatar key={i} src={url} variant="rounded" sx={{ width: 40, height: 40 }} />
-                                                ))}
-                                                {formData.fotosUrl.length > 3 && (
-                                                    <Typography variant="caption">+{formData.fotosUrl.length - 3}</Typography>
-                                                )}
-                                            </Box>
-                                        )}
-                                        <Button
-                                            variant="outlined"
-                                            component="label"
-                                            startIcon={<FaUpload />}
-                                            sx={{ textTransform: 'none', borderRadius: 2 }}
-                                        >
-                                            {accountType === "estabelecimento" ? "Adicionar Fotos" : "Upload"}
-                                            <input
-                                                type="file"
-                                                hidden
-                                                accept="image/*"
-                                                multiple={accountType === "estabelecimento"}
-                                                onChange={handleFileChange}
-                                            />
-                                        </Button>
-                                    </Box>
                                 </>
                             )}
+
+                            <Grid container spacing={2} sx={{ mb: 2 }}>
+                                <Grid item xs={12}>
+                                    <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 0.5, color: "text.secondary" }}>
+                                        WhatsApp / Telefone
+                                    </Typography>
+                                    <TextField
+                                        fullWidth
+                                        name="telefone"
+                                        value={formData.telefone}
+                                        onChange={handleInputChange}
+                                        placeholder="5548999999999"
+                                        sx={inputStyles}
+                                        required
+                                    />
+                                </Grid>
+                                <Grid item xs={12}>
+                                    <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 0.5, color: "text.secondary" }}>
+                                        {accountType === "estabelecimento" ? "CNPJ" : "CPF"}
+                                    </Typography>
+                                    <TextField
+                                        fullWidth
+                                        name={accountType === "estabelecimento" ? "cnpj" : "cpf"}
+                                        value={accountType === "estabelecimento" ? formData.cnpj : formData.cpf}
+                                        onChange={handleInputChange}
+                                        placeholder={accountType === "estabelecimento" ? "00.000.000/0000-00" : "000.000.000-00"}
+                                        sx={inputStyles}
+                                        required
+                                    />
+                                </Grid>
+                            </Grid>
+
+                            <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 1, color: "text.secondary" }}>
+                                {accountType === "estabelecimento" ? "Foto do Estabelecimento" : "Foto de Perfil"}
+                            </Typography>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
+                                <Avatar
+                                    src={formData.fotoUrl}
+                                    variant={accountType === "estabelecimento" ? "rounded" : "circular"}
+                                    sx={{
+                                        width: 80,
+                                        height: 80,
+                                        border: '2px solid',
+                                        borderColor: 'primary.main',
+                                        borderRadius: accountType === "estabelecimento" ? 2 : "50%"
+                                    }}
+                                />
+                                {accountType === "estabelecimento" && formData.fotosUrl?.length > 0 && (
+                                    <Box sx={{ display: 'flex', gap: 1 }}>
+                                        {formData.fotosUrl.slice(0, 3).map((url, i) => (
+                                            <Avatar key={i} src={url} variant="rounded" sx={{ width: 40, height: 40 }} />
+                                        ))}
+                                        {formData.fotosUrl.length > 3 && (
+                                            <Typography variant="caption">+{formData.fotosUrl.length - 3}</Typography>
+                                        )}
+                                    </Box>
+                                )}
+                                <Button
+                                    variant="outlined"
+                                    component="label"
+                                    startIcon={<FaUpload />}
+                                    sx={{ textTransform: 'none', borderRadius: 2 }}
+                                >
+                                    {accountType === "estabelecimento" ? "Adicionar Fotos" : "Upload"}
+                                    <input
+                                        type="file"
+                                        hidden
+                                        accept="image/*"
+                                        multiple={accountType === "estabelecimento"}
+                                        onChange={handleFileChange}
+                                    />
+                                </Button>
+                            </Box>
                         </>
                     ) : (
                         <>

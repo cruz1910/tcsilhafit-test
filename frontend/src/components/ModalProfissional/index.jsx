@@ -95,7 +95,7 @@ const ModalProfissional = ({ open, onClose, profissional }) => {
         <Dialog
             open={open}
             onClose={onClose}
-            maxWidth="sm"
+            maxWidth="md"
             fullWidth
             PaperProps={{
                 sx: {
@@ -116,15 +116,27 @@ const ModalProfissional = ({ open, onClose, profissional }) => {
                         Informações completas do selecionado
                     </Typography>
                 </Box>
-                <IconButton
-                    onClick={onClose}
-                    sx={{
-                        bgcolor: alpha(theme.palette.divider, 0.1),
-                        '&:hover': { bgcolor: alpha(theme.palette.divider, 0.2) }
-                    }}
-                >
-                    <FaChevronLeft size={18} />
-                </IconButton>
+                <Box sx={{ display: 'flex', gap: 1 }}>
+                    <IconButton
+                        onClick={handleWhatsApp}
+                        sx={{
+                            bgcolor: alpha('#10B981', 0.1),
+                            color: '#10B981',
+                            '&:hover': { bgcolor: alpha('#10B981', 0.2) }
+                        }}
+                    >
+                        <FaWhatsapp size={20} />
+                    </IconButton>
+                    <IconButton
+                        onClick={onClose}
+                        sx={{
+                            bgcolor: alpha(theme.palette.divider, 0.1),
+                            '&:hover': { bgcolor: alpha(theme.palette.divider, 0.2) }
+                        }}
+                    >
+                        <FaChevronLeft size={18} />
+                    </IconButton>
+                </Box>
             </Box>
 
             <DialogContent sx={{ p: 4, overflowY: 'auto' }}>
@@ -237,22 +249,55 @@ const ModalProfissional = ({ open, onClose, profissional }) => {
                             border: 'none'
                         }}
                     >
-                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
                             {gradeAtividades.length > 0 ? (
                                 gradeAtividades.map((grade, idx) => (
-                                    <Box key={idx} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                        <Typography variant="body2" fontWeight={700} color="text.secondary">
+                                    <Box key={idx}>
+                                        <Typography variant="body2" fontWeight={700} color="text.secondary" sx={{ mb: 1 }}>
                                             {grade.atividade}
                                         </Typography>
-                                        <Typography variant="body2" fontWeight={900}>
-                                            {Array.isArray(grade.periodos) ? grade.periodos.join(", ") : "06:00 - 22:00"}
-                                        </Typography>
+                                        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                                            {Array.isArray(grade.periodos) ? grade.periodos.map((p, i) => (
+                                                <Chip
+                                                    key={i}
+                                                    label={p}
+                                                    size="small"
+                                                    sx={{
+                                                        bgcolor: alpha(theme.palette.primary.main, 0.1),
+                                                        color: theme.palette.primary.main,
+                                                        fontWeight: 700,
+                                                        borderRadius: 1.5,
+                                                        border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`
+                                                    }}
+                                                />
+                                            )) : (
+                                                <Chip
+                                                    label="06:00 - 22:00"
+                                                    size="small"
+                                                    sx={{
+                                                        bgcolor: alpha(theme.palette.primary.main, 0.1),
+                                                        color: theme.palette.primary.main,
+                                                        fontWeight: 700,
+                                                        borderRadius: 1.5
+                                                    }}
+                                                />
+                                            )}
+                                        </Box>
                                     </Box>
                                 ))
                             ) : (
-                                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                     <Typography variant="body2" fontWeight={700}>Horários Padrão</Typography>
-                                    <Typography variant="body2" fontWeight={900}>06:00 - 22:00</Typography>
+                                    <Chip
+                                        label="06:00 - 22:00"
+                                        size="small"
+                                        sx={{
+                                            bgcolor: alpha(theme.palette.primary.main, 0.1),
+                                            color: theme.palette.primary.main,
+                                            fontWeight: 700,
+                                            borderRadius: 1.5
+                                        }}
+                                    />
                                 </Box>
                             )}
                         </Box>
@@ -300,11 +345,11 @@ const ModalProfissional = ({ open, onClose, profissional }) => {
                                 borderRadius: 3,
                                 textTransform: 'none',
                                 fontWeight: 800,
-                                bgcolor: '#FF0000',
-                                '&:hover': { bgcolor: '#D00000' },
+                                bgcolor: theme.palette.primary.main,
+                                '&:hover': { bgcolor: theme.palette.primary.dark },
                                 height: 56,
                                 fontSize: '1.1rem',
-                                boxShadow: '0 8px 16px rgba(255, 0, 0, 0.15)'
+                                boxShadow: `0 8px 16px ${alpha(theme.palette.primary.main, 0.2)}`
                             }}
                         >
                             {loading ? "Enviando..." : "Enviar avaliação"}
@@ -368,24 +413,6 @@ const ModalProfissional = ({ open, onClose, profissional }) => {
                     )}
                 </Box>
 
-                {/* Botão de Contato */}
-                <Button
-                    fullWidth
-                    variant="contained"
-                    startIcon={<FaWhatsapp size={20} />}
-                    onClick={handleWhatsApp}
-                    sx={{
-                        borderRadius: 3,
-                        py: 2,
-                        textTransform: 'none',
-                        fontWeight: 800,
-                        fontSize: '1rem',
-                        bgcolor: '#10B981',
-                        '&:hover': { bgcolor: '#059669' }
-                    }}
-                >
-                    Entrar em Contato
-                </Button>
             </DialogContent>
         </Dialog>
     );

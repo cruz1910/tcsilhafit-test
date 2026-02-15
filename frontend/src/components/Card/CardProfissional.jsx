@@ -19,7 +19,7 @@ const CardProfissional = ({ profissional, onVisualizar }) => {
         <Card
             sx={{
                 width: "100%",
-                maxWidth: 350,
+                maxWidth: 400,
                 height: "100%",
                 display: "flex",
                 flexDirection: "column",
