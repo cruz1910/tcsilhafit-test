@@ -36,7 +36,7 @@ const Cadastro = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [step, setStep] = useState(1);
-    const [formData, setFormData] = useState({
+    const initialFormData = {
         nome: "",
         email: "",
         senha: "",
@@ -64,13 +64,18 @@ const Cadastro = () => {
         fotoUrl: "",
         fotosUrl: [],
         outrosAtividade: "", // Texto personalizado para "Outros"
-    });
+    };
+
+    const [formData, setFormData] = useState(initialFormData);
 
     const [expandedActivities, setExpandedActivities] = useState(new Set());
 
     const handleTypeChange = (event, newType) => {
-        if (newType !== null) {
+        if (newType !== null && newType !== accountType) {
             setAccountType(newType);
+            setFormData(initialFormData);
+            setStep(1);
+            setExpandedActivities(new Set());
         }
     };
 
@@ -684,7 +689,7 @@ const Cadastro = () => {
                                     <Box sx={{ mb: 3 }}>
                                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
                                             <Avatar
-                                                src={formData.fotoUrl}
+                                                src={accountType === "estabelecimento" ? (formData.fotosUrl && formData.fotosUrl[0]) : formData.fotoUrl}
                                                 sx={{
                                                     width: 80,
                                                     height: 80,
@@ -709,17 +714,43 @@ const Cadastro = () => {
                                             </Button>
                                         </Box>
 
-                                        {accountType === "estabelecimento" && formData.fotosUrl?.length > 0 && (
+                                        {accountType === "estabelecimento" && formData.fotosUrl?.length > 1 && (
                                             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, mt: 2 }}>
-                                                {formData.fotosUrl.map((url, i) => (
-                                                    <Box key={i} sx={{ position: 'relative' }}>
+                                                {formData.fotosUrl.slice(1, 6).map((url, i) => (
+                                                    <Box key={i + 1} sx={{ position: 'relative' }}>
                                                         <Avatar
                                                             src={url}
-                                                            sx={{ width: 60, height: 60, border: '1px solid', borderColor: 'divider' }}
+                                                            sx={{
+                                                                width: 60,
+                                                                height: 60,
+                                                                border: '1px solid',
+                                                                borderColor: 'divider',
+                                                                opacity: i === 4 && formData.fotosUrl.length > 6 ? 0.5 : 1
+                                                            }}
                                                         />
+                                                        {i === 4 && formData.fotosUrl.length > 6 && (
+                                                            <Box sx={{
+                                                                position: 'absolute',
+                                                                top: 0,
+                                                                left: 0,
+                                                                width: '100%',
+                                                                height: '100%',
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                justifyContent: 'center',
+                                                                bgcolor: 'rgba(0,0,0,0.5)',
+                                                                color: 'white',
+                                                                borderRadius: '50%',
+                                                                fontSize: '0.8rem',
+                                                                fontWeight: 700,
+                                                                pointerEvents: 'none'
+                                                            }}>
+                                                                +{formData.fotosUrl.length - 6}
+                                                            </Box>
+                                                        )}
                                                         <IconButton
                                                             size="small"
-                                                            onClick={() => handleRemoveFoto(i)}
+                                                            onClick={() => handleRemoveFoto(i + 1)}
                                                             sx={{
                                                                 position: 'absolute',
                                                                 top: -8,
@@ -728,6 +759,7 @@ const Cadastro = () => {
                                                                 color: 'white',
                                                                 width: 20,
                                                                 height: 20,
+                                                                zIndex: 2,
                                                                 '&:hover': { bgcolor: 'error.dark' }
                                                             }}
                                                         >
