@@ -1,4 +1,4 @@
-import { Box, Container, Typography, CircularProgress } from "@mui/material";
+import { Box, Container, Typography, CircularProgress, Pagination } from "@mui/material";
 import { useState, useEffect } from "react";
 import CardEstabelecimento from "../../components/Card/CardEstabelecimento";
 import ModalDetalhesEstabelecimento from "../../components/ModalDetalhesEstabelecimento";
@@ -9,6 +9,8 @@ const Estabelecimento = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [estabelecimentos, setEstabelecimentos] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const itemsPerPage = 12;
 
   useEffect(() => {
     const fetchEstabelecimentos = async () => {
@@ -39,6 +41,16 @@ const Estabelecimento = () => {
     setIsModalOpen(true);
   };
 
+  const handleChangePage = (event, value) => {
+    setPage(value);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const paginatedEstabelecimentos = estabelecimentos.slice(
+    (page - 1) * itemsPerPage,
+    page * itemsPerPage
+  );
+
   return (
     <Container maxWidth="lg" sx={{ py: 6 }}>
       <Box sx={{ mb: 6 }}>
@@ -55,25 +67,40 @@ const Estabelecimento = () => {
           <CircularProgress color="primary" />
         </Box>
       ) : estabelecimentos.length > 0 ? (
-        <Box
-          sx={{
-            display: "grid",
-            gap: 4,
-            gridTemplateColumns: {
-              xs: "1fr",
-              sm: "repeat(2, 1fr)",
-              md: "repeat(3, 1fr)",
-            },
-          }}
-        >
-          {estabelecimentos.map((item) => (
-            <CardEstabelecimento
-              key={item.id}
-              estabelecimento={item}
-              onClickDetail={handleOpenModal}
-            />
-          ))}
-        </Box>
+        <>
+          <Box
+            sx={{
+              display: "grid",
+              gap: 4,
+              mb: 6,
+              gridTemplateColumns: {
+                xs: "1fr",
+                sm: "repeat(2, 1fr)",
+                md: "repeat(3, 1fr)",
+              },
+            }}
+          >
+            {paginatedEstabelecimentos.map((item) => (
+              <CardEstabelecimento
+                key={item.id}
+                estabelecimento={item}
+                onClickDetail={handleOpenModal}
+              />
+            ))}
+          </Box>
+
+          {estabelecimentos.length > itemsPerPage && (
+            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+              <Pagination
+                count={Math.ceil(estabelecimentos.length / itemsPerPage)}
+                page={page}
+                onChange={handleChangePage}
+                color="primary"
+                size="large"
+              />
+            </Box>
+          )}
+        </>
       ) : (
         <Box sx={{ textAlign: 'center', py: 10 }}>
           <Typography variant="h6" color="text.secondary">

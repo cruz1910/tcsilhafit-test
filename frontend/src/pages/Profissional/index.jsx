@@ -1,4 +1,4 @@
-import { Box, Container, Typography, CircularProgress } from "@mui/material";
+import { Box, Container, Typography, CircularProgress, Pagination } from "@mui/material";
 import { useState, useEffect } from "react";
 import CardProfissional from "../../components/Card/CardProfissional";
 import ModalProfissional from "../../components/ModalProfissional";
@@ -9,6 +9,8 @@ const Profissional = () => {
     const [modalOpen, setModalOpen] = useState(false);
     const [profissionais, setProfissionais] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [page, setPage] = useState(1);
+    const itemsPerPage = 16;
 
     useEffect(() => {
         const fetchProfissionais = async () => {
@@ -19,7 +21,7 @@ const Profissional = () => {
                     Imagem: item.fotoUrl || "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=500&auto=format&fit=crop&q=60",
                     especialidades: item.especializacao ? item.especializacao.split(", ") : (Array.isArray(item.atividadesOferecidas) ? item.atividadesOferecidas : []),
                     gradeAtividades: Array.isArray(item.gradeAtividades) ? item.gradeAtividades : [],
-                    avaliacao: 4.8,
+                    avaliacao: item.avaliacao || 0.0,
                 }));
                 setProfissionais(mappedData);
             } catch (error) {
@@ -42,6 +44,16 @@ const Profissional = () => {
         setSelectedProfissional(null);
     };
 
+    const handleChangePage = (event, value) => {
+        setPage(value);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    const paginatedProfissionais = profissionais.slice(
+        (page - 1) * itemsPerPage,
+        page * itemsPerPage
+    );
+
     return (
         <Container maxWidth="lg" sx={{ py: 6 }}>
             <Box sx={{ mb: 6 }}>
@@ -58,27 +70,42 @@ const Profissional = () => {
                     <CircularProgress color="primary" />
                 </Box>
             ) : profissionais.length > 0 ? (
-                <Box
-                    sx={{
-                        display: "grid",
-                        gap: 3,
-                        gridTemplateColumns: {
-                            xs: "1fr",
-                            sm: "repeat(2, 1fr)",
-                            md: "repeat(3, 1fr)",
-                            lg: "repeat(4, 1fr)",
-                        },
-                        justifyItems: "center",
-                    }}
-                >
-                    {profissionais.map((item) => (
-                        <CardProfissional
-                            key={item.id}
-                            profissional={item}
-                            onVisualizar={() => handleOpenModal(item)}
-                        />
-                    ))}
-                </Box>
+                <>
+                    <Box
+                        sx={{
+                            display: "grid",
+                            gap: 3,
+                            mb: 6,
+                            gridTemplateColumns: {
+                                xs: "1fr",
+                                sm: "repeat(2, 1fr)",
+                                md: "repeat(3, 1fr)",
+                                lg: "repeat(4, 1fr)",
+                            },
+                            justifyItems: "center",
+                        }}
+                    >
+                        {paginatedProfissionais.map((item) => (
+                            <CardProfissional
+                                key={item.id}
+                                profissional={item}
+                                onVisualizar={() => handleOpenModal(item)}
+                            />
+                        ))}
+                    </Box>
+
+                    {profissionais.length > itemsPerPage && (
+                        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+                            <Pagination
+                                count={Math.ceil(profissionais.length / itemsPerPage)}
+                                page={page}
+                                onChange={handleChangePage}
+                                color="primary"
+                                size="large"
+                            />
+                        </Box>
+                    )}
+                </>
             ) : (
                 <Box sx={{ textAlign: 'center', py: 10 }}>
                     <Typography variant="h6" color="text.secondary">

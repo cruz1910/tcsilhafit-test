@@ -116,7 +116,7 @@ public class EstabelecimentoService {
             estabelecimento.setSenha(passwordEncoder.encode(dto.getSenha()));
         }
 
-        return estabelecimentoMapper.toDTO(estabelecimentoRepository.save(estabelecimento));
+        return mappedWithRating(estabelecimentoRepository.save(estabelecimento));
     }
 
     @Transactional

@@ -53,5 +53,6 @@ public class ProfissionalDTO {
         private String fotoUrl;
         private String outrosAtividade;
         private Role role;
+        private Double avaliacao;
     }
 }

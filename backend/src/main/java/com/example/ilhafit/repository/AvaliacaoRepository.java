@@ -10,7 +10,11 @@ import java.util.List;
 public interface AvaliacaoRepository extends JpaRepository<Avaliacao, Long> {
     List<Avaliacao> findByEstabelecimentoIdOrderByDataAvaliacaoDesc(Long estabelecimentoId);
 
+    List<Avaliacao> findByProfissionalIdOrderByDataAvaliacaoDesc(Long profissionalId);
+
     void deleteByEstabelecimentoId(Long estabelecimentoId);
+
+    void deleteByProfissionalId(Long profissionalId);
 
     void deleteByAutorId(Long autorId);
 }

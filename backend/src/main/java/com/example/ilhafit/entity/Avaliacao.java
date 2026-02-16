@@ -35,8 +35,12 @@ public class Avaliacao {
     private Usuario autor;
 
     @ManyToOne
-    @JoinColumn(name = "estabelecimento_id", nullable = false)
+    @JoinColumn(name = "estabelecimento_id")
     private Estabelecimento estabelecimento;
+
+    @ManyToOne
+    @JoinColumn(name = "profissional_id")
+    private Profissional profissional;
 
     @Column(name = "data_avaliacao", nullable = false, updatable = false)
     private LocalDateTime dataAvaliacao;

@@ -5,6 +5,8 @@ import com.example.ilhafit.entity.Profissional;
 import com.example.ilhafit.entity.Role;
 import com.example.ilhafit.mapper.ProfissionalMapper;
 import com.example.ilhafit.repository.ProfissionalRepository;
+import com.example.ilhafit.repository.AvaliacaoRepository;
+import com.example.ilhafit.entity.Avaliacao;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -20,6 +22,7 @@ public class ProfissionalService {
 
     private final ProfissionalRepository profissionalRepository;
     private final ProfissionalMapper profissionalMapper;
+    private final AvaliacaoRepository avaliacaoRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Transactional
@@ -32,18 +35,33 @@ public class ProfissionalService {
         }
         Profissional profissional = profissionalMapper.toEntity(dto);
         profissional.setRole(Role.PROFISSIONAL);
-        return profissionalMapper.toDTO(profissionalRepository.save(profissional));
+        return mappedWithRating(profissionalRepository.save(profissional));
     }
 
     public List<ProfissionalDTO.Resposta> listarTodos() {
         return profissionalRepository.findAll().stream()
-                .map(profissionalMapper::toDTO)
+                .map(this::mappedWithRating)
                 .collect(Collectors.toList());
     }
 
     public Optional<ProfissionalDTO.Resposta> buscarPorId(Long id) {
         return profissionalRepository.findById(id)
-                .map(profissionalMapper::toDTO);
+                .map(this::mappedWithRating);
+    }
+
+    private ProfissionalDTO.Resposta mappedWithRating(Profissional p) {
+        ProfissionalDTO.Resposta dto = profissionalMapper.toDTO(p);
+        List<Avaliacao> avaliacoes = avaliacaoRepository.findByProfissionalIdOrderByDataAvaliacaoDesc(p.getId());
+        if (avaliacoes.isEmpty()) {
+            dto.setAvaliacao(0.0);
+        } else {
+            double media = avaliacoes.stream()
+                    .mapToInt(Avaliacao::getNota)
+                    .average()
+                    .orElse(0.0);
+            dto.setAvaliacao(Math.round(media * 10.0) / 10.0); // 1 casa decimal
+        }
+        return dto;
     }
 
     public Optional<ProfissionalDTO.Resposta> buscarPorEmail(String email) {
@@ -89,7 +107,7 @@ public class ProfissionalService {
             profissional.setSenha(passwordEncoder.encode(dto.getSenha()));
         }
 
-        return profissionalMapper.toDTO(profissionalRepository.save(profissional));
+        return mappedWithRating(profissionalRepository.save(profissional));
     }
 
     @Transactional
@@ -97,6 +115,7 @@ public class ProfissionalService {
         if (!profissionalRepository.existsById(id)) {
             throw new IllegalArgumentException("Profissional não encontrado");
         }
+        avaliacaoRepository.deleteByProfissionalId(id);
         profissionalRepository.deleteById(id);
     }
 }
