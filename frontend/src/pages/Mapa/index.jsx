@@ -19,12 +19,18 @@ import {
     useMediaQuery,
     CircularProgress,
 } from "@mui/material";
-import { FaSearch, FaMapMarkerAlt, FaPhone, FaClock, FaChevronRight, FaStar, FaFilter, FaTimes } from "react-icons/fa";
+import { FaSearch, FaMapMarkerAlt, FaPhone, FaClock, FaChevronRight, FaStar, FaFilter, FaTimes, FaChevronDown } from "react-icons/fa";
 import { estabelecimentoService } from "../../services";
 import MapComponent from "../../components/MapComponent";
 import ModalDetalhesEstabelecimento from "../../components/ModalDetalhesEstabelecimento";
+import { Menu, MenuItem } from "@mui/material";
 
-const categories = ["Academy", "CrossFit", "Funcional", "Pilates", "Yoga", "Dança", "Basquete", "Natação"];
+const mainCategories = ["Academia", "CrossFit", "Funcional", "Pilates", "Yoga"];
+const allCategories = [
+    "Academia", "CrossFit", "Funcional", "Pilates", "Yoga", "Dança",
+    "Balé", "Basquete", "Futebol", "Natação", "Vôlei", "Jiu-Jitsu",
+    "Boxe", "Muay Thai", "Kung Fu", "Ciclismo", "Circo", "Fisioterapia", "Outros"
+];
 
 const Mapa = () => {
     const theme = useTheme();
@@ -42,6 +48,7 @@ const Mapa = () => {
     const [showFilters, setShowFilters] = useState(false);
     const [modalOpen, setModalOpen] = useState(false);
     const [estabelecimentoParaModal, setEstabelecimentoParaModal] = useState(null);
+    const [categoryMenuAnchor, setCategoryMenuAnchor] = useState(null);
 
     useEffect(() => {
         const fetchAll = async () => {
@@ -166,19 +173,29 @@ const Mapa = () => {
                             alignItems: 'flex-end'
                         }}>
                             <Box>
-                                <Typography variant="subtitle2" fontWeight={700} mb={1}>Avaliação Mínima</Typography>
-                                <Box sx={{ px: 1 }}>
-                                    <Slider
-                                        value={minRating}
-                                        onChange={(_, v) => setMinRating(v)}
-                                        min={0}
-                                        max={5}
-                                        step={0.5}
-                                        marks
-                                        valueLabelDisplay="auto"
-                                        color="primary"
-                                    />
+                                <Typography variant="subtitle2" fontWeight={700} mb={1.5}>Avaliação Mínima</Typography>
+                                <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'center' }}>
+                                    {[1, 2, 3, 4, 5].map((star) => (
+                                        <IconButton
+                                            key={star}
+                                            onClick={() => setMinRating(star === minRating ? 0 : star)}
+                                            size="small"
+                                            sx={{
+                                                color: star <= minRating ? '#FBBF24' : '#E5E7EB',
+                                                transition: 'all 0.2s',
+                                                '&:hover': {
+                                                    color: '#FBBF24',
+                                                    transform: 'scale(1.1)'
+                                                }
+                                            }}
+                                        >
+                                            <FaStar size={24} />
+                                        </IconButton>
+                                    ))}
                                 </Box>
+                                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', textAlign: 'center', mt: 0.5 }}>
+                                    {minRating > 0 ? `${minRating}+ estrelas` : 'Qualquer avaliação'}
+                                </Typography>
                             </Box>
                             <Box>
                                 <Typography variant="subtitle2" fontWeight={700} mb={1}>Distância Máxima ({maxDistance}km)</Typography>
@@ -249,7 +266,7 @@ const Mapa = () => {
                                 boxShadow: selectedCategories.length === 0 ? `0 4px 12px ${alpha(theme.palette.primary.main, 0.3)}` : 'none'
                             }}
                         />
-                        {categories.map((cat) => (
+                        {mainCategories.map((cat) => (
                             <Chip
                                 key={cat}
                                 label={cat}
@@ -270,6 +287,56 @@ const Mapa = () => {
                                 }}
                             />
                         ))}
+                        <Button
+                            variant="outlined"
+                            size="small"
+                            endIcon={<FaChevronDown />}
+                            onClick={(e) => setCategoryMenuAnchor(e.currentTarget)}
+                            sx={{
+                                borderRadius: 2.5,
+                                textTransform: 'none',
+                                fontWeight: 600,
+                                borderColor: 'divider',
+                                color: 'text.primary',
+                                minWidth: 'auto',
+                                px: 2,
+                                '&:hover': {
+                                    bgcolor: alpha(theme.palette.primary.main, 0.05),
+                                    borderColor: 'primary.main'
+                                }
+                            }}
+                        >
+                            Mais
+                        </Button>
+                        <Menu
+                            anchorEl={categoryMenuAnchor}
+                            open={Boolean(categoryMenuAnchor)}
+                            onClose={() => setCategoryMenuAnchor(null)}
+                            PaperProps={{
+                                sx: {
+                                    borderRadius: 3,
+                                    mt: 1,
+                                    maxHeight: 400
+                                }
+                            }}
+                        >
+                            {allCategories.map((cat) => (
+                                <MenuItem
+                                    key={cat}
+                                    onClick={() => {
+                                        toggleCategory(cat);
+                                        setCategoryMenuAnchor(null);
+                                    }}
+                                    selected={selectedCategories.includes(cat)}
+                                    sx={{
+                                        fontWeight: selectedCategories.includes(cat) ? 700 : 400,
+                                        bgcolor: selectedCategories.includes(cat) ? alpha(theme.palette.primary.main, 0.1) : 'transparent'
+                                    }}
+                                >
+                                    {cat}
+                                </MenuItem>
+                            ))}
+                        </Menu>
                     </Box>
                 </Box>
             </Box>

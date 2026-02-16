@@ -116,27 +116,15 @@ const ModalProfissional = ({ open, onClose, profissional }) => {
                         Informações completas do selecionado
                     </Typography>
                 </Box>
-                <Box sx={{ display: 'flex', gap: 1 }}>
-                    <IconButton
-                        onClick={handleWhatsApp}
-                        sx={{
-                            bgcolor: alpha('#10B981', 0.1),
-                            color: '#10B981',
-                            '&:hover': { bgcolor: alpha('#10B981', 0.2) }
-                        }}
-                    >
-                        <FaWhatsapp size={20} />
-                    </IconButton>
-                    <IconButton
-                        onClick={onClose}
-                        sx={{
-                            bgcolor: alpha(theme.palette.divider, 0.1),
-                            '&:hover': { bgcolor: alpha(theme.palette.divider, 0.2) }
-                        }}
-                    >
-                        <FaChevronLeft size={18} />
-                    </IconButton>
-                </Box>
+                <IconButton
+                    onClick={onClose}
+                    sx={{
+                        bgcolor: alpha(theme.palette.divider, 0.1),
+                        '&:hover': { bgcolor: alpha(theme.palette.divider, 0.2) }
+                    }}
+                >
+                    <FaChevronLeft size={18} />
+                </IconButton>
             </Box>
 
             <DialogContent sx={{ p: 4, overflowY: 'auto' }}>
@@ -214,28 +202,6 @@ const ModalProfissional = ({ open, onClose, profissional }) => {
                         </Paper>
                     </Grid>
                 </Grid>
-
-                {/* Localização Simplificada */}
-                <Box sx={{ mb: 4 }}>
-                    <Typography variant="h6" fontWeight={800} sx={{ mb: 2 }}>Localização</Typography>
-                    <Box
-                        sx={{
-                            width: '100%',
-                            height: 200,
-                            borderRadius: 4,
-                            bgcolor: '#F1F5F9',
-                            overflow: 'hidden',
-                            border: '1px solid',
-                            borderColor: 'divider'
-                        }}
-                    >
-                        <MapComponent
-                            lat={-27.5948}
-                            lng={-48.5482}
-                            markerTitle={profissional.nome}
-                        />
-                    </Box>
-                </Box>
 
                 {/* Horários */}
                 <Box sx={{ mb: 4 }}>
@@ -412,6 +378,31 @@ const ModalProfissional = ({ open, onClose, profissional }) => {
                         </Box>
                     )}
                 </Box>
+
+                {/* WhatsApp Contact Button */}
+                <Button
+                    fullWidth
+                    variant="contained"
+                    size="large"
+                    startIcon={<FaWhatsapp />}
+                    onClick={handleWhatsApp}
+                    sx={{
+                        mt: 4,
+                        bgcolor: '#25D366',
+                        color: 'white',
+                        textTransform: 'none',
+                        fontWeight: 700,
+                        py: 1.5,
+                        borderRadius: 3,
+                        fontSize: '1.1rem',
+                        '&:hover': {
+                            bgcolor: '#20BA5A',
+                            boxShadow: '0 8px 16px rgba(37, 211, 102, 0.3)'
+                        }
+                    }}
+                >
+                    Entrar em contato via WhatsApp
+                </Button>
 
             </DialogContent>
         </Dialog>

@@ -17,9 +17,10 @@ const CardProfissional = ({ profissional, onVisualizar }) => {
 
     return (
         <Card
+            onClick={() => onVisualizar(profissional)}
             sx={{
                 width: "100%",
-                maxWidth: 400,
+                maxWidth: 450,
                 height: "100%",
                 display: "flex",
                 flexDirection: "column",
@@ -30,6 +31,7 @@ const CardProfissional = ({ profissional, onVisualizar }) => {
                 borderColor: isDark ? "divider" : "#e0e0e0",
                 overflow: "hidden",
                 bgcolor: "background.paper",
+                cursor: "pointer",
                 "&:hover": {
                     boxShadow: theme.shadows[6],
                     transform: "translateY(-4px)",
@@ -162,7 +164,10 @@ const CardProfissional = ({ profissional, onVisualizar }) => {
                     variant="contained"
                     fullWidth
                     startIcon={<FaCalendarAlt />}
-                    onClick={() => onVisualizar(profissional)}
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        onVisualizar(profissional);
+                    }}
                     sx={{
                         mt: "auto",
                         bgcolor: "primary.main",

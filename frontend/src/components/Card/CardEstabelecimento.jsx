@@ -36,7 +36,7 @@ const CardEstabelecimento = ({ estabelecimento, onClickDetail }) => {
       <Box sx={{ position: "relative" }}>
         <CardMedia
           component="img"
-          height="200"
+          height="240"
           image={estabelecimento.Imagem || (estabelecimento.fotosUrl && estabelecimento.fotosUrl.length > 0 ? estabelecimento.fotosUrl[0] : "")}
           alt="Estabelecimento"
           sx={{ objectFit: 'cover' }}

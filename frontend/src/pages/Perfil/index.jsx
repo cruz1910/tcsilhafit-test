@@ -910,6 +910,7 @@ const Perfil = () => {
                                                                                 key={dia}
                                                                                 value={dia}
                                                                                 selected={grade?.diasSemana?.includes(dia)}
+                                                                                disabled={!isEditing}
                                                                                 onChange={() => {
                                                                                     const newDias = (grade.diasSemana || []).includes(dia)
                                                                                         ? grade.diasSemana.filter(d => d !== dia)
@@ -939,6 +940,7 @@ const Perfil = () => {
                                                                                 key={periodo}
                                                                                 value={periodo}
                                                                                 selected={grade?.periodos?.includes(periodo)}
+                                                                                disabled={!isEditing}
                                                                                 onChange={() => {
                                                                                     const newPeriodos = (grade.periodos || []).includes(periodo)
                                                                                         ? grade.periodos.filter(p => p !== periodo)
@@ -970,11 +972,11 @@ const Perfil = () => {
                                                                             checked={grade.exclusivoMulheres || false}
                                                                             onChange={(e) => handleGradeUpdate(atividade, 'exclusivoMulheres', e.target.checked)}
                                                                             disabled={!isEditing}
-                                                                            sx={{ color: '#ec4899', '&.Mui-checked': { color: '#ec4899' } }}
+                                                                            sx={{ color: 'primary.main', '&.Mui-checked': { color: 'primary.main' } }}
                                                                         />
                                                                     }
                                                                     label={
-                                                                        <Typography variant="body2" fontWeight={700} sx={{ color: '#ec4899' }}>
+                                                                        <Typography variant="body2" fontWeight={700} sx={{ color: 'primary.main' }}>
                                                                             Oferecer aula para mulheres nesta atividade
                                                                         </Typography>
                                                                     }
