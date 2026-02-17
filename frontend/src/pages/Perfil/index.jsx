@@ -622,7 +622,8 @@ const Perfil = () => {
                             )}
                         </Grid>
 
-                        {(user.role === 'ESTABELECIMENTO' || user.role === 'PROFISSIONAL') && (
+
+                        {user.role === 'ESTABELECIMENTO' && (
                             <>
                                 <Typography variant="h6" fontWeight={800} sx={{ mt: 6, mb: 4, display: 'flex', alignItems: 'center', gap: 1.5 }}>
                                     <Box sx={{ width: 4, height: 24, bgcolor: 'primary.main', borderRadius: 2 }} />

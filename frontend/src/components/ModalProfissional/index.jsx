@@ -141,10 +141,24 @@ const ModalProfissional = ({ open, onClose, profissional }) => {
                     >
                         {nome.charAt(0)}
                     </Avatar>
-                    <Box>
-                        <Typography variant="h5" fontWeight={800} sx={{ mb: 0.5 }}>
-                            {nome}
-                        </Typography>
+                    <Box sx={{ flex: 1 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 0.5 }}>
+                            <Typography variant="h5" fontWeight={800}>
+                                {nome}
+                            </Typography>
+                            <IconButton
+                                onClick={handleWhatsApp}
+                                sx={{
+                                    bgcolor: '#25D366',
+                                    color: 'white',
+                                    '&:hover': { bgcolor: '#20BA5A' },
+                                    width: 40,
+                                    height: 40
+                                }}
+                            >
+                                <FaWhatsapp size={20} />
+                            </IconButton>
+                        </Box>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
                             <FaStar color="#FBBF24" size={16} />
                             <Typography variant="body2" fontWeight={800} color="#92400E">
