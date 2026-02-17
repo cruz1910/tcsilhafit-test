@@ -878,17 +878,24 @@ const Cadastro = () => {
                                         sx={inputStyles}
                                     />
                                 )}
-                                renderTags={(value, getTagProps) =>
-                                    value.map((option, index) => (
-                                        <Chip
-                                            label={option}
-                                            {...getTagProps({ index })}
-                                            sx={{ borderRadius: 1.5, fontWeight: 600 }}
-                                        />
-                                    ))
-                                }
-                                sx={{ mb: 3 }}
+                                renderTags={() => null} // Oculta as tags dentro do input
+                                sx={{ mb: 2 }}
                             />
+
+                            {/* Tags fora do input */}
+                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 3 }}>
+                                {formData.gradeAtividades.map((g, index) => (
+                                    <Chip
+                                        key={index}
+                                        label={g.atividade}
+                                        onDelete={() => {
+                                            const newGrade = formData.gradeAtividades.filter(item => item.atividade !== g.atividade);
+                                            setFormData(prev => ({ ...prev, gradeAtividades: newGrade }));
+                                        }}
+                                        sx={{ borderRadius: 1.5, fontWeight: 700, bgcolor: 'primary.main', color: 'white' }}
+                                    />
+                                ))}
+                            </Box>
 
                             {formData.gradeAtividades.some(g => g.atividade === "Outros") && (
                                 <Box sx={{ mb: 3 }}>

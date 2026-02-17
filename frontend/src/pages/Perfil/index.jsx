@@ -1028,6 +1028,7 @@ const Perfil = () => {
                                 accept="image/*"
                                 multiple={user.role === 'ESTABELECIMENTO'}
                                 onChange={handleFileChange}
+                                disabled={!isEditing}
                             />
                             <label htmlFor="photo-upload-tab">
                                 <Button
