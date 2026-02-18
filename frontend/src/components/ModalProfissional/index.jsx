@@ -153,7 +153,9 @@ const ModalProfissional = ({ open, onClose, profissional }) => {
                                     color: 'white',
                                     '&:hover': { bgcolor: '#20BA5A' },
                                     width: 40,
-                                    height: 40
+                                    height: 40,
+                                    marginLeft: 'auto',
+                                    marginRight: 1
                                 }}
                             >
                                 <FaWhatsapp size={20} />
@@ -392,31 +394,6 @@ const ModalProfissional = ({ open, onClose, profissional }) => {
                         </Box>
                     )}
                 </Box>
-
-                {/* WhatsApp Contact Button */}
-                <Button
-                    fullWidth
-                    variant="contained"
-                    size="large"
-                    startIcon={<FaWhatsapp />}
-                    onClick={handleWhatsApp}
-                    sx={{
-                        mt: 4,
-                        bgcolor: '#25D366',
-                        color: 'white',
-                        textTransform: 'none',
-                        fontWeight: 700,
-                        py: 1.5,
-                        borderRadius: 3,
-                        fontSize: '1.1rem',
-                        '&:hover': {
-                            bgcolor: '#20BA5A',
-                            boxShadow: '0 8px 16px rgba(37, 211, 102, 0.3)'
-                        }
-                    }}
-                >
-                    Entrar em contato via WhatsApp
-                </Button>
 
             </DialogContent>
         </Dialog>

@@ -5,6 +5,7 @@ const MapComponent = ({
     lat = -27.5948,
     lng = -48.5482,
     zoom = 13,
+    markerTitle = "Localização",
     markers = [], // Array de { id, lat, lng, title }
     onMarkerClick = null,
     autoFit = true
@@ -74,7 +75,7 @@ const MapComponent = ({
             // Caso de marcador único via props lat/lng (compatibilidade com modais)
             L.marker([lat, lng])
                 .addTo(markersLayerRef.current)
-                .bindPopup("Localização");
+                .bindPopup(markerTitle);
         }
 
         return () => {
