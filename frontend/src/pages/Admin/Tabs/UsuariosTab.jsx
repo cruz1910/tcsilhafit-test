@@ -22,6 +22,10 @@ import {
     MenuItem,
     FormControl,
     InputLabel,
+    CircularProgress,
+    Tooltip,
+    useTheme,
+    alpha,
 } from "@mui/material";
 import {
     FaTrash,
@@ -31,12 +35,14 @@ import {
     FaBuilding,
     FaUserTie,
     FaUserShield,
+    FaExclamationTriangle,
 } from "react-icons/fa";
 import { toast } from "react-toastify";
 import { adminService } from "../../../services";
 import { useNavigate } from "react-router-dom";
 
 const UsuariosTab = () => {
+    const theme = useTheme();
     const navigate = useNavigate();
     const [users, setUsers] = useState([]);
     const [filteredUsers, setFilteredUsers] = useState([]);
@@ -77,6 +83,7 @@ const UsuariosTab = () => {
             filtered = filtered.filter(
                 (u) =>
                     u.nome?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    u.nomeFantasia?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                     u.email?.toLowerCase().includes(searchTerm.toLowerCase())
             );
         }
@@ -140,31 +147,32 @@ const UsuariosTab = () => {
         <Box>
             {/* Stats */}
             <Box sx={{ display: "flex", gap: 2, mb: 4, flexWrap: "wrap" }}>
-                <Paper sx={{ flex: 1, p: 2, minWidth: 150 }}>
+                <Paper elevation={0} sx={{ flex: 1, p: 2, minWidth: 150, border: '1px solid', borderColor: 'divider', borderRadius: 3 }}>
                     <Typography variant="body2" color="text.secondary">Total de Usuários</Typography>
                     <Typography variant="h4" fontWeight={700}>{stats.total}</Typography>
                 </Paper>
-                <Paper sx={{ flex: 1, p: 2, minWidth: 150 }}>
+                <Paper elevation={0} sx={{ flex: 1, p: 2, minWidth: 150, border: '1px solid', borderColor: 'divider', borderRadius: 3 }}>
                     <Typography variant="body2" color="text.secondary">Alunos</Typography>
                     <Typography variant="h4" fontWeight={700} color="primary.main">{stats.alunos}</Typography>
                 </Paper>
-                <Paper sx={{ flex: 1, p: 2, minWidth: 150 }}>
+                <Paper elevation={0} sx={{ flex: 1, p: 2, minWidth: 150, border: '1px solid', borderColor: 'divider', borderRadius: 3 }}>
                     <Typography variant="body2" color="text.secondary">Profissionais</Typography>
                     <Typography variant="h4" fontWeight={700} color="secondary.main">{stats.profissionais}</Typography>
                 </Paper>
-                <Paper sx={{ flex: 1, p: 2, minWidth: 150 }}>
+                <Paper elevation={0} sx={{ flex: 1, p: 2, minWidth: 150, border: '1px solid', borderColor: 'divider', borderRadius: 3 }}>
                     <Typography variant="body2" color="text.secondary">Estabelecimentos</Typography>
                     <Typography variant="h4" fontWeight={700} color="warning.main">{stats.estabelecimentos}</Typography>
                 </Paper>
             </Box>
 
             {/* Filtros e Busca */}
-            <Paper sx={{ p: 3, mb: 3 }}>
+            <Paper elevation={0} sx={{ p: 3, mb: 3, border: '1px solid', borderColor: 'divider', borderRadius: 3 }}>
                 <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap", alignItems: "center" }}>
                     <TextField
                         placeholder="Buscar por nome ou email..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
+                        size="small"
                         sx={{ flex: 1, minWidth: 250 }}
                         InputProps={{
                             startAdornment: (
@@ -196,11 +204,10 @@ const UsuariosTab = () => {
             </Paper>
 
             {/* Tabela */}
-            <TableContainer component={Paper}>
+            <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 3 }}>
                 <Table>
                     <TableHead>
                         <TableRow>
-                            <TableCell><strong>ID</strong></TableCell>
                             <TableCell><strong>Tipo</strong></TableCell>
                             <TableCell><strong>Nome</strong></TableCell>
                             <TableCell><strong>Email</strong></TableCell>
@@ -210,16 +217,17 @@ const UsuariosTab = () => {
                     <TableBody>
                         {loading ? (
                             <TableRow>
-                                <TableCell colSpan={5} align="center">Carregando...</TableCell>
+                                <TableCell colSpan={4} align="center" sx={{ py: 5 }}>
+                                    <CircularProgress size={32} />
+                                </TableCell>
                             </TableRow>
                         ) : filteredUsers.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={5} align="center">Nenhum usuário encontrado</TableCell>
+                                <TableCell colSpan={4} align="center">Nenhum usuário encontrado</TableCell>
                             </TableRow>
                         ) : (
                             filteredUsers.map((user) => (
                                 <TableRow key={`${user.tipo}-${user.id}`} hover>
-                                    <TableCell>{user.id}</TableCell>
                                     <TableCell>
                                         <Chip
                                             icon={getTipoIcon(user.tipo)}
@@ -228,12 +236,19 @@ const UsuariosTab = () => {
                                             size="small"
                                         />
                                     </TableCell>
-                                    <TableCell>{user.nome || "N/A"}</TableCell>
+                                    <TableCell>{user.nome || user.nomeFantasia || "N/A"}</TableCell>
                                     <TableCell>{user.email || "N/A"}</TableCell>
                                     <TableCell align="right">
-                                        <IconButton size="small" color="error" onClick={() => setDeleteDialog({ open: true, user })}>
-                                            <FaTrash size={14} />
-                                        </IconButton>
+                                        <Tooltip title="Excluir">
+                                            <IconButton
+                                                size="small"
+                                                color="error"
+                                                onClick={() => setDeleteDialog({ open: true, user })}
+                                                sx={{ bgcolor: alpha(theme.palette.error.main, 0.08), '&:hover': { bgcolor: alpha(theme.palette.error.main, 0.2), color: 'white' } }}
+                                            >
+                                                <FaTrash size={14} />
+                                            </IconButton>
+                                        </Tooltip>
                                     </TableCell>
                                 </TableRow>
                             ))
@@ -244,7 +259,10 @@ const UsuariosTab = () => {
 
             {/* Dialog de Confirmação */}
             <Dialog open={deleteDialog.open} onClose={() => setDeleteDialog({ open: false, user: null })}>
-                <DialogTitle>Confirmar Exclusão</DialogTitle>
+                <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <FaExclamationTriangle color={theme.palette.error.main} />
+                    Confirmar Exclusão
+                </DialogTitle>
                 <DialogContent>
                     <Typography>
                         Tem certeza que deseja excluir o usuário <strong>{deleteDialog.user?.nome}</strong>?

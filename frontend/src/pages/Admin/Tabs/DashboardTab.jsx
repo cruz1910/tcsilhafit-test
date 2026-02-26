@@ -7,6 +7,7 @@ import {
     LinearProgress,
     CircularProgress,
     useTheme,
+    alpha,
 } from "@mui/material";
 import {
     FaUser,
@@ -20,6 +21,7 @@ import { toast } from "react-toastify";
 
 const DashboardTab = () => {
     const theme = useTheme();
+    const isDark = theme.palette.mode === 'dark';
     const [stats, setStats] = useState({
         total: 0,
         alunos: 0,
@@ -62,7 +64,7 @@ const DashboardTab = () => {
 
     const StatCard = ({ title, value, icon, color, percentage }) => (
         <Paper
-            elevation={2}
+            elevation={0}
             sx={{
                 p: 3,
                 height: "100%",
@@ -71,6 +73,9 @@ const DashboardTab = () => {
                 justifyContent: "space-between",
                 position: "relative",
                 overflow: "hidden",
+                border: '1px solid',
+                borderColor: 'divider',
+                borderRadius: 3,
             }}
         >
             <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", mb: 2 }}>
@@ -86,7 +91,7 @@ const DashboardTab = () => {
                     sx={{
                         p: 1.5,
                         borderRadius: 2,
-                        bgcolor: `${color}.light`,
+                        bgcolor: alpha(theme.palette[color]?.main || theme.palette.primary.main, 0.1),
                         color: `${color}.main`,
                         display: "flex",
                         alignItems: "center",
@@ -110,7 +115,7 @@ const DashboardTab = () => {
                     variant="determinate"
                     value={percentage}
                     color={color}
-                    sx={{ height: 6, borderRadius: 3, bgcolor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)' }}
+                    sx={{ height: 6, borderRadius: 3, bgcolor: isDark ? alpha(theme.palette.text.primary, 0.1) : alpha(theme.palette.text.primary, 0.05) }}
                 />
             </Box>
         </Paper>
@@ -138,18 +143,37 @@ const DashboardTab = () => {
             {/* Cards de Resumo */}
             <Grid container spacing={3} sx={{ mb: 4 }}>
                 <Grid item xs={12} sm={6} md={3}>
-                    <Paper elevation={0} sx={{ p: 3, bgcolor: "primary.main", color: "white", height: "100%" }}>
-                        <Typography variant="subtitle2" sx={{ opacity: 0.8, mb: 1 }}>
+                    <Paper
+                        elevation={0}
+                        sx={{
+                            p: 3,
+                            height: "100%",
+                            border: '1px solid',
+                            borderColor: 'divider',
+                            borderRadius: 3,
+                            position: 'relative',
+                            overflow: 'hidden',
+                        }}
+                    >
+                        <Box sx={{
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            height: 4,
+                            bgcolor: 'primary.main',
+                        }} />
+                        <Typography variant="body2" color="text.secondary" fontWeight={600} sx={{ mb: 1 }}>
                             Total de Usuários
                         </Typography>
-                        <Typography variant="h3" fontWeight={800}>
+                        <Typography variant="h3" fontWeight={800} color="text.primary">
                             {stats.total}
                         </Typography>
-                        <Typography variant="body2" sx={{ opacity: 0.8, mt: 2 }}>
+                        <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
                             Cadastrados na plataforma
                         </Typography>
                         <Box sx={{ mt: 2, display: "flex", justifyContent: "flex-end" }}>
-                            <FaUsers size={40} style={{ opacity: 0.3 }} />
+                            <FaUsers size={40} style={{ opacity: 0.15 }} color={theme.palette.primary.main} />
                         </Box>
                     </Paper>
                 </Grid>
@@ -186,7 +210,7 @@ const DashboardTab = () => {
             </Grid>
 
             {/* Seção de Análise Visual (Barras maiores) */}
-            <Paper sx={{ p: 4 }}>
+            <Paper elevation={0} sx={{ p: 4, border: '1px solid', borderColor: 'divider', borderRadius: 3 }}>
                 <Typography variant="h6" fontWeight={700} gutterBottom sx={{ mb: 3 }}>
                     Distribuição de Cadastros
                 </Typography>

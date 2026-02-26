@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import {
     Box,
     Typography,
@@ -18,12 +18,44 @@ import {
     useTheme,
     useMediaQuery,
     CircularProgress,
+    Menu,
+    MenuItem,
 } from "@mui/material";
+import { alpha } from "@mui/material/styles";
 import { FaSearch, FaMapMarkerAlt, FaPhone, FaClock, FaChevronRight, FaStar, FaFilter, FaTimes, FaChevronDown } from "react-icons/fa";
 import { estabelecimentoService } from "../../services";
 import MapComponent from "../../components/MapComponent";
 import ModalDetalhesEstabelecimento from "../../components/ModalDetalhesEstabelecimento";
-import { Menu, MenuItem } from "@mui/material";
+
+// Haversine: calcula distância em km entre duas coordenadas
+const haversineDistance = (lat1, lon1, lat2, lon2) => {
+    const R = 6371;
+    const dLat = ((lat2 - lat1) * Math.PI) / 180;
+    const dLon = ((lon2 - lon1) * Math.PI) / 180;
+    const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) *
+        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+};
+
+// Normaliza nome de atividade para comparação case-insensitive
+const normalizeAtividade = (name) => {
+    if (!name) return '';
+    const lower = name.toLowerCase().trim();
+    const map = {
+        'academia': 'Academia', 'crossfit': 'CrossFit', 'funcional': 'Funcional',
+        'pilates': 'Pilates', 'yoga': 'Yoga', 'dança': 'Dança', 'balé': 'Balé',
+        'basquete': 'Basquete', 'futebol': 'Futebol', 'natação': 'Natação',
+        'vôlei': 'Vôlei', 'jiu-jitsu': 'Jiu-Jitsu', 'boxe': 'Boxe',
+        'muay thai': 'Muay Thai', 'kung fu': 'Kung Fu', 'ciclismo': 'Ciclismo',
+        'circo': 'Circo', 'fisioterapia': 'Fisioterapia', 'outros': 'Outros',
+    };
+    return map[lower] || name;
+};
+
+// Configurações para Grande Florianópolis
+const FLORIPA_COORDS = { lat: -27.5948, lng: -48.5482 };
 
 const mainCategories = ["Academia", "CrossFit", "Funcional", "Pilates", "Yoga"];
 const allCategories = [
@@ -43,7 +75,7 @@ const Mapa = () => {
     const [search, setSearch] = useState("");
     const [selectedCategories, setSelectedCategories] = useState([]);
     const [minRating, setMinRating] = useState(0);
-    const [maxDistance, setMaxDistance] = useState(10);
+    const [maxDistance, setMaxDistance] = useState(50);
     const [onlyOpen, setOnlyOpen] = useState(false);
     const [showFilters, setShowFilters] = useState(false);
     const [modalOpen, setModalOpen] = useState(false);
@@ -56,25 +88,33 @@ const Mapa = () => {
                 const data = await estabelecimentoService.getAll();
 
                 const mapped = data.map(est => {
-                    // Coordenadas reais ou fallback para Florianópolis centro
-                    const lat = est.endereco?.latitude || (-27.59 + (Math.random() - 0.5) * 0.1);
-                    const lng = est.endereco?.longitude || (-48.54 + (Math.random() - 0.5) * 0.1);
+                    const lat = est.endereco?.latitude || null;
+                    const lng = est.endereco?.longitude || null;
+
+                    // Extrair atividades da gradeAtividades e normalizar
+                    const atividades = (est.gradeAtividades || []).map(g => normalizeAtividade(g.atividade));
+
+                    // Calcular distância real do centro de Florianópolis
+                    const distancia = (lat && lng)
+                        ? haversineDistance(FLORIPA_COORDS.lat, FLORIPA_COORDS.lng, lat, lng)
+                        : null;
 
                     return {
                         id: est.id,
                         nome: est.nomeFantasia || est.nome,
-                        categoria: est.atividadesOferecidas?.[0] || "Academia",
+                        categoria: atividades[0] || "Academia",
                         lat,
                         lng,
                         avaliacao: est.avaliacao || 0,
-                        distancia: (Math.random() * 5).toFixed(1), // Simulated distance
+                        distancia: distancia !== null ? distancia.toFixed(1) : '0.0',
                         imagem: est.fotosUrl?.[0] || "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=500&auto=format&fit=crop&q=60",
                         telefone: est.telefone,
                         horario: "06:00 - 22:00",
                         aberto: true,
-                        atividades: est.atividadesOferecidas || []
+                        atividades,
+                        bairro: est.endereco?.bairro || '',
                     };
-                });
+                }).filter(e => e.lat !== null && e.lng !== null);
                 setDbEstablishments(mapped);
             } catch (err) {
                 console.error("Erro ao buscar dados do mapa:", err);
@@ -95,13 +135,16 @@ const Mapa = () => {
         setSearch("");
         setSelectedCategories([]);
         setMinRating(0);
-        setMaxDistance(10);
+        setMaxDistance(50);
         setOnlyOpen(false);
     };
 
     const filteredEstablishments = useMemo(() => {
         return dbEstablishments.filter((e) => {
-            const matchesSearch = e.nome.toLowerCase().includes(search.toLowerCase());
+            const searchLower = search.toLowerCase();
+            const matchesSearch = e.nome.toLowerCase().includes(searchLower)
+                || e.bairro.toLowerCase().includes(searchLower)
+                || e.atividades.some(a => a.toLowerCase().includes(searchLower));
             const matchesCategory = selectedCategories.length === 0 || e.atividades.some(a => selectedCategories.includes(a));
             const matchesRating = e.avaliacao >= minRating;
             const matchesDistance = parseFloat(e.distancia) <= maxDistance;
@@ -110,9 +153,10 @@ const Mapa = () => {
         });
     }, [search, selectedCategories, minRating, maxDistance, onlyOpen, dbEstablishments]);
 
-    // Configurações para Grande Florianópolis
-    const FLORIPA_COORDS = { lat: -27.5948, lng: -48.5482 };
-    const DEFAULT_ZOOM = 11;
+    // Verifica se algum filtro está ativo
+    const hasActiveFilters = search.length > 0 || selectedCategories.length > 0 || minRating > 0 || maxDistance < 50;
+
+    const DEFAULT_ZOOM = 12;
 
     const selectedEstablishment = dbEstablishments.find((e) => e.id === selectedId);
 
@@ -204,7 +248,7 @@ const Mapa = () => {
                                         value={maxDistance}
                                         onChange={(_, v) => setMaxDistance(v)}
                                         min={1}
-                                        max={10}
+                                        max={50}
                                         step={1}
                                         valueLabelDisplay="auto"
                                         color="primary"
@@ -370,7 +414,7 @@ const Mapa = () => {
                             lat={FLORIPA_COORDS.lat}
                             lng={FLORIPA_COORDS.lng}
                             zoom={DEFAULT_ZOOM}
-                            autoFit={false}
+                            autoFit={true}
                             markers={filteredEstablishments.map(e => ({
                                 id: e.id,
                                 lat: e.lat,
@@ -378,6 +422,7 @@ const Mapa = () => {
                                 title: e.nome
                             }))}
                             onMarkerClick={(id) => setSelectedId(id)}
+                            selectedId={selectedId}
                         />
                     </Box>
 
@@ -400,7 +445,7 @@ const Mapa = () => {
                             bgcolor: alpha(theme.palette.background.paper, 0.8),
                             backdropFilter: 'blur(10px)',
                             border: '1px solid',
-                            borderColor: alpha(theme.palette.common.white, 0.3),
+                            borderColor: 'divider',
                             opacity: selectedId ? 1 : 0.8
                         }}>
                             {selectedEstablishment ? (
@@ -514,7 +559,7 @@ const Mapa = () => {
                                                 {est.nome}
                                             </Typography>
                                             <Typography variant="caption" color="text.secondary">
-                                                {est.categoria} • {est.distancia}km
+                                                {est.categoria} • {est.bairro} • {est.distancia}km
                                             </Typography>
                                         </Box>
                                         <FaChevronRight size={12} color={theme.palette.text.secondary} />
@@ -542,7 +587,5 @@ const Mapa = () => {
         </Box>
     );
 };
-
-import { alpha } from "@mui/material/styles";
 
 export default Mapa;

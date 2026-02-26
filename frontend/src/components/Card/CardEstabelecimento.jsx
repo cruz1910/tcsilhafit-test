@@ -6,12 +6,15 @@ import {
   CardMedia,
   Chip,
   Divider,
+  useTheme,
 } from "@mui/material";
-
+import { alpha } from "@mui/material/styles";
 import { CiTimer } from "react-icons/ci";
 import { FaArrowRight, FaStar } from "react-icons/fa";
 
 const CardEstabelecimento = ({ estabelecimento, onClickDetail }) => {
+  const theme = useTheme();
+  const isDark = theme.palette.mode === 'dark';
   return (
     <Card
       onClick={() => onClickDetail && onClickDetail(estabelecimento)}
@@ -23,7 +26,9 @@ const CardEstabelecimento = ({ estabelecimento, onClickDetail }) => {
         borderRadius: 4,
         boxShadow: 3,
         transition: "all 0.3s ease",
-        border: "1px solid transparent",
+        border: "1px solid",
+        borderColor: isDark ? 'divider' : 'transparent',
+        bgcolor: 'background.paper',
         cursor: "pointer",
 
         "&:hover": {
@@ -46,7 +51,7 @@ const CardEstabelecimento = ({ estabelecimento, onClickDetail }) => {
             position: "absolute",
             top: 15,
             right: 15,
-            bgcolor: "#fff",
+            bgcolor: 'background.paper',
             display: "flex",
             alignItems: "center",
             gap: "4px",
@@ -59,7 +64,7 @@ const CardEstabelecimento = ({ estabelecimento, onClickDetail }) => {
           <FaStar size={14} color="#FBBF24" />
           <Typography
             variant="caption"
-            sx={{ color: "#000", fontWeight: 600 }}
+            sx={{ color: 'text.primary', fontWeight: 600 }}
           >
             {estabelecimento.avaliacao}
           </Typography>
@@ -80,8 +85,8 @@ const CardEstabelecimento = ({ estabelecimento, onClickDetail }) => {
               label={cat}
               size="small"
               sx={{
-                bgcolor: "rgba(16, 185, 129, 0.12)",
-                color: "primary.main",
+                bgcolor: alpha(theme.palette.primary.main, isDark ? 0.2 : 0.12),
+                color: 'primary.main',
                 fontWeight: 500,
               }}
             />
@@ -109,7 +114,7 @@ const CardEstabelecimento = ({ estabelecimento, onClickDetail }) => {
           }}
         >
           <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-            <CiTimer size={18} color="rgba(0,0,0,0.54)" />
+            <CiTimer size={18} color={theme.palette.text.secondary} />
             <Typography
               variant="caption"
               sx={{ color: "text.secondary", fontWeight: 500 }}

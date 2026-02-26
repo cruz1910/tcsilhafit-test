@@ -12,6 +12,10 @@ public interface AvaliacaoRepository extends JpaRepository<Avaliacao, Long> {
 
     List<Avaliacao> findByProfissionalIdOrderByDataAvaliacaoDesc(Long profissionalId);
 
+    boolean existsByAutorIdAndEstabelecimentoId(Long autorId, Long estabelecimentoId);
+
+    boolean existsByAutorIdAndProfissionalId(Long autorId, Long profissionalId);
+
     void deleteByEstabelecimentoId(Long estabelecimentoId);
 
     void deleteByProfissionalId(Long profissionalId);

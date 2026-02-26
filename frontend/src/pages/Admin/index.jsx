@@ -2,10 +2,10 @@ import React, { useState, useEffect } from "react";
 import {
     Box,
     Typography,
-    Tabs,
-    Tab,
+    Container,
     useTheme,
-    Paper,
+    alpha,
+    Button,
 } from "@mui/material";
 import {
     FaUsers,
@@ -55,73 +55,70 @@ const Admin = () => {
         }
     }, [navigate]);
 
-    const handleTabChange = (event, newValue) => {
-        setTabValue(newValue);
-    };
+    const theme = useTheme();
+
+    const tabs = [
+        { label: "Visão Geral", icon: <FaChartLine size={14} /> },
+        { label: "Usuários", icon: <FaUsers size={14} /> },
+        { label: "Estabelecimentos", icon: <FaStore size={14} /> },
+        { label: "Avaliações", icon: <FaStar size={14} /> },
+    ];
 
     return (
-        <Box sx={{ minHeight: "100vh", bgcolor: "background.default", py: 4, px: 2 }}>
-            <Box sx={{ maxWidth: 1400, mx: "auto" }}>
-                {/* Header */}
-                <Box sx={{ mb: 4 }}>
-                    <Typography variant="h4" fontWeight={800} color="text.primary" gutterBottom>
-                        Painel de Administração
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                        Gerencie usuários, estabelecimentos e avaliações do sistema.
-                    </Typography>
-                </Box>
-
-                {/* Tabs */}
-                <Box sx={{ borderBottom: 1, borderColor: "divider", mb: 2 }}>
-                    <Tabs
-                        value={tabValue}
-                        onChange={handleTabChange}
-                        aria-label="admin tabs"
-                        variant="scrollable"
-                        scrollButtons="auto"
-                    >
-                        <Tab
-                            icon={<FaStore />}
-                            iconPosition="start"
-                            label="Visão Geral"
-                            id="admin-tab-0"
-                        />
-                        <Tab
-                            icon={<FaUsers />}
-                            iconPosition="start"
-                            label="Usuários"
-                            id="admin-tab-1"
-                        />
-                        <Tab
-                            icon={<FaStore />}
-                            iconPosition="start"
-                            label="Estabelecimentos"
-                            id="admin-tab-2"
-                        />
-                        <Tab
-                            icon={<FaStar />}
-                            iconPosition="start"
-                            label="Avaliações"
-                            id="admin-tab-3"
-                        />
-                    </Tabs>
-                </Box>
-
-                <TabPanel value={tabValue} index={0}>
-                    <DashboardTab />
-                </TabPanel>
-                <TabPanel value={tabValue} index={1}>
-                    <UsuariosTab />
-                </TabPanel>
-                <TabPanel value={tabValue} index={2}>
-                    <EstabelecimentosTab />
-                </TabPanel>
-                <TabPanel value={tabValue} index={3}>
-                    <AvaliacoesTab />
-                </TabPanel>
+        <Container maxWidth="xl" sx={{ py: 6, px: { xs: 2, md: 3 } }}>
+            {/* Header */}
+            <Box sx={{ mb: 5 }}>
+                <Typography variant="h4" fontWeight={900} sx={{
+                    color: 'text.primary',
+                    mb: 1,
+                    letterSpacing: '-0.02em',
+                }}>
+                    Painel de Administração
+                </Typography>
+                <Typography variant="body1" color="text.secondary" fontWeight={500}>
+                    Gerencie usuários, estabelecimentos e avaliações do sistema.
+                </Typography>
             </Box>
-        </Box>
+
+            {/* Tabs estilizadas como no Perfil */}
+            <Box sx={{ mb: 4, display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+                {tabs.map((tab, index) => (
+                    <Button
+                        key={index}
+                        onClick={() => setTabValue(index)}
+                        startIcon={tab.icon}
+                        sx={{
+                            borderRadius: 10,
+                            textTransform: 'none',
+                            px: 3,
+                            fontWeight: 700,
+                            bgcolor: tabValue === index ? 'primary.main' : 'transparent',
+                            color: tabValue === index ? 'white' : 'text.primary',
+                            border: '1px solid',
+                            borderColor: tabValue === index ? 'primary.main' : 'divider',
+                            '&:hover': {
+                                bgcolor: tabValue === index ? 'primary.main' : alpha(theme.palette.divider, 0.1),
+                            }
+                        }}
+                    >
+                        {tab.label}
+                    </Button>
+                ))}
+            </Box>
+
+            <TabPanel value={tabValue} index={0}>
+                <DashboardTab />
+            </TabPanel>
+            <TabPanel value={tabValue} index={1}>
+                <UsuariosTab />
+            </TabPanel>
+            <TabPanel value={tabValue} index={2}>
+                <EstabelecimentosTab />
+            </TabPanel>
+            <TabPanel value={tabValue} index={3}>
+                <AvaliacoesTab />
+            </TabPanel>
+        </Container>
     );
 };
 

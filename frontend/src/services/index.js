@@ -337,9 +337,21 @@ export const avaliacaoService = {
         return response.data;
     },
 
+    // Listar avaliações de um profissional
+    getByProfissional: async (id) => {
+        const response = await api.get(`/avaliacoes/profissional/${id}`);
+        return response.data;
+    },
+
     // Enviar nova avaliação
     avaliar: async (data) => {
         const response = await api.post('/avaliacoes', data);
+        return response.data;
+    },
+
+    // Excluir avaliação (autor ou admin)
+    delete: async (id) => {
+        const response = await api.delete(`/avaliacoes/${id}`);
         return response.data;
     },
 };

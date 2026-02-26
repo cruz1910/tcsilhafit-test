@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useCallback } from 'react';
 import { Box } from '@mui/material';
 
 const MapComponent = ({
@@ -8,83 +8,31 @@ const MapComponent = ({
     markerTitle = "Localização",
     markers = [], // Array de { id, lat, lng, title }
     onMarkerClick = null,
-    autoFit = true
+    autoFit = true,
+    selectedId = null
 }) => {
     const mapRef = useRef(null);
     const mapInstance = useRef(null);
     const markersLayerRef = useRef(null);
+    const markerObjectsRef = useRef({});
+    const prevMarkersKeyRef = useRef('');
 
+    // Inicializa o mapa uma vez
     useEffect(() => {
-        if (!window.L) {
-            console.error("Leaflet não carregado. Verifique o index.html");
-            return;
-        }
-
+        if (!window.L || mapInstance.current) return;
         const L = window.L;
 
-        // Inicializa o mapa se ainda não existir
-        if (!mapInstance.current) {
-            mapInstance.current = L.map(mapRef.current).setView([lat, lng], zoom);
+        mapInstance.current = L.map(mapRef.current, {
+            zoomControl: true,
+            scrollWheelZoom: true,
+        }).setView([lat, lng], zoom);
 
-            L.tileLayer(`https://api.maptiler.com/maps/streets-v2/{z}/{x}/{y}.png?key=MFouw8iASb0sVoPbhqsk`, {
-                attribution: '<a href="https://www.maptiler.com/copyright/" target="_blank">&copy; MapTiler</a> <a href="https://www.openstreetmap.org/copyright" target="_blank">&copy; OpenStreetMap contributors</a>',
-            }).addTo(mapInstance.current);
+        L.tileLayer(`https://api.maptiler.com/maps/streets-v2/{z}/{x}/{y}.png?key=MFouw8iASb0sVoPbhqsk`, {
+            attribution: '<a href="https://www.maptiler.com/copyright/" target="_blank">&copy; MapTiler</a> <a href="https://www.openstreetmap.org/copyright" target="_blank">&copy; OpenStreetMap contributors</a>',
+        }).addTo(mapInstance.current);
 
-            markersLayerRef.current = L.layerGroup().addTo(mapInstance.current);
-        }
+        markersLayerRef.current = L.layerGroup().addTo(mapInstance.current);
 
-        // Atualiza a visualização principal
-        if (markers.length === 0) {
-            mapInstance.current.setView([lat, lng], zoom);
-        }
-
-        // Limpa marcadores antigos
-        if (markersLayerRef.current) {
-            markersLayerRef.current.clearLayers();
-        }
-
-        // Adiciona novos marcadores
-        if (markers && markers.length > 0) {
-            markers.forEach(marker => {
-                if (marker.lat && marker.lng) {
-                    const m = L.marker([marker.lat, marker.lng])
-                        .addTo(markersLayerRef.current)
-                        .bindPopup(marker.title || "");
-
-                    if (onMarkerClick) {
-                        m.on('click', () => onMarkerClick(marker.id));
-                    }
-                }
-            });
-
-            // Se tiver múltiplos marcadores e autoFit estiver ativo, ajusta o zoom para caber todos
-            if (autoFit) {
-                if (markers.length > 1) {
-                    const group = new L.featureGroup(
-                        markers.filter(m => m.lat && m.lng).map(m => L.marker([m.lat, m.lng]))
-                    );
-                    mapInstance.current.fitBounds(group.getBounds().pad(0.1));
-                } else if (markers.length === 1) {
-                    mapInstance.current.setView([markers[0].lat, markers[0].lng], zoom);
-                }
-            } else {
-                // Se autoFit for falso, mantém a visualização nas coordenadas passadas
-                mapInstance.current.setView([lat, lng], zoom);
-            }
-        } else {
-            // Caso de marcador único via props lat/lng (compatibilidade com modais)
-            L.marker([lat, lng])
-                .addTo(markersLayerRef.current)
-                .bindPopup(markerTitle);
-        }
-
-        return () => {
-            // Cleanup: removemos apenas se o componente for desmontado completamente
-        };
-    }, [lat, lng, zoom, markers, onMarkerClick]);
-
-    // Cleanup final ao desmontar
-    useEffect(() => {
         return () => {
             if (mapInstance.current) {
                 mapInstance.current.remove();
@@ -92,6 +40,90 @@ const MapComponent = ({
             }
         };
     }, []);
+
+    // Atualiza marcadores quando a lista de markers muda
+    useEffect(() => {
+        if (!mapInstance.current || !window.L) return;
+        const L = window.L;
+
+        // Chave para detectar mudança real nos markers
+        const markersKey = markers.map(m => `${m.id}`).sort().join(',');
+        const markersChanged = markersKey !== prevMarkersKeyRef.current;
+        prevMarkersKeyRef.current = markersKey;
+
+        // Limpa marcadores antigos
+        if (markersLayerRef.current) {
+            markersLayerRef.current.clearLayers();
+        }
+        markerObjectsRef.current = {};
+
+        if (markers && markers.length > 0) {
+            const validMarkers = markers.filter(m => m.lat && m.lng);
+
+            validMarkers.forEach(marker => {
+                const isSelected = marker.id === selectedId;
+                const icon = L.divIcon({
+                    className: 'custom-marker',
+                    html: `<div style="
+                        width: ${isSelected ? '18px' : '14px'};
+                        height: ${isSelected ? '18px' : '14px'};
+                        background: ${isSelected ? '#EF4444' : '#3B82F6'};
+                        border: 3px solid white;
+                        border-radius: 50%;
+                        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+                        transition: all 0.2s;
+                    "></div>`,
+                    iconSize: [isSelected ? 24 : 20, isSelected ? 24 : 20],
+                    iconAnchor: [isSelected ? 12 : 10, isSelected ? 12 : 10],
+                });
+
+                const m = L.marker([marker.lat, marker.lng], { icon })
+                    .addTo(markersLayerRef.current)
+                    .bindPopup(`<b>${marker.title || ''}</b>`);
+
+                if (onMarkerClick) {
+                    m.on('click', () => onMarkerClick(marker.id));
+                }
+
+                markerObjectsRef.current[marker.id] = m;
+            });
+
+            // Ajusta zoom apenas quando a lista de markers muda (filtros), não quando selectedId muda
+            if (autoFit && markersChanged) {
+                if (validMarkers.length > 1) {
+                    const group = L.featureGroup(
+                        validMarkers.map(m => L.marker([m.lat, m.lng]))
+                    );
+                    mapInstance.current.fitBounds(group.getBounds().pad(0.15), {
+                        maxZoom: 15,
+                        animate: true,
+                        duration: 0.5,
+                    });
+                } else if (validMarkers.length === 1) {
+                    mapInstance.current.setView([validMarkers[0].lat, validMarkers[0].lng], 14, { animate: true });
+                }
+            }
+        } else {
+            // Sem markers: mostra posição padrão
+            if (markersChanged) {
+                mapInstance.current.setView([lat, lng], zoom, { animate: true });
+            }
+            L.marker([lat, lng])
+                .addTo(markersLayerRef.current)
+                .bindPopup(markerTitle);
+        }
+    }, [markers, selectedId, onMarkerClick, autoFit, lat, lng, zoom, markerTitle]);
+
+    // Pan suave ao selecionar um marker pela sidebar
+    useEffect(() => {
+        if (!mapInstance.current || !selectedId) return;
+        const markerObj = markerObjectsRef.current[selectedId];
+        if (markerObj) {
+            const latlng = markerObj.getLatLng();
+            mapInstance.current.panTo(latlng, { animate: true, duration: 0.4 });
+            markerObj.openPopup();
+        }
+    }, [selectedId]);
 
     return (
         <Box

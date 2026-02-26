@@ -3,11 +3,12 @@ import {
     Box,
     Paper,
     Typography,
-    Grid,
-    Card,
-    CardContent,
-    CardMedia,
-    CardActions,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow,
     IconButton,
     Chip,
     Button,
@@ -19,23 +20,27 @@ import {
     DialogActions,
     CircularProgress,
     Tooltip,
+    useTheme,
+    alpha,
 } from "@mui/material";
 import {
     FaTrash,
     FaSearch,
-    FaPhone,
-    FaEnvelope,
-    FaMapMarkerAlt,
+    FaExclamationTriangle,
 } from "react-icons/fa";
 import { toast } from "react-toastify";
 import { estabelecimentoService } from "../../../services";
+import ModalDetalhesEstabelecimento from "../../../components/ModalDetalhesEstabelecimento";
 
 const EstabelecimentosTab = () => {
+    const theme = useTheme();
     const [estabelecimentos, setEstabelecimentos] = useState([]);
     const [filteredEstabelecimentos, setFilteredEstabelecimentos] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
     const [deleteDialog, setDeleteDialog] = useState({ open: false, estabelecimento: null });
+    const [selectedEstab, setSelectedEstab] = useState(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
     useEffect(() => {
         loadEstabelecimentos();
@@ -73,6 +78,21 @@ const EstabelecimentosTab = () => {
         setFilteredEstabelecimentos(filtered);
     };
 
+    const handleOpenModal = (estab) => {
+        const mapped = {
+            ...estab,
+            nome: estab.nomeFantasia || estab.nome,
+            Imagem: (estab.fotosUrl && estab.fotosUrl.length > 0) ? estab.fotosUrl[0] : "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=1470&auto=format&fit=crop",
+            Imagens: estab.fotosUrl || [],
+            categorias: estab.atividadesOferecidas || [],
+            avaliacao: estab.avaliacao || 0.0,
+            aberto: true,
+            descricao: estab.descricao || "Um ótimo local para treinar e cuidar da sua saúde.",
+        };
+        setSelectedEstab(mapped);
+        setIsModalOpen(true);
+    };
+
     const handleDelete = async () => {
         if (!deleteDialog.estabelecimento) return;
 
@@ -89,16 +109,27 @@ const EstabelecimentosTab = () => {
 
     return (
         <Box>
-            {/* Stats e Busca */}
-            <Box sx={{ mb: 4, display: "flex", gap: 2, alignItems: "center", flexWrap: "wrap" }}>
-                <Paper sx={{ p: 2, display: "flex", alignItems: "center", gap: 2, flex: 1 }}>
+            {/* Stats */}
+            <Box sx={{ display: "flex", gap: 2, mb: 4, flexWrap: "wrap" }}>
+                <Paper elevation={0} sx={{ flex: 1, p: 2, minWidth: 150, border: '1px solid', borderColor: 'divider', borderRadius: 3 }}>
+                    <Typography variant="body2" color="text.secondary">Total</Typography>
+                    <Typography variant="h4" fontWeight={700} color="warning.main">{estabelecimentos.length}</Typography>
+                </Paper>
+                <Paper elevation={0} sx={{ flex: 1, p: 2, minWidth: 150, border: '1px solid', borderColor: 'divider', borderRadius: 3 }}>
+                    <Typography variant="body2" color="text.secondary">Filtrados</Typography>
+                    <Typography variant="h4" fontWeight={700}>{filteredEstabelecimentos.length}</Typography>
+                </Paper>
+            </Box>
+
+            {/* Busca */}
+            <Paper elevation={0} sx={{ p: 3, mb: 3, border: '1px solid', borderColor: 'divider', borderRadius: 3 }}>
+                <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap", alignItems: "center" }}>
                     <TextField
                         placeholder="Buscar por nome, fantasia ou email..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        fullWidth
-                        variant="outlined"
                         size="small"
+                        sx={{ flex: 1, minWidth: 250 }}
                         InputProps={{
                             startAdornment: (
                                 <InputAdornment position="start">
@@ -107,96 +138,75 @@ const EstabelecimentosTab = () => {
                             ),
                         }}
                     />
-                </Paper>
-                <Chip
-                    label={`${filteredEstabelecimentos.length} encontrados`}
-                    color="primary"
-                    variant="outlined"
-                    sx={{ fontWeight: 'bold' }}
-                />
-            </Box>
-
-            {/* Grid de Cards */}
-            {loading ? (
-                <Box sx={{ display: "flex", justifyContent: "center", p: 5 }}>
-                    <CircularProgress />
                 </Box>
-            ) : filteredEstabelecimentos.length === 0 ? (
-                <Paper sx={{ p: 4, textAlign: "center" }}>
-                    <Typography color="text.secondary">Nenhum estabelecimento encontrado</Typography>
-                </Paper>
-            ) : (
-                <Grid container spacing={3}>
-                    {filteredEstabelecimentos.map((estab) => (
-                        <Grid item xs={12} sm={6} md={4} lg={3} key={estab.id}>
-                            <Card sx={{ height: "100%", display: "flex", flexDirection: "column", position: "relative" }}>
-                                <CardMedia
-                                    component="img"
-                                    height="140"
-                                    image={estab.fotoUrl || "https://via.placeholder.com/300x140?text=Sem+Imagem"}
-                                    alt={estab.nomeFantasia}
-                                    sx={{ bgcolor: "grey.200" }}
-                                />
-                                {estab.exclusivoMulheres && (
-                                    <Chip
-                                        label="Feminino"
-                                        color="secondary"
-                                        size="small"
-                                        sx={{ position: "absolute", top: 10, right: 10 }}
-                                    />
-                                )}
-                                <CardContent sx={{ flexGrow: 1 }}>
-                                    <Typography gutterBottom variant="h6" component="div" noWrap title={estab.nomeFantasia || estab.nome}>
-                                        {estab.nomeFantasia || estab.nome || "Sem Nome"}
-                                    </Typography>
+            </Paper>
 
-                                    <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5, color: "text.secondary" }}>
-                                        <FaEnvelope size={12} />
-                                        <Typography variant="body2" noWrap title={estab.email}>
-                                            {estab.email}
-                                        </Typography>
-                                    </Box>
-
-                                    {estab.telefone && (
-                                        <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5, color: "text.secondary" }}>
-                                            <FaPhone size={12} />
-                                            <Typography variant="body2">
-                                                {estab.telefone}
-                                            </Typography>
-                                        </Box>
-                                    )}
-
-                                    {/* Exemplo de endereço se existir no objeto */}
-                                    {estab.endereco && (
-                                        <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 1, color: "text.secondary" }}>
-                                            <FaMapMarkerAlt size={12} />
-                                            <Typography variant="caption" noWrap>
-                                                {estab.endereco.cidade || "Localização não inf."}
-                                            </Typography>
-                                        </Box>
-                                    )}
-                                </CardContent>
-                                <CardActions sx={{ justifyContent: "flex-end", p: 2, pt: 0 }}>
-                                    <Tooltip title="Excluir">
-                                        <IconButton
+            {/* Tabela */}
+            <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 3 }}>
+                <Table>
+                    <TableHead>
+                        <TableRow>
+                            <TableCell><strong>Nome Fantasia</strong></TableCell>
+                            <TableCell><strong>Email</strong></TableCell>
+                            <TableCell><strong>Telefone</strong></TableCell>
+                            <TableCell><strong>Exclusivo Mulheres</strong></TableCell>
+                            <TableCell align="right"><strong>Ações</strong></TableCell>
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
+                        {loading ? (
+                            <TableRow>
+                                <TableCell colSpan={5} align="center" sx={{ py: 5 }}>
+                                    <CircularProgress size={32} />
+                                </TableCell>
+                            </TableRow>
+                        ) : filteredEstabelecimentos.length === 0 ? (
+                            <TableRow>
+                                <TableCell colSpan={5} align="center">Nenhum estabelecimento encontrado</TableCell>
+                            </TableRow>
+                        ) : (
+                            filteredEstabelecimentos.map((estab) => (
+                                <TableRow
+                                    key={estab.id}
+                                    hover
+                                    onClick={() => handleOpenModal(estab)}
+                                    sx={{ cursor: 'pointer' }}
+                                >
+                                    <TableCell>{estab.nomeFantasia || estab.nome || "N/A"}</TableCell>
+                                    <TableCell>{estab.email || "N/A"}</TableCell>
+                                    <TableCell>{estab.telefone || "N/A"}</TableCell>
+                                    <TableCell>
+                                        <Chip
+                                            label={estab.exclusivoMulheres ? "Sim" : "Não"}
+                                            color={estab.exclusivoMulheres ? "secondary" : "default"}
                                             size="small"
-                                            color="error"
-                                            onClick={() => setDeleteDialog({ open: true, estabelecimento: estab })}
-                                            sx={{ bgcolor: 'error.lighter', '&:hover': { bgcolor: 'error.light', color: 'white' } }}
-                                        >
-                                            <FaTrash size={16} />
-                                        </IconButton>
-                                    </Tooltip>
-                                </CardActions>
-                            </Card>
-                        </Grid>
-                    ))}
-                </Grid>
-            )}
+                                        />
+                                    </TableCell>
+                                    <TableCell align="right">
+                                        <Tooltip title="Excluir">
+                                            <IconButton
+                                                size="small"
+                                                color="error"
+                                                onClick={(e) => { e.stopPropagation(); setDeleteDialog({ open: true, estabelecimento: estab }); }}
+                                                sx={{ bgcolor: alpha(theme.palette.error.main, 0.08), '&:hover': { bgcolor: alpha(theme.palette.error.main, 0.2), color: 'white' } }}
+                                            >
+                                                <FaTrash size={14} />
+                                            </IconButton>
+                                        </Tooltip>
+                                    </TableCell>
+                                </TableRow>
+                            ))
+                        )}
+                    </TableBody>
+                </Table>
+            </TableContainer>
 
             {/* Dialog de Confirmação */}
             <Dialog open={deleteDialog.open} onClose={() => setDeleteDialog({ open: false, estabelecimento: null })}>
-                <DialogTitle>Confirmar Exclusão</DialogTitle>
+                <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <FaExclamationTriangle color={theme.palette.error.main} />
+                    Confirmar Exclusão
+                </DialogTitle>
                 <DialogContent>
                     <Typography>
                         Tem certeza que deseja excluir <strong>{deleteDialog.estabelecimento?.nomeFantasia || deleteDialog.estabelecimento?.nome}</strong>?
@@ -210,6 +220,13 @@ const EstabelecimentosTab = () => {
                     <Button onClick={handleDelete} color="error" variant="contained">Excluir</Button>
                 </DialogActions>
             </Dialog>
+
+            {/* Modal de Detalhes (mesmo do usuário final) */}
+            <ModalDetalhesEstabelecimento
+                open={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                estabelecimento={selectedEstab}
+            />
         </Box>
     );
 };

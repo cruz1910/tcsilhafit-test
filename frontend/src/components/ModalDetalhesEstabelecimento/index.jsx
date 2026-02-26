@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import {
     Dialog,
     DialogContent,
+    DialogTitle,
+    DialogActions,
     Box,
     Typography,
     IconButton,
@@ -13,6 +15,7 @@ import {
     useTheme,
     alpha,
     TextField,
+    Tooltip,
 } from "@mui/material";
 import {
     FaChevronLeft,
@@ -21,7 +24,9 @@ import {
     FaMapMarkerAlt,
     FaClock,
     FaWhatsapp,
-    FaPaperPlane
+    FaPaperPlane,
+    FaTrash,
+    FaExclamationTriangle,
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { authService, avaliacaoService } from "../../services";
@@ -35,7 +40,12 @@ const ModalDetalhesEstabelecimento = ({ open, onClose, estabelecimento }) => {
     const [novaAvaliacao, setNovaAvaliacao] = useState({ nota: 5, comentario: "" });
     const [loading, setLoading] = useState(false);
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
+    const [deleteAvaliacaoDialog, setDeleteAvaliacaoDialog] = useState({ open: false, avaliacao: null });
     const isAuthenticated = authService.isAuthenticated();
+    const userInfo = authService.getUserInfo();
+    const isAdmin = userInfo?.role === 'ADMIN';
+    const isUser = userInfo?.role === 'USER';
+    const isDark = theme.palette.mode === 'dark';
 
     useEffect(() => {
         if (open && estabelecimento?.id) {
@@ -68,7 +78,8 @@ const ModalDetalhesEstabelecimento = ({ open, onClose, estabelecimento }) => {
             setNovaAvaliacao({ nota: 5, comentario: "" });
             loadAvaliacoes();
         } catch (error) {
-            toast.error("Erro ao enviar avaliação.");
+            const msg = error.response?.data?.erro || "Erro ao enviar avaliação.";
+            toast.error(msg);
         } finally {
             setLoading(false);
         }
@@ -80,9 +91,22 @@ const ModalDetalhesEstabelecimento = ({ open, onClose, estabelecimento }) => {
         window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
     };
 
+    const handleDeleteAvaliacao = async () => {
+        if (!deleteAvaliacaoDialog.avaliacao) return;
+        try {
+            await avaliacaoService.delete(deleteAvaliacaoDialog.avaliacao.id);
+            toast.success("Avaliação excluída com sucesso!");
+            setDeleteAvaliacaoDialog({ open: false, avaliacao: null });
+            loadAvaliacoes();
+        } catch (error) {
+            console.error("Erro ao excluir avaliação:", error);
+            toast.error("Erro ao excluir avaliação");
+        }
+    };
+
     if (!estabelecimento) return null;
 
-    return (
+    return (<>
         <Dialog
             open={open}
             onClose={onClose}
@@ -315,7 +339,7 @@ const ModalDetalhesEstabelecimento = ({ open, onClose, estabelecimento }) => {
                         {/* Hor\u00e1rio de Funcionamento */}
                         <Box sx={{ mb: 6 }}>
                             <Typography variant="h5" fontWeight={800} sx={{ mb: 2 }}>Hor\u00e1rio de Funcionamento</Typography>
-                            <Paper variant="outlined" sx={{ p: 4, borderRadius: 4, bgcolor: '#F8FAFC', border: 'none' }}>
+                            <Paper variant="outlined" sx={{ p: 4, borderRadius: 4, bgcolor: isDark ? alpha(theme.palette.common.white, 0.05) : '#F8FAFC', border: 'none' }}>
                                 {Array.isArray(estabelecimento?.gradeAtividades) && estabelecimento.gradeAtividades.length > 0 ? (
                                     estabelecimento.gradeAtividades.map((grade, idx) => (
                                         <Box key={idx} sx={{ mb: idx !== estabelecimento.gradeAtividades.length - 1 ? 3 : 0 }}>
@@ -361,7 +385,7 @@ const ModalDetalhesEstabelecimento = ({ open, onClose, estabelecimento }) => {
                             <Paper sx={{
                                 width: '100%',
                                 height: 350,
-                                bgcolor: '#F8FAFC',
+                                bgcolor: isDark ? alpha(theme.palette.common.white, 0.05) : '#F8FAFC',
                                 borderRadius: 4,
                                 overflow: 'hidden',
                                 border: '1px solid',
@@ -377,12 +401,12 @@ const ModalDetalhesEstabelecimento = ({ open, onClose, estabelecimento }) => {
 
                         <Divider sx={{ my: 6 }} />
 
-                        {/* Se\u00e7\u00e3o de Avalia\u00e7\u00f5es */}
-                        <Typography variant="h5" fontWeight={800} sx={{ mb: 3 }}>Avalia\u00e7\u00f5es</Typography>
+                        {/* Seção de Avaliações */}
+                        <Typography variant="h5" fontWeight={800} sx={{ mb: 3 }}>Avaliações</Typography>
 
-                        {isAuthenticated ? (
-                            <Paper elevation={0} sx={{ mb: 4, p: 4, bgcolor: '#F8FAFC', borderRadius: 4 }}>
-                                <Typography variant="h6" fontWeight={800} sx={{ mb: 2 }}>Sua avalia\u00e7\u00e3o</Typography>
+                        {isAuthenticated && isUser ? (
+                            <Paper elevation={0} sx={{ mb: 4, p: 4, bgcolor: isDark ? alpha(theme.palette.common.white, 0.03) : '#F8FAFC', borderRadius: 4 }}>
+                                <Typography variant="h6" fontWeight={800} sx={{ mb: 2 }}>Sua avaliação</Typography>
                                 <Box sx={{ display: 'flex', gap: 1, mb: 3 }}>
                                     {[1, 2, 3, 4, 5].map((star) => (
                                         <FaStar
@@ -398,12 +422,12 @@ const ModalDetalhesEstabelecimento = ({ open, onClose, estabelecimento }) => {
                                     fullWidth
                                     multiline
                                     rows={4}
-                                    placeholder="Como foi sua experi\u00eancia neste local?"
+                                    placeholder="Como foi sua experiência neste local?"
                                     value={novaAvaliacao.comentario}
                                     onChange={(e) => setNovaAvaliacao({ ...novaAvaliacao, comentario: e.target.value })}
                                     sx={{
                                         mb: 3,
-                                        bgcolor: 'white',
+                                        bgcolor: isDark ? alpha(theme.palette.common.white, 0.05) : 'white',
                                         '& .MuiOutlinedInput-root': { borderRadius: 3 }
                                     }}
                                 />
@@ -423,11 +447,17 @@ const ModalDetalhesEstabelecimento = ({ open, onClose, estabelecimento }) => {
                                         boxShadow: `0 8px 16px ${alpha(theme.palette.primary.main, 0.3)}`
                                     }}
                                 >
-                                    {loading ? "Enviando..." : "Enviar avalia\u00e7\u00e3o"}
+                                    {loading ? "Enviando..." : "Enviar avaliação"}
                                 </Button>
                             </Paper>
+                        ) : isAuthenticated ? (
+                            <Paper elevation={0} sx={{ mb: 4, p: 3, bgcolor: alpha(theme.palette.primary.main, 0.05), borderRadius: 4, border: '1px solid', borderColor: 'divider' }}>
+                                <Typography variant="body1" color="text.secondary" fontWeight={600} sx={{ textAlign: 'center' }}>
+                                    {isAdmin ? 'Modo moderador — você pode excluir avaliações inadequadas.' : 'Apenas alunos podem enviar avaliações.'}
+                                </Typography>
+                            </Paper>
                         ) : (
-                            <Paper elevation={0} sx={{ mb: 4, p: 4, bgcolor: '#F8FAFC', borderRadius: 4, textAlign: 'center' }}>
+                            <Paper elevation={0} sx={{ mb: 4, p: 4, bgcolor: isDark ? alpha(theme.palette.common.white, 0.03) : '#F8FAFC', borderRadius: 4, textAlign: 'center' }}>
                                 <Box sx={{ mb: 3 }}>
                                     <FaStar size={48} color={alpha(theme.palette.primary.main, 0.3)} />
                                 </Box>
@@ -435,7 +465,7 @@ const ModalDetalhesEstabelecimento = ({ open, onClose, estabelecimento }) => {
                                     Cadastre-se para avaliar
                                 </Typography>
                                 <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                                    Fa\u00e7a parte da comunidade IlhaFit e compartilhe sua experi\u00eancia neste estabelecimento
+                                    Faça parte da comunidade IlhaFit e compartilhe sua experiência neste estabelecimento
                                 </Typography>
                                 <Button
                                     fullWidth
@@ -461,13 +491,27 @@ const ModalDetalhesEstabelecimento = ({ open, onClose, estabelecimento }) => {
                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                             {avaliacoes.length > 0 ? (
                                 avaliacoes.map((av) => (
-                                    <Paper key={av.id} elevation={0} sx={{ p: 3, borderRadius: 3, border: '1px solid', borderColor: 'divider' }}>
+                                    <Paper key={av.id} elevation={0} sx={{ p: 3, borderRadius: 3, border: '1px solid', borderColor: 'divider', bgcolor: isDark ? alpha(theme.palette.common.white, 0.03) : 'background.paper' }}>
                                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                                             <Typography variant="subtitle1" fontWeight={800}>{av.nomeAutor}</Typography>
-                                            <Box sx={{ display: 'flex', gap: 0.5 }}>
-                                                {[...Array(5)].map((_, i) => (
-                                                    <FaStar key={i} size={14} color={i < av.nota ? "#FFD700" : "#E2E8F0"} />
-                                                ))}
+                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                <Box sx={{ display: 'flex', gap: 0.5 }}>
+                                                    {[...Array(5)].map((_, i) => (
+                                                        <FaStar key={i} size={14} color={i < av.nota ? "#FFD700" : "#E2E8F0"} />
+                                                    ))}
+                                                </Box>
+                                                {(isAdmin || (userInfo?.nome === av.nomeAutor)) && (
+                                                    <Tooltip title="Excluir avaliação">
+                                                        <IconButton
+                                                            size="small"
+                                                            color="error"
+                                                            onClick={() => setDeleteAvaliacaoDialog({ open: true, avaliacao: av })}
+                                                            sx={{ bgcolor: alpha(theme.palette.error.main, 0.08), '&:hover': { bgcolor: alpha(theme.palette.error.main, 0.2), color: 'white' } }}
+                                                        >
+                                                            <FaTrash size={12} />
+                                                        </IconButton>
+                                                    </Tooltip>
+                                                )}
                                             </Box>
                                         </Box>
                                         <Typography variant="body1" color="text.secondary" sx={{ lineHeight: 1.6 }}>
@@ -476,7 +520,7 @@ const ModalDetalhesEstabelecimento = ({ open, onClose, estabelecimento }) => {
                                     </Paper>
                                 ))
                             ) : (
-                                <Box sx={{ py: 6, textAlign: 'center', bgcolor: '#F8FAFC', borderRadius: 4, border: '1px dashed', borderColor: 'divider' }}>
+                                <Box sx={{ py: 6, textAlign: 'center', bgcolor: isDark ? alpha(theme.palette.common.white, 0.03) : '#F8FAFC', borderRadius: 4, border: '1px dashed', borderColor: 'divider' }}>
                                     <Typography variant="body1" color="text.secondary" fontWeight={500}>
                                         Seja o primeiro a avaliar!
                                     </Typography>
@@ -486,8 +530,28 @@ const ModalDetalhesEstabelecimento = ({ open, onClose, estabelecimento }) => {
                     </Box>
                 </Box>
             </DialogContent>
-        </Dialog >
-    );
+        </Dialog>
+
+        {/* Dialog de Confirmação de Exclusão de Avaliação */}
+        <Dialog open={deleteAvaliacaoDialog.open} onClose={() => setDeleteAvaliacaoDialog({ open: false, avaliacao: null })}>
+            <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <FaExclamationTriangle color={theme.palette.error.main} />
+                Excluir Avaliação
+            </DialogTitle>
+            <DialogContent>
+                <Typography>
+                    Tem certeza que deseja excluir a avaliação de <strong>{deleteAvaliacaoDialog.avaliacao?.nomeAutor}</strong>?
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                    Esta ação não pode ser desfeita.
+                </Typography>
+            </DialogContent>
+            <DialogActions>
+                <Button onClick={() => setDeleteAvaliacaoDialog({ open: false, avaliacao: null })}>Cancelar</Button>
+                <Button onClick={handleDeleteAvaliacao} color="error" variant="contained">Excluir</Button>
+            </DialogActions>
+        </Dialog>
+    </>);
 };
 
 export default ModalDetalhesEstabelecimento;

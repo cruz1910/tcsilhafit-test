@@ -15,6 +15,7 @@ public class AvaliacaoDTO {
         private Integer nota;
         private String comentario;
         private Long estabelecimentoId;
+        private Long profissionalId;
     }
 
     @Data
