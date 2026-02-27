@@ -58,6 +58,11 @@ public class SecurityConfig {
                         // Proteger rotas ADMIN
                         .requestMatchers("/api/administradores/**", "/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/usuarios/**").hasRole("ADMIN")
+                        // Denúncias: POST qualquer autenticado, GET/PUT/DELETE apenas ADMIN
+                        .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/denuncias").authenticated()
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/denuncias").hasRole("ADMIN")
+                        .requestMatchers(org.springframework.http.HttpMethod.PUT, "/api/denuncias/**").hasRole("ADMIN")
+                        .requestMatchers(org.springframework.http.HttpMethod.DELETE, "/api/denuncias/**").hasRole("ADMIN")
                         // Qualquer outra rota precisa de autenticação
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

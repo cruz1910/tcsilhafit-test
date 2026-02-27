@@ -24,6 +24,7 @@ public class LoginDTO {
         private String nome;
         private String email;
         private String role;
-        private String token; // Futuro uso para JWT
+        private String token;
+        private String refreshToken;
     }
 }

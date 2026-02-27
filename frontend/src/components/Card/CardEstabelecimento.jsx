@@ -20,6 +20,7 @@ const CardEstabelecimento = ({ estabelecimento, onClickDetail }) => {
       onClick={() => onClickDetail && onClickDetail(estabelecimento)}
       sx={{
         width: "100%",
+        maxWidth: 450,
         height: "100%",
         display: "flex",
         flexDirection: "column",

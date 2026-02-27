@@ -12,19 +12,24 @@ import java.util.Date;
 @Component
 public class JwtTokenProvider {
 
-    private static final String JWT_SECRET = "9a4f2c8d3b7a1e6f9g8h7i6j5k4l3m2n1o0p9q8r7s6t5u4v3w2x1y0zABCDEF1234567890abcdef1234567890";
-   
-    private static final int JWT_EXPIRATION_MS = 86400000;
+    @Value("${jwt.secret}")
+    private String jwtSecret;
+
+    @Value("${jwt.expiration-ms}")
+    private long jwtExpirationMs;
+
+    @Value("${jwt.refresh-expiration-ms}")
+    private long refreshExpirationMs;
 
     private Key getSigningKey() {
-        return Keys.hmacShaKeyFor(JWT_SECRET.getBytes());
+        return Keys.hmacShaKeyFor(jwtSecret.getBytes());
     }
 
     public String generateToken(Authentication authentication) {
         UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal(); 
 
         Date now = new Date();
-        Date expiryDate = new Date(now.getTime() + JWT_EXPIRATION_MS);
+        Date expiryDate = new Date(now.getTime() + jwtExpirationMs);
 
         return Jwts.builder()
                 .setSubject(userPrincipal.getEmail())
@@ -32,6 +37,19 @@ public class JwtTokenProvider {
                 .claim("nome", userPrincipal.getNome())
                 .claim("role", userPrincipal.getRole().name())
                 .setIssuedAt(new Date())
+                .setExpiration(expiryDate)
+                .signWith(getSigningKey(), SignatureAlgorithm.HS512)
+                .compact();
+    }
+
+    public String generateRefreshToken(String email) {
+        Date now = new Date();
+        Date expiryDate = new Date(now.getTime() + refreshExpirationMs);
+
+        return Jwts.builder()
+                .setSubject(email)
+                .claim("type", "refresh")
+                .setIssuedAt(now)
                 .setExpiration(expiryDate)
                 .signWith(getSigningKey(), SignatureAlgorithm.HS512)
                 .compact();

@@ -19,12 +19,14 @@ import com.example.ilhafit.repository.PasswordResetTokenRepository;
 import com.example.ilhafit.repository.ProfissionalRepository;
 import com.example.ilhafit.repository.UsuarioRepository;
 import com.example.ilhafit.repository.VerificationTokenRepository;
+import com.example.ilhafit.security.CustomUserDetailsService;
 import com.example.ilhafit.security.JwtTokenProvider;
 import com.example.ilhafit.security.UserPrincipal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -47,6 +49,7 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider tokenProvider;
     private final PasswordEncoder passwordEncoder;
+    private final CustomUserDetailsService customUserDetailsService;
 
     private final PasswordResetTokenRepository passwordResetTokenRepository;
     private final VerificationTokenRepository verificationTokenRepository;
@@ -63,8 +66,37 @@ public class AuthService {
 
         UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
 
+        String refreshToken = tokenProvider.generateRefreshToken(userPrincipal.getEmail());
+
         return LoginDTO.Response.builder()
                 .token(token)
+                .refreshToken(refreshToken)
+                .id(userPrincipal.getId())
+                .nome(userPrincipal.getNome())
+                .email(userPrincipal.getEmail())
+                .role(userPrincipal.getRole().name())
+                .build();
+    }
+
+    public LoginDTO.Response refreshToken(String refreshToken) {
+        if (!tokenProvider.validateToken(refreshToken)) {
+            throw new RuntimeException("Refresh token inválido ou expirado");
+        }
+
+        String email = tokenProvider.getEmailFromJWT(refreshToken);
+
+        UserDetails userDetails = customUserDetailsService.loadUserByUsername(email);
+        UsernamePasswordAuthenticationToken authentication =
+                new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+
+        String newToken = tokenProvider.generateToken(authentication);
+        String newRefreshToken = tokenProvider.generateRefreshToken(email);
+
+        UserPrincipal userPrincipal = (UserPrincipal) userDetails;
+
+        return LoginDTO.Response.builder()
+                .token(newToken)
+                .refreshToken(newRefreshToken)
                 .id(userPrincipal.getId())
                 .nome(userPrincipal.getNome())
                 .email(userPrincipal.getEmail())

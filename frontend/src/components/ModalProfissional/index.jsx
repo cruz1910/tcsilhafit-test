@@ -29,11 +29,13 @@ import {
     FaPaperPlane,
     FaTrash,
     FaExclamationTriangle,
+    FaFlag,
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { authService, avaliacaoService } from "../../services";
 import { toast } from "react-toastify";
 import MapComponent from "../MapComponent";
+import ModalDenuncia from "../ModalDenuncia";
 
 const ModalProfissional = ({ open, onClose, profissional }) => {
     const theme = useTheme();
@@ -42,6 +44,7 @@ const ModalProfissional = ({ open, onClose, profissional }) => {
     const [novaAvaliacao, setNovaAvaliacao] = useState({ nota: 5, comentario: "" });
     const [loading, setLoading] = useState(false);
     const [deleteAvaliacaoDialog, setDeleteAvaliacaoDialog] = useState({ open: false, avaliacao: null });
+    const [denunciaDialog, setDenunciaDialog] = useState({ open: false, avaliacaoId: null });
     const isAuthenticated = authService.isAuthenticated();
     const userInfo = authService.getUserInfo();
     const isAdmin = userInfo?.role === 'ADMIN';
@@ -420,6 +423,17 @@ const ModalProfissional = ({ open, onClose, profissional }) => {
                                                 </IconButton>
                                             </Tooltip>
                                         )}
+                                        {isAuthenticated && userInfo?.nome !== av.nomeAutor && (
+                                            <Tooltip title="Denunciar avaliação">
+                                                <IconButton
+                                                    size="small"
+                                                    onClick={() => setDenunciaDialog({ open: true, avaliacaoId: av.id })}
+                                                    sx={{ color: 'text.secondary', '&:hover': { color: 'warning.main', bgcolor: alpha(theme.palette.warning.main, 0.1) } }}
+                                                >
+                                                    <FaFlag size={11} />
+                                                </IconButton>
+                                            </Tooltip>
+                                        )}
                                     </Box>
                                 </Box>
                                 <Typography variant="body1" color="text.secondary" sx={{ lineHeight: 1.6 }}>
@@ -458,6 +472,13 @@ const ModalProfissional = ({ open, onClose, profissional }) => {
                 <Button onClick={handleDeleteAvaliacao} color="error" variant="contained">Excluir</Button>
             </DialogActions>
         </Dialog>
+
+        {/* Modal de Denúncia */}
+        <ModalDenuncia
+            open={denunciaDialog.open}
+            onClose={() => setDenunciaDialog({ open: false, avaliacaoId: null })}
+            avaliacaoId={denunciaDialog.avaliacaoId}
+        />
     </>);
 };
 

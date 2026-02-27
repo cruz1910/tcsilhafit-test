@@ -27,6 +27,16 @@ public class AuthController {
         }
     }
 
+    @PostMapping("/refresh")
+    public ResponseEntity<?> refresh(@RequestBody Map<String, String> payload) {
+        String refreshToken = payload.get("refreshToken");
+        try {
+            return ResponseEntity.ok(authService.refreshToken(refreshToken));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(401).body(Map.of("erro", e.getMessage()));
+        }
+    }
+
     @PostMapping("/esqueci-senha")
     public ResponseEntity<?> esqueciSenha(@RequestBody Map<String, String> payload) {
         String email = payload.get("email");

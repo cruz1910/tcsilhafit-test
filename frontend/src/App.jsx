@@ -27,7 +27,7 @@ function App() {
         <Route path="/redefinir-senha" element={<RedefinirSenha />} />
         <Route path="/confirmar-email" element={<ConfirmarEmail />} />
         <Route path="/mapa" element={<Mapa />} />
-        <Route path="/perfil" element={<Perfil />} />
+        <Route path="/perfil" element={<ProtectedRoute><Perfil /></ProtectedRoute>} />
         <Route
           path="/admin"
           element={

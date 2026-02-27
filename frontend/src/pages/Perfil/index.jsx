@@ -51,7 +51,7 @@ import {
     Autocomplete,
     Chip
 } from "@mui/material";
-import { authService, userService, estabelecimentoService, profissionalService } from "../../services";
+import { authService, meService, userService, estabelecimentoService, profissionalService } from "../../services";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 
@@ -167,13 +167,9 @@ const Perfil = () => {
     const loadUserData = async () => {
         try {
             let data;
-            if (user.role === 'USER') {
-                data = await userService.getById(user.id);
-            } else if (user.role === 'ESTABELECIMENTO') {
-                data = await estabelecimentoService.getById(user.id);
-            } else if (user.role === 'PROFISSIONAL') {
-                data = await profissionalService.getById(user.id);
-            } else {
+            try {
+                data = await meService.get();
+            } catch {
                 data = { nome: user.nome, email: user.email };
             }
 
@@ -335,11 +331,11 @@ const Perfil = () => {
             const payload = { ...formData };
 
             if (user.role === 'USER') {
-                await userService.update(user.id, payload);
+                await meService.update(payload);
             } else if (user.role === 'ESTABELECIMENTO') {
-                await estabelecimentoService.update(user.id, payload);
+                await meService.updateEstabelecimento(payload);
             } else if (user.role === 'PROFISSIONAL') {
-                await profissionalService.update(user.id, payload);
+                await meService.updateProfissional(payload);
             }
 
             const updatedUser = { ...user, nome: formData.nome };
@@ -364,13 +360,7 @@ const Perfil = () => {
 
     const handleDeleteAccount = async () => {
         try {
-            if (user.role === 'USER') {
-                await userService.delete(user.id);
-            } else if (user.role === 'ESTABELECIMENTO') {
-                await estabelecimentoService.delete(user.id);
-            } else if (user.role === 'PROFISSIONAL') {
-                await profissionalService.delete(user.id);
-            }
+            await meService.delete();
 
             toast.success("Conta excluída. Até logo!");
             authService.logout();

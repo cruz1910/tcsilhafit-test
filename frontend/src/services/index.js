@@ -8,6 +8,9 @@ export const authService = {
         const response = await api.post('/autenticacao/login', { email, senha: password });
         if (response.data.token) {
             localStorage.setItem('token', response.data.token);
+            if (response.data.refreshToken) {
+                localStorage.setItem('refreshToken', response.data.refreshToken);
+            }
             // Salva os dados básicos do usuário para uso imediato no layout
             localStorage.setItem('user', JSON.stringify({
                 id: response.data.id,
@@ -94,16 +97,94 @@ export const authService = {
         return response.data;
     },
 
+    // Renovar token usando refresh token
+    refresh: async () => {
+        const refreshToken = localStorage.getItem('refreshToken');
+        if (!refreshToken) {
+            throw new Error('Sem refresh token');
+        }
+        const response = await api.post('/autenticacao/refresh', { refreshToken });
+        if (response.data.token) {
+            localStorage.setItem('token', response.data.token);
+            if (response.data.refreshToken) {
+                localStorage.setItem('refreshToken', response.data.refreshToken);
+            }
+            localStorage.setItem('user', JSON.stringify({
+                id: response.data.id,
+                nome: response.data.nome,
+                email: response.data.email,
+                role: response.data.role
+            }));
+        }
+        return response.data;
+    },
+
     // Logout
     logout: () => {
         localStorage.removeItem('token');
+        localStorage.removeItem('refreshToken');
         localStorage.removeItem('user');
         window.location.href = '/';
     },
 
-    // Verificar se está autenticado
+    // Decodificar payload do JWT (base64)
+    _decodeToken: (token) => {
+        try {
+            const payload = token.split('.')[1];
+            return JSON.parse(atob(payload));
+        } catch {
+            return null;
+        }
+    },
+
+    // Verificar se o token está expirado
+    isTokenExpired: (token) => {
+        if (!token) return true;
+        const decoded = authService._decodeToken(token);
+        if (!decoded || !decoded.exp) return true;
+        // Considera expirado se faltam menos de 60 segundos
+        return decoded.exp * 1000 < Date.now() + 60000;
+    },
+
+    // Verificar se está autenticado (com validação de expiração)
     isAuthenticated: () => {
-        return !!localStorage.getItem('token');
+        const token = localStorage.getItem('token');
+        if (!token) return false;
+        return !authService.isTokenExpired(token);
+    },
+};
+
+// ==================== MEU PERFIL (usuário autenticado) ====================
+
+export const meService = {
+    // Buscar dados do próprio usuário autenticado
+    get: async () => {
+        const response = await api.get('/me');
+        return response.data;
+    },
+
+    // Atualizar dados do próprio usuário (USER)
+    update: async (data) => {
+        const response = await api.put('/me', data);
+        return response.data;
+    },
+
+    // Atualizar dados do próprio estabelecimento
+    updateEstabelecimento: async (data) => {
+        const response = await api.put('/me/estabelecimento', data);
+        return response.data;
+    },
+
+    // Atualizar dados do próprio profissional
+    updateProfissional: async (data) => {
+        const response = await api.put('/me/profissional', data);
+        return response.data;
+    },
+
+    // Deletar a própria conta
+    delete: async () => {
+        const response = await api.delete('/me');
+        return response.data;
     },
 };
 
@@ -352,6 +433,33 @@ export const avaliacaoService = {
     // Excluir avaliação (autor ou admin)
     delete: async (id) => {
         const response = await api.delete(`/avaliacoes/${id}`);
+        return response.data;
+    },
+};
+
+export const denunciaService = {
+    // Criar denúncia (qualquer usuário autenticado)
+    criar: async (data) => {
+        const response = await api.post('/denuncias', data);
+        return response.data;
+    },
+
+    // Listar todas as denúncias (admin)
+    getAll: async (status) => {
+        const params = status ? { status } : {};
+        const response = await api.get('/denuncias', { params });
+        return response.data;
+    },
+
+    // Atualizar status da denúncia (admin)
+    atualizarStatus: async (id, status) => {
+        const response = await api.put(`/denuncias/${id}/status`, { status });
+        return response.data;
+    },
+
+    // Excluir avaliação denunciada (admin)
+    excluirAvaliacao: async (id) => {
+        const response = await api.delete(`/denuncias/${id}/avaliacao`);
         return response.data;
     },
 };
