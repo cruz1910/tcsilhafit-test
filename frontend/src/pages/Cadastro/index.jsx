@@ -19,7 +19,7 @@ import {
     Chip,
     InputAdornment
 } from "@mui/material";
-import { FaTimes, FaUpload, FaWhatsapp, FaUser, FaBuilding, FaUserTie, FaEye, FaEyeSlash, FaChevronDown } from "react-icons/fa";
+import { FaTimes, FaUpload, FaWhatsapp, FaUser, FaBuilding, FaUserTie, FaEye, FaEyeSlash, FaChevronDown, FaInstagram, FaFacebook, FaGlobe } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
@@ -64,6 +64,9 @@ const Cadastro = () => {
         fotoUrl: "",
         fotosUrl: [],
         outrosAtividade: "", // Texto personalizado para "Outros"
+        instagram: "",
+        facebook: "",
+        website: "",
     };
 
     const [formData, setFormData] = useState(initialFormData);
@@ -772,6 +775,65 @@ const Cadastro = () => {
                                     </Box>
                                 </>
                             )}
+
+                            {/* Redes Sociais & Contatos */}
+                            <Divider sx={{ my: 2 }} />
+                            <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 1, color: "text.secondary" }}>
+                                Redes Sociais & Contatos (Opcional)
+                            </Typography>
+                            <Grid container spacing={2} sx={{ mb: 2 }}>
+                                <Grid item xs={12} sm={4}>
+                                    <TextField
+                                        fullWidth
+                                        name="instagram"
+                                        value={formData.instagram}
+                                        onChange={handleInputChange}
+                                        placeholder="@seuperfil"
+                                        sx={inputStyles}
+                                        InputProps={{
+                                            startAdornment: (
+                                                <InputAdornment position="start">
+                                                    <FaInstagram size={16} color="#E4405F" />
+                                                </InputAdornment>
+                                            ),
+                                        }}
+                                    />
+                                </Grid>
+                                <Grid item xs={12} sm={4}>
+                                    <TextField
+                                        fullWidth
+                                        name="facebook"
+                                        value={formData.facebook}
+                                        onChange={handleInputChange}
+                                        placeholder="facebook.com/seuperfil"
+                                        sx={inputStyles}
+                                        InputProps={{
+                                            startAdornment: (
+                                                <InputAdornment position="start">
+                                                    <FaFacebook size={16} color="#1877F2" />
+                                                </InputAdornment>
+                                            ),
+                                        }}
+                                    />
+                                </Grid>
+                                <Grid item xs={12} sm={4}>
+                                    <TextField
+                                        fullWidth
+                                        name="website"
+                                        value={formData.website}
+                                        onChange={handleInputChange}
+                                        placeholder="www.seusite.com"
+                                        sx={inputStyles}
+                                        InputProps={{
+                                            startAdornment: (
+                                                <InputAdornment position="start">
+                                                    <FaGlobe size={16} color={theme.palette.primary.main} />
+                                                </InputAdornment>
+                                            ),
+                                        }}
+                                    />
+                                </Grid>
+                            </Grid>
                         </>
                     ) : (
                         <>

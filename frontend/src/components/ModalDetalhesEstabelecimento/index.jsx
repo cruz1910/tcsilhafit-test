@@ -28,6 +28,9 @@ import {
     FaTrash,
     FaExclamationTriangle,
     FaFlag,
+    FaInstagram,
+    FaFacebook,
+    FaGlobe,
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { authService, avaliacaoService } from "../../services";
@@ -295,6 +298,60 @@ const ModalDetalhesEstabelecimento = ({ open, onClose, estabelecimento }) => {
                         )}
                     </Box>
 
+
+                    {/* Redes Sociais - Exibição Condicional */}
+                    {(estabelecimento.instagram || estabelecimento.facebook || estabelecimento.website) && (
+                        <Box sx={{ display: 'flex', gap: 1.5, mb: 5 }}>
+                            {estabelecimento.instagram && (
+                                <IconButton
+                                    onClick={() => {
+                                        const handle = estabelecimento.instagram.replace('@', '');
+                                        window.open(`https://instagram.com/${handle}`, '_blank');
+                                    }}
+                                    sx={{
+                                        bgcolor: alpha('#E4405F', 0.1),
+                                        color: '#E4405F',
+                                        '&:hover': { bgcolor: alpha('#E4405F', 0.2) },
+                                        width: 44, height: 44
+                                    }}
+                                >
+                                    <FaInstagram size={20} />
+                                </IconButton>
+                            )}
+                            {estabelecimento.facebook && (
+                                <IconButton
+                                    onClick={() => {
+                                        const url = estabelecimento.facebook.startsWith('http') ? estabelecimento.facebook : `https://facebook.com/${estabelecimento.facebook}`;
+                                        window.open(url, '_blank');
+                                    }}
+                                    sx={{
+                                        bgcolor: alpha('#1877F2', 0.1),
+                                        color: '#1877F2',
+                                        '&:hover': { bgcolor: alpha('#1877F2', 0.2) },
+                                        width: 44, height: 44
+                                    }}
+                                >
+                                    <FaFacebook size={20} />
+                                </IconButton>
+                            )}
+                            {estabelecimento.website && (
+                                <IconButton
+                                    onClick={() => {
+                                        const url = estabelecimento.website.startsWith('http') ? estabelecimento.website : `https://${estabelecimento.website}`;
+                                        window.open(url, '_blank');
+                                    }}
+                                    sx={{
+                                        bgcolor: alpha(theme.palette.primary.main, 0.1),
+                                        color: 'primary.main',
+                                        '&:hover': { bgcolor: alpha(theme.palette.primary.main, 0.2) },
+                                        width: 44, height: 44
+                                    }}
+                                >
+                                    <FaGlobe size={20} />
+                                </IconButton>
+                            )}
+                        </Box>
+                    )}
 
                     {/* Vertical Layout - All sections stacked */}
                     <Box>

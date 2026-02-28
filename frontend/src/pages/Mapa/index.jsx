@@ -22,7 +22,8 @@ import {
     MenuItem,
 } from "@mui/material";
 import { alpha } from "@mui/material/styles";
-import { FaSearch, FaMapMarkerAlt, FaPhone, FaClock, FaChevronRight, FaStar, FaFilter, FaTimes, FaChevronDown } from "react-icons/fa";
+import { FaSearch, FaMapMarkerAlt, FaPhone, FaClock, FaChevronRight, FaStar, FaFilter, FaTimes, FaChevronDown, FaLocationArrow } from "react-icons/fa";
+import { Snackbar, Alert } from "@mui/material";
 import { estabelecimentoService } from "../../services";
 import MapComponent from "../../components/MapComponent";
 import ModalDetalhesEstabelecimento from "../../components/ModalDetalhesEstabelecimento";
@@ -50,6 +51,11 @@ const normalizeAtividade = (name) => {
         'vôlei': 'Vôlei', 'jiu-jitsu': 'Jiu-Jitsu', 'boxe': 'Boxe',
         'muay thai': 'Muay Thai', 'kung fu': 'Kung Fu', 'ciclismo': 'Ciclismo',
         'circo': 'Circo', 'fisioterapia': 'Fisioterapia', 'outros': 'Outros',
+        // Variantes sem acento / legado
+        'musculacao': 'Academia', 'musculação': 'Academia',
+        'natacao': 'Natação', 'spinning': 'Ciclismo',
+        'luta': 'Boxe', 'danca': 'Dança', 'bale': 'Balé',
+        'volei': 'Vôlei', 'jiu jitsu': 'Jiu-Jitsu', 'jiujitsu': 'Jiu-Jitsu',
     };
     return map[lower] || name;
 };
@@ -81,6 +87,41 @@ const Mapa = () => {
     const [modalOpen, setModalOpen] = useState(false);
     const [estabelecimentoParaModal, setEstabelecimentoParaModal] = useState(null);
     const [categoryMenuAnchor, setCategoryMenuAnchor] = useState(null);
+    const [userLocation, setUserLocation] = useState(FLORIPA_COORDS);
+    const [geoStatus, setGeoStatus] = useState('pending'); // 'pending' | 'granted' | 'denied' | 'unavailable'
+    const [geoSnackbar, setGeoSnackbar] = useState({ open: false, message: '', severity: 'info' });
+
+    // Captura localização do usuário via Geolocation API
+    const requestUserLocation = useCallback(() => {
+        if (!navigator.geolocation) {
+            setGeoStatus('unavailable');
+            setGeoSnackbar({ open: true, message: 'Geolocalização não disponível no seu navegador. Usando localização padrão (Florianópolis).', severity: 'warning' });
+            return;
+        }
+        setGeoStatus('pending');
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const newLocation = { lat: position.coords.latitude, lng: position.coords.longitude };
+                setUserLocation(newLocation);
+                setGeoStatus('granted');
+                setGeoSnackbar({ open: true, message: 'Localização obtida! Resultados ordenados por proximidade.', severity: 'success' });
+            },
+            (error) => {
+                setGeoStatus('denied');
+                const messages = {
+                    1: 'Permissão de localização negada. Usando Florianópolis como referência.',
+                    2: 'Não foi possível determinar sua localização. Usando Florianópolis como referência.',
+                    3: 'Tempo esgotado ao buscar localização. Usando Florianópolis como referência.',
+                };
+                setGeoSnackbar({ open: true, message: messages[error.code] || messages[2], severity: 'warning' });
+            },
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 300000 }
+        );
+    }, []);
+
+    useEffect(() => {
+        requestUserLocation();
+    }, [requestUserLocation]);
 
     useEffect(() => {
         const fetchAll = async () => {
@@ -94,11 +135,6 @@ const Mapa = () => {
                     // Extrair atividades da gradeAtividades e normalizar
                     const atividades = (est.gradeAtividades || []).map(g => normalizeAtividade(g.atividade));
 
-                    // Calcular distância real do centro de Florianópolis
-                    const distancia = (lat && lng)
-                        ? haversineDistance(FLORIPA_COORDS.lat, FLORIPA_COORDS.lng, lat, lng)
-                        : null;
-
                     return {
                         id: est.id,
                         nome: est.nomeFantasia || est.nome,
@@ -106,7 +142,6 @@ const Mapa = () => {
                         lat,
                         lng,
                         avaliacao: est.avaliacao || 0,
-                        distancia: distancia !== null ? distancia.toFixed(1) : '0.0',
                         imagem: est.fotosUrl?.[0] || "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=500&auto=format&fit=crop&q=60",
                         telefone: est.telefone,
                         horario: "06:00 - 22:00",
@@ -139,8 +174,16 @@ const Mapa = () => {
         setOnlyOpen(false);
     };
 
+    // Recalcula distâncias sempre que userLocation mudar
+    const establishmentsWithDistance = useMemo(() => {
+        return dbEstablishments.map(e => ({
+            ...e,
+            distancia: haversineDistance(userLocation.lat, userLocation.lng, e.lat, e.lng).toFixed(1)
+        }));
+    }, [dbEstablishments, userLocation]);
+
     const filteredEstablishments = useMemo(() => {
-        return dbEstablishments.filter((e) => {
+        const filtered = establishmentsWithDistance.filter((e) => {
             const searchLower = search.toLowerCase();
             const matchesSearch = e.nome.toLowerCase().includes(searchLower)
                 || e.bairro.toLowerCase().includes(searchLower)
@@ -151,14 +194,33 @@ const Mapa = () => {
             const matchesStatus = !onlyOpen || e.aberto;
             return matchesSearch && matchesCategory && matchesRating && matchesDistance && matchesStatus;
         });
-    }, [search, selectedCategories, minRating, maxDistance, onlyOpen, dbEstablishments]);
+        // Ordenar por distância (mais próximo primeiro)
+        return filtered.sort((a, b) => parseFloat(a.distancia) - parseFloat(b.distancia));
+    }, [search, selectedCategories, minRating, maxDistance, onlyOpen, establishmentsWithDistance]);
+
+    // Reset selectedId quando os filtros mudam e o item selecionado não está mais nos resultados
+    useEffect(() => {
+        if (selectedId && !filteredEstablishments.find(e => e.id === selectedId)) {
+            setSelectedId(null);
+        }
+    }, [filteredEstablishments, selectedId]);
+
+    // Memoizar array de markers para evitar re-renders desnecessários no MapComponent
+    const mapMarkers = useMemo(() => {
+        return filteredEstablishments.map(e => ({
+            id: e.id,
+            lat: e.lat,
+            lng: e.lng,
+            title: e.nome
+        }));
+    }, [filteredEstablishments]);
 
     // Verifica se algum filtro está ativo
     const hasActiveFilters = search.length > 0 || selectedCategories.length > 0 || minRating > 0 || maxDistance < 50;
 
     const DEFAULT_ZOOM = 12;
 
-    const selectedEstablishment = dbEstablishments.find((e) => e.id === selectedId);
+    const selectedEstablishment = filteredEstablishments.find((e) => e.id === selectedId);
 
     return (
         <Box sx={{
@@ -180,24 +242,53 @@ const Mapa = () => {
                             Encontre os melhores lugares para treinar perto de você
                         </Typography>
                     </Box>
-                    <Button
-                        variant="outlined"
-                        startIcon={showFilters ? <FaTimes /> : <FaFilter />}
-                        onClick={() => setShowFilters(!showFilters)}
-                        sx={{
-                            borderRadius: 3,
-                            textTransform: 'none',
-                            fontWeight: 700,
-                            borderColor: theme.palette.primary.main,
-                            color: theme.palette.primary.main,
-                            '&:hover': {
-                                bgcolor: alpha(theme.palette.primary.main, 0.05),
-                                borderColor: theme.palette.primary.dark,
-                            }
-                        }}
-                    >
-                        {showFilters ? "Fechar Filtros" : "Filtros Avançados"}
-                    </Button>
+                    <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center' }}>
+                        <Tooltip title={geoStatus === 'granted' ? 'Localização ativa — clique para atualizar' : 'Clique para usar sua localização'}>
+                            <Button
+                                variant={geoStatus === 'granted' ? "contained" : "outlined"}
+                                startIcon={<FaLocationArrow />}
+                                onClick={requestUserLocation}
+                                size="small"
+                                sx={{
+                                    borderRadius: 3,
+                                    textTransform: 'none',
+                                    fontWeight: 700,
+                                    ...(geoStatus === 'granted' ? {
+                                        bgcolor: '#10B981',
+                                        '&:hover': { bgcolor: '#059669' },
+                                    } : {
+                                        borderColor: theme.palette.primary.main,
+                                        color: theme.palette.primary.main,
+                                        '&:hover': {
+                                            bgcolor: alpha(theme.palette.primary.main, 0.05),
+                                            borderColor: theme.palette.primary.dark,
+                                        }
+                                    })
+                                }}
+                            >
+                                {geoStatus === 'granted' ? 'Próximos de mim' : 'Usar minha localização'}
+                            </Button>
+                        </Tooltip>
+                        <Button
+                            variant="outlined"
+                            startIcon={showFilters ? <FaTimes /> : <FaFilter />}
+                            onClick={() => setShowFilters(!showFilters)}
+                            size="small"
+                            sx={{
+                                borderRadius: 3,
+                                textTransform: 'none',
+                                fontWeight: 700,
+                                borderColor: theme.palette.primary.main,
+                                color: theme.palette.primary.main,
+                                '&:hover': {
+                                    bgcolor: alpha(theme.palette.primary.main, 0.05),
+                                    borderColor: theme.palette.primary.dark,
+                                }
+                            }}
+                        >
+                            {showFilters ? "Fechar Filtros" : "Filtros Avançados"}
+                        </Button>
+                    </Box>
                 </Box>
 
                 <Collapse in={showFilters}>
@@ -415,12 +506,7 @@ const Mapa = () => {
                             lng={FLORIPA_COORDS.lng}
                             zoom={DEFAULT_ZOOM}
                             autoFit={true}
-                            markers={filteredEstablishments.map(e => ({
-                                id: e.id,
-                                lat: e.lat,
-                                lng: e.lng,
-                                title: e.nome
-                            }))}
+                            markers={mapMarkers}
                             onMarkerClick={(id) => setSelectedId(id)}
                             selectedId={selectedId}
                         />
@@ -584,6 +670,23 @@ const Mapa = () => {
                 onClose={() => setModalOpen(false)}
                 estabelecimento={estabelecimentoParaModal}
             />
+
+            {/* Snackbar de Geolocalização */}
+            <Snackbar
+                open={geoSnackbar.open}
+                autoHideDuration={4000}
+                onClose={() => setGeoSnackbar(prev => ({ ...prev, open: false }))}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+            >
+                <Alert
+                    onClose={() => setGeoSnackbar(prev => ({ ...prev, open: false }))}
+                    severity={geoSnackbar.severity}
+                    variant="filled"
+                    sx={{ borderRadius: 3, fontWeight: 600 }}
+                >
+                    {geoSnackbar.message}
+                </Alert>
+            </Snackbar>
         </Box>
     );
 };

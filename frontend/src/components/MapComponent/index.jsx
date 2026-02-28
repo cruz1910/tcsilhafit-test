@@ -41,7 +41,27 @@ const MapComponent = ({
         };
     }, []);
 
-    // Atualiza marcadores quando a lista de markers muda
+    // Cria ícone do marcador
+    const createIcon = useCallback((isSelected) => {
+        const L = window.L;
+        if (!L) return null;
+        return L.divIcon({
+            className: 'custom-marker',
+            html: `<div style="
+                width: ${isSelected ? '18px' : '14px'};
+                height: ${isSelected ? '18px' : '14px'};
+                background: ${isSelected ? '#EF4444' : '#3B82F6'};
+                border: 3px solid white;
+                border-radius: 50%;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+                transition: all 0.2s;
+            "></div>`,
+            iconSize: [isSelected ? 24 : 20, isSelected ? 24 : 20],
+            iconAnchor: [isSelected ? 12 : 10, isSelected ? 12 : 10],
+        });
+    }, []);
+
+    // Atualiza marcadores quando a lista de markers muda (filtros)
     useEffect(() => {
         if (!mapInstance.current || !window.L) return;
         const L = window.L;
@@ -50,6 +70,9 @@ const MapComponent = ({
         const markersKey = markers.map(m => `${m.id}`).sort().join(',');
         const markersChanged = markersKey !== prevMarkersKeyRef.current;
         prevMarkersKeyRef.current = markersKey;
+
+        // Se os markers não mudaram, não precisa limpar e recriar
+        if (!markersChanged) return;
 
         // Limpa marcadores antigos
         if (markersLayerRef.current) {
@@ -61,22 +84,7 @@ const MapComponent = ({
             const validMarkers = markers.filter(m => m.lat && m.lng);
 
             validMarkers.forEach(marker => {
-                const isSelected = marker.id === selectedId;
-                const icon = L.divIcon({
-                    className: 'custom-marker',
-                    html: `<div style="
-                        width: ${isSelected ? '18px' : '14px'};
-                        height: ${isSelected ? '18px' : '14px'};
-                        background: ${isSelected ? '#EF4444' : '#3B82F6'};
-                        border: 3px solid white;
-                        border-radius: 50%;
-                        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-                        transition: all 0.2s;
-                    "></div>`,
-                    iconSize: [isSelected ? 24 : 20, isSelected ? 24 : 20],
-                    iconAnchor: [isSelected ? 12 : 10, isSelected ? 12 : 10],
-                });
-
+                const icon = createIcon(false);
                 const m = L.marker([marker.lat, marker.lng], { icon })
                     .addTo(markersLayerRef.current)
                     .bindPopup(`<b>${marker.title || ''}</b>`);
@@ -88,8 +96,8 @@ const MapComponent = ({
                 markerObjectsRef.current[marker.id] = m;
             });
 
-            // Ajusta zoom apenas quando a lista de markers muda (filtros), não quando selectedId muda
-            if (autoFit && markersChanged) {
+            // Ajusta zoom para enquadrar os novos resultados
+            if (autoFit) {
                 if (validMarkers.length > 1) {
                     const group = L.featureGroup(
                         validMarkers.map(m => L.marker([m.lat, m.lng]))
@@ -105,25 +113,34 @@ const MapComponent = ({
             }
         } else {
             // Sem markers: mostra posição padrão
-            if (markersChanged) {
-                mapInstance.current.setView([lat, lng], zoom, { animate: true });
-            }
+            mapInstance.current.setView([lat, lng], zoom, { animate: true });
             L.marker([lat, lng])
                 .addTo(markersLayerRef.current)
                 .bindPopup(markerTitle);
         }
-    }, [markers, selectedId, onMarkerClick, autoFit, lat, lng, zoom, markerTitle]);
+    }, [markers, onMarkerClick, autoFit, lat, lng, zoom, markerTitle, createIcon]);
 
-    // Pan suave ao selecionar um marker pela sidebar
+    // Atualiza estilo dos marcadores quando selectedId muda (sem recriar todos)
     useEffect(() => {
-        if (!mapInstance.current || !selectedId) return;
-        const markerObj = markerObjectsRef.current[selectedId];
-        if (markerObj) {
-            const latlng = markerObj.getLatLng();
-            mapInstance.current.panTo(latlng, { animate: true, duration: 0.4 });
-            markerObj.openPopup();
+        if (!mapInstance.current || !window.L) return;
+
+        // Atualiza o ícone de todos os marcadores visíveis
+        Object.entries(markerObjectsRef.current).forEach(([id, markerObj]) => {
+            const isSelected = String(id) === String(selectedId);
+            const icon = createIcon(isSelected);
+            if (icon) markerObj.setIcon(icon);
+        });
+
+        // Pan suave ao selecionar um marker
+        if (selectedId) {
+            const markerObj = markerObjectsRef.current[selectedId];
+            if (markerObj) {
+                const latlng = markerObj.getLatLng();
+                mapInstance.current.panTo(latlng, { animate: true, duration: 0.4 });
+                markerObj.openPopup();
+            }
         }
-    }, [selectedId]);
+    }, [selectedId, createIcon]);
 
     return (
         <Box

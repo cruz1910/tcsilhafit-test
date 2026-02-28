@@ -29,6 +29,8 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/ilhafit
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: root
+    volumes:
+      - ilhafit_uploads:/app/uploads
     depends_on:
       postgres:
         condition: service_healthy
@@ -45,6 +47,7 @@ services:
 
 volumes:
   ilhafit_data:
+  ilhafit_uploads:
 
 networks:
   ilhafit-network:

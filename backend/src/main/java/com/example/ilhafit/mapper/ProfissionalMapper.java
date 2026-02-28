@@ -37,6 +37,9 @@ public class ProfissionalMapper {
         }
         pro.setFotoUrl(dto.getFotoUrl());
         pro.setOutrosAtividade(dto.getOutrosAtividade());
+        pro.setInstagram(dto.getInstagram());
+        pro.setFacebook(dto.getFacebook());
+        pro.setWebsite(dto.getWebsite());
         return pro;
     }
 
@@ -64,6 +67,9 @@ public class ProfissionalMapper {
         }
         dto.setFotoUrl(pro.getFotoUrl());
         dto.setOutrosAtividade(pro.getOutrosAtividade());
+        dto.setInstagram(pro.getInstagram());
+        dto.setFacebook(pro.getFacebook());
+        dto.setWebsite(pro.getWebsite());
         dto.setRole(pro.getRole());
         return dto;
     }

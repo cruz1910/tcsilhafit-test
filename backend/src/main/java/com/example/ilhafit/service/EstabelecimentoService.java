@@ -84,6 +84,9 @@ public class EstabelecimentoService {
         estabelecimento.setExclusivoMulheres(dto.getExclusivoMulheres());
         estabelecimento.setFotosUrl(dto.getFotosUrl());
         estabelecimento.setOutrosAtividade(dto.getOutrosAtividade());
+        estabelecimento.setInstagram(dto.getInstagram());
+        estabelecimento.setFacebook(dto.getFacebook());
+        estabelecimento.setWebsite(dto.getWebsite());
 
         // Atualiza endereço
         if (dto.getEndereco() != null) {

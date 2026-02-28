@@ -62,6 +62,9 @@ export const authService = {
                 gradeAtividades: formData.gradeAtividades || [],
                 exclusivoMulheres: formData.exclusivoMulheres,
                 fotosUrl: formData.fotosUrl,
+                instagram: formData.instagram || null,
+                facebook: formData.facebook || null,
+                website: formData.website || null,
                 endereco: formData.endereco ? {
                     ...formData.endereco,
                     rua: formData.endereco.rua,
@@ -81,6 +84,9 @@ export const authService = {
                 gradeAtividades: formData.gradeAtividades || [],
                 exclusivoMulheres: formData.exclusivoMulheres,
                 fotoUrl: formData.fotoUrl,
+                instagram: formData.instagram || null,
+                facebook: formData.facebook || null,
+                website: formData.website || null,
                 endereco: formData.endereco ? {
                     ...formData.endereco,
                     rua: formData.endereco.rua,
@@ -152,6 +158,70 @@ export const authService = {
         if (!token) return false;
         return !authService.isTokenExpired(token);
     },
+};
+
+// ==================== UPLOAD DE IMAGENS ====================
+
+const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
+
+export const uploadService = {
+    // Validar arquivo no frontend antes de enviar
+    validate: (file) => {
+        if (!file) return { valid: false, error: 'Nenhum arquivo selecionado.' };
+        if (!ALLOWED_TYPES.includes(file.type)) {
+            return { valid: false, error: 'Formato não permitido. Aceitos: JPEG, PNG, WebP.' };
+        }
+        if (file.size > MAX_FILE_SIZE) {
+            return { valid: false, error: `Arquivo muito grande (${(file.size / 1024 / 1024).toFixed(1)}MB). Máximo: 2MB.` };
+        }
+        return { valid: true, error: null };
+    },
+
+    // Upload de uma imagem com progresso
+    uploadImagem: async (file, onProgress) => {
+        const formData = new FormData();
+        formData.append('file', file);
+        const response = await api.post('/upload/imagem', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+            onUploadProgress: (progressEvent) => {
+                if (onProgress && progressEvent.total) {
+                    const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+                    onProgress(percent);
+                }
+            }
+        });
+        return response.data;
+    },
+
+    // Upload de múltiplas imagens com progresso
+    uploadImagens: async (files, onProgress) => {
+        const formData = new FormData();
+        files.forEach(file => formData.append('files', file));
+        const response = await api.post('/upload/imagens', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+            onUploadProgress: (progressEvent) => {
+                if (onProgress && progressEvent.total) {
+                    const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+                    onProgress(percent);
+                }
+            }
+        });
+        return response.data;
+    },
+
+    // Deletar imagem
+    deleteImagem: async (fileName) => {
+        const response = await api.delete(`/upload/imagem?fileName=${encodeURIComponent(fileName)}`);
+        return response.data;
+    },
+
+    // Extrair nome do arquivo a partir da URL
+    getFileNameFromUrl: (url) => {
+        if (!url) return null;
+        const parts = url.split('/');
+        return parts[parts.length - 1];
+    }
 };
 
 // ==================== MEU PERFIL (usuário autenticado) ====================

@@ -39,8 +39,9 @@ const Home = () => {
         const data = await estabelecimentoService.getAll();
         const mappedData = data.slice(0, 3).map(item => ({
           ...item,
-          Imagem: item.fotoUrl || "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=500&auto=format&fit=crop&q=60",
-          categorias: item.atividadesOferecidas || [],
+          Imagem: (item.fotosUrl && item.fotosUrl.length > 0) ? item.fotosUrl[0] : "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=500&auto=format&fit=crop&q=60",
+          Imagens: item.fotosUrl || [],
+          categorias: (item.gradeAtividades || []).map(g => g.atividade),
           avaliacao: item.avaliacao || 0.0,
           aberto: true,
           descricao: item.descricao || "Um ótimo local para treinar e cuidar da sua saúde.",

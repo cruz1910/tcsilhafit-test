@@ -90,6 +90,9 @@ public class ProfissionalService {
         profissional.setExclusivoMulheres(dto.getExclusivoMulheres());
         profissional.setFotoUrl(dto.getFotoUrl()); // String direta
         profissional.setOutrosAtividade(dto.getOutrosAtividade());
+        profissional.setInstagram(dto.getInstagram());
+        profissional.setFacebook(dto.getFacebook());
+        profissional.setWebsite(dto.getWebsite());
 
         // Atualiza Endereço
         if (dto.getEndereco() != null) {

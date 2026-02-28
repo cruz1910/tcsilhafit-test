@@ -30,6 +30,9 @@ import {
     FaTrash,
     FaExclamationTriangle,
     FaFlag,
+    FaInstagram,
+    FaFacebook,
+    FaGlobe,
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { authService, avaliacaoService } from "../../services";
@@ -242,6 +245,60 @@ const ModalProfissional = ({ open, onClose, profissional }) => {
                         </Paper>
                     </Grid>
                 </Grid>
+
+                {/* Redes Sociais - Exibição Condicional */}
+                {(profissional.instagram || profissional.facebook || profissional.website) && (
+                    <Box sx={{ display: 'flex', gap: 1.5, mb: 4 }}>
+                        {profissional.instagram && (
+                            <IconButton
+                                onClick={() => {
+                                    const handle = profissional.instagram.replace('@', '');
+                                    window.open(`https://instagram.com/${handle}`, '_blank');
+                                }}
+                                sx={{
+                                    bgcolor: alpha('#E4405F', 0.1),
+                                    color: '#E4405F',
+                                    '&:hover': { bgcolor: alpha('#E4405F', 0.2) },
+                                    width: 44, height: 44
+                                }}
+                            >
+                                <FaInstagram size={20} />
+                            </IconButton>
+                        )}
+                        {profissional.facebook && (
+                            <IconButton
+                                onClick={() => {
+                                    const url = profissional.facebook.startsWith('http') ? profissional.facebook : `https://facebook.com/${profissional.facebook}`;
+                                    window.open(url, '_blank');
+                                }}
+                                sx={{
+                                    bgcolor: alpha('#1877F2', 0.1),
+                                    color: '#1877F2',
+                                    '&:hover': { bgcolor: alpha('#1877F2', 0.2) },
+                                    width: 44, height: 44
+                                }}
+                            >
+                                <FaFacebook size={20} />
+                            </IconButton>
+                        )}
+                        {profissional.website && (
+                            <IconButton
+                                onClick={() => {
+                                    const url = profissional.website.startsWith('http') ? profissional.website : `https://${profissional.website}`;
+                                    window.open(url, '_blank');
+                                }}
+                                sx={{
+                                    bgcolor: alpha(theme.palette.primary.main, 0.1),
+                                    color: 'primary.main',
+                                    '&:hover': { bgcolor: alpha(theme.palette.primary.main, 0.2) },
+                                    width: 44, height: 44
+                                }}
+                            >
+                                <FaGlobe size={20} />
+                            </IconButton>
+                        )}
+                    </Box>
+                )}
 
                 {/* Horários */}
                 <Box sx={{ mb: 4 }}>

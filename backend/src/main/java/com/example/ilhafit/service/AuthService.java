@@ -195,6 +195,7 @@ public class AuthService {
     }
 
     public UsuarioDTO.Resposta registerUsuario(UsuarioDTO.Registro dto) {
+        validatePassword(dto.getSenha());
         if (usuarioRepository.existsByEmail(dto.getEmail())) {
             throw new RuntimeException("Email já cadastrado");
         }
@@ -208,10 +209,26 @@ public class AuthService {
         return usuarioMapper.toDTO(usuario);
     }
 
-    public EstabelecimentoDTO.Resposta registerEstabelecimento(EstabelecimentoDTO.Registro dto) {
-        if (dto.getSenha() == null || dto.getSenha().trim().isEmpty()) {
+    private void validatePassword(String senha) {
+        if (senha == null || senha.trim().isEmpty()) {
             throw new IllegalArgumentException("Senha é obrigatória");
         }
+        if (senha.length() < 8) {
+            throw new IllegalArgumentException("Senha deve ter no mínimo 8 caracteres");
+        }
+        if (!senha.matches(".*[A-Z].*")) {
+            throw new IllegalArgumentException("Senha deve conter pelo menos uma letra maiúscula");
+        }
+        if (!senha.matches(".*\\d.*")) {
+            throw new IllegalArgumentException("Senha deve conter pelo menos um número");
+        }
+        if (!senha.matches(".*[@$!%*?&].*")) {
+            throw new IllegalArgumentException("Senha deve conter pelo menos um caractere especial (@$!%*?&)");
+        }
+    }
+
+    public EstabelecimentoDTO.Resposta registerEstabelecimento(EstabelecimentoDTO.Registro dto) {
+        validatePassword(dto.getSenha());
         if (estabelecimentoRepository.existsByEmail(dto.getEmail())) {
             throw new RuntimeException("Email já cadastrado");
         }
@@ -240,9 +257,7 @@ public class AuthService {
     }
 
     public ProfissionalDTO.Resposta registerProfissional(ProfissionalDTO.Registro dto) {
-        if (dto.getSenha() == null || dto.getSenha().trim().isEmpty()) {
-            throw new IllegalArgumentException("Senha é obrigatória");
-        }
+        validatePassword(dto.getSenha());
         if (profissionalRepository.existsByEmail(dto.getEmail())) {
             throw new RuntimeException("Email já cadastrado");
         }

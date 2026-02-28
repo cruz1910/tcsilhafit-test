@@ -36,6 +36,9 @@ public class EstabelecimentoMapper {
         }
         est.setFotosUrl(dto.getFotosUrl());
         est.setOutrosAtividade(dto.getOutrosAtividade());
+        est.setInstagram(dto.getInstagram());
+        est.setFacebook(dto.getFacebook());
+        est.setWebsite(dto.getWebsite());
         return est;
     }
 
@@ -62,6 +65,9 @@ public class EstabelecimentoMapper {
         }
         dto.setFotosUrl(est.getFotosUrl());
         dto.setOutrosAtividade(est.getOutrosAtividade());
+        dto.setInstagram(est.getInstagram());
+        dto.setFacebook(est.getFacebook());
+        dto.setWebsite(est.getWebsite());
         dto.setRole(est.getRole());
         return dto;
     }

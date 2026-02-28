@@ -66,6 +66,10 @@ public class Estabelecimento {
     @Column(name = "foto_url", columnDefinition = "TEXT")
     private List<String> fotosUrl;
 
+    private String instagram;
+    private String facebook;
+    private String website;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, columnDefinition = "VARCHAR(50)")
     private Role role = Role.ESTABELECIMENTO;

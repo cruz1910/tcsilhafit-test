@@ -47,13 +47,15 @@ public class SecurityConfig {
                                 "/api/profissionais/registrar",
                                 "/api/estabelecimentos/registrar",
                                 "/api/administradores/registrar",
+                                "/uploads/**",
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html")
                         .permitAll()
                         // Rotas de listagem pública
                         .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/estabelecimentos",
-                                "/api/profissionais")
+                                "/api/profissionais",
+                                "/api/avaliacoes/**")
                         .permitAll()
                         // Proteger rotas ADMIN
                         .requestMatchers("/api/administradores/**", "/api/admin/**").hasRole("ADMIN")

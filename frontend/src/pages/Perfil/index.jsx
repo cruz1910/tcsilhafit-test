@@ -42,16 +42,21 @@ import {
     FaCity,
     FaHashtag,
     FaInfoCircle,
-    FaHome
+    FaHome,
+    FaInstagram,
+    FaFacebook,
+    FaGlobe
 } from "react-icons/fa";
 import {
     Collapse,
     ToggleButton,
     Avatar,
     Autocomplete,
-    Chip
+    Chip,
+    LinearProgress,
+    CircularProgress
 } from "@mui/material";
-import { authService, meService, userService, estabelecimentoService, profissionalService } from "../../services";
+import { authService, meService, userService, estabelecimentoService, profissionalService, uploadService } from "../../services";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 
@@ -87,6 +92,9 @@ const Perfil = () => {
     const [selectedTab, setSelectedTab] = useState(0);
     const [openDelete, setOpenDelete] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState(0);
+    const [isUploading, setIsUploading] = useState(false);
+    const [previewFiles, setPreviewFiles] = useState([]);
 
     const [formData, setFormData] = useState({
         nome: '',
@@ -114,6 +122,9 @@ const Perfil = () => {
         nomeFantasia: '',
         razaoSocial: '',
         outrosAtividade: '',
+        instagram: '',
+        facebook: '',
+        website: '',
     });
 
     // Funções de máscara
@@ -200,6 +211,9 @@ const Perfil = () => {
                 nomeFantasia: data.nomeFantasia || data.nome || '',
                 razaoSocial: data.razaoSocial || '',
                 outrosAtividade: data.outrosAtividade || '',
+                instagram: data.instagram || '',
+                facebook: data.facebook || '',
+                website: data.website || '',
             });
             if (data.registroCref) setCrefOriginal(data.registroCref);
         } catch (error) {
@@ -302,20 +316,89 @@ const Perfil = () => {
         }));
     };
 
-    const handleFileChange = (e) => {
-        if (e.target.files && e.target.files.length > 0) {
+    const handleFileChange = async (e) => {
+        if (!e.target.files || e.target.files.length === 0) return;
+
+        const files = Array.from(e.target.files);
+
+        // Validar cada arquivo no frontend
+        for (const file of files) {
+            const { valid, error } = uploadService.validate(file);
+            if (!valid) {
+                toast.error(error);
+                e.target.value = '';
+                return;
+            }
+        }
+
+        // Mostrar previews imediatamente
+        const previews = files.map(file => ({
+            file,
+            preview: URL.createObjectURL(file),
+            name: file.name
+        }));
+        setPreviewFiles(previews);
+
+        // Fazer upload real para o backend
+        setIsUploading(true);
+        setUploadProgress(0);
+
+        try {
             if (user.role === 'ESTABELECIMENTO') {
-                const newPhotos = Array.from(e.target.files).map(file => URL.createObjectURL(file));
+                const result = await uploadService.uploadImagens(files, setUploadProgress);
+                if (result.erros && result.erros.length > 0) {
+                    result.erros.forEach(err => toast.warning(err));
+                }
+                if (result.imagens && result.imagens.length > 0) {
+                    const newUrls = result.imagens.map(img => img.url);
+                    setFormData(prev => ({
+                        ...prev,
+                        fotosUrl: [...(prev.fotosUrl || []), ...newUrls]
+                    }));
+                    toast.success(`${result.imagens.length} foto(s) enviada(s) com sucesso!`);
+                }
+            } else {
+                const result = await uploadService.uploadImagem(files[0], setUploadProgress);
+                setFormData(prev => ({ ...prev, fotoUrl: result.url }));
+                toast.success("Foto enviada com sucesso!");
+            }
+        } catch (error) {
+            const msg = error.response?.data?.erro || "Erro ao enviar imagem.";
+            toast.error(msg);
+        } finally {
+            setIsUploading(false);
+            setUploadProgress(0);
+            setPreviewFiles([]);
+            e.target.value = '';
+        }
+    };
+
+    const handleDeletePhoto = async (url, index) => {
+        const fileName = uploadService.getFileNameFromUrl(url);
+        try {
+            if (fileName) {
+                await uploadService.deleteImagem(fileName);
+            }
+            if (user.role === 'ESTABELECIMENTO') {
                 setFormData(prev => ({
                     ...prev,
-                    fotosUrl: [...(prev.fotosUrl || []), ...newPhotos]
+                    fotosUrl: prev.fotosUrl.filter((_, i) => i !== index)
                 }));
             } else {
-                const file = e.target.files[0];
-                const url = URL.createObjectURL(file);
-                setFormData(prev => ({ ...prev, fotoUrl: url }));
+                setFormData(prev => ({ ...prev, fotoUrl: '' }));
             }
-            toast.info("Foto(s) selecionada(s). Clique em 'Salvar' para confirmar.");
+            toast.success("Foto removida!");
+        } catch (error) {
+            // Mesmo se falhar no servidor, remove localmente
+            if (user.role === 'ESTABELECIMENTO') {
+                setFormData(prev => ({
+                    ...prev,
+                    fotosUrl: prev.fotosUrl.filter((_, i) => i !== index)
+                }));
+            } else {
+                setFormData(prev => ({ ...prev, fotoUrl: '' }));
+            }
+            toast.info("Foto removida do perfil.");
         }
     };
 
@@ -612,6 +695,77 @@ const Perfil = () => {
                             )}
                         </Grid>
 
+                        {/* Redes Sociais & Contatos */}
+                        {user.role !== 'USER' && (
+                            <>
+                                <Typography variant="h6" fontWeight={800} sx={{ mt: 6, mb: 4, display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                                    <Box sx={{ width: 4, height: 24, bgcolor: 'primary.main', borderRadius: 2 }} />
+                                    Redes Sociais & Contatos
+                                </Typography>
+                                <Grid container spacing={2}>
+                                    <Grid item xs={12} md={4}>
+                                        <TextField
+                                            fullWidth
+                                            variant="outlined"
+                                            label="Instagram"
+                                            name="instagram"
+                                            value={formData.instagram || ''}
+                                            onChange={handleChange}
+                                            placeholder="@seuperfil"
+                                            InputProps={{
+                                                startAdornment: (
+                                                    <InputAdornment position="start">
+                                                        <FaInstagram size={14} color="#E4405F" />
+                                                    </InputAdornment>
+                                                ),
+                                            }}
+                                            sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
+                                            disabled={!isEditing}
+                                        />
+                                    </Grid>
+                                    <Grid item xs={12} md={4}>
+                                        <TextField
+                                            fullWidth
+                                            variant="outlined"
+                                            label="Facebook"
+                                            name="facebook"
+                                            value={formData.facebook || ''}
+                                            onChange={handleChange}
+                                            placeholder="facebook.com/seuperfil"
+                                            InputProps={{
+                                                startAdornment: (
+                                                    <InputAdornment position="start">
+                                                        <FaFacebook size={14} color="#1877F2" />
+                                                    </InputAdornment>
+                                                ),
+                                            }}
+                                            sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
+                                            disabled={!isEditing}
+                                        />
+                                    </Grid>
+                                    <Grid item xs={12} md={4}>
+                                        <TextField
+                                            fullWidth
+                                            variant="outlined"
+                                            label="Website"
+                                            name="website"
+                                            value={formData.website || ''}
+                                            onChange={handleChange}
+                                            placeholder="www.seusite.com"
+                                            InputProps={{
+                                                startAdornment: (
+                                                    <InputAdornment position="start">
+                                                        <FaGlobe size={14} color={theme.palette.primary.main} />
+                                                    </InputAdornment>
+                                                ),
+                                            }}
+                                            sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
+                                            disabled={!isEditing}
+                                        />
+                                    </Grid>
+                                </Grid>
+                            </>
+                        )}
 
                         {user.role === 'ESTABELECIMENTO' && (
                             <>
@@ -992,6 +1146,8 @@ const Perfil = () => {
                             <Box sx={{ width: 4, height: 24, bgcolor: 'primary.main', borderRadius: 2 }} />
                             Gerenciar Fotos
                         </Typography>
+
+                        {/* Foto Principal / Avatar */}
                         <Box sx={{ position: 'relative', mb: 4 }}>
                             <Box sx={{
                                 p: 0.5,
@@ -1003,30 +1159,37 @@ const Perfil = () => {
                                 boxShadow: '0 8px 16px rgba(16, 185, 129, 0.2)'
                             }}>
                                 <Avatar
-                                    src={user?.role === 'ESTABELECIMENTO' ? formData.fotosUrl[0] : formData.fotoUrl}
+                                    src={user?.role === 'ESTABELECIMENTO'
+                                        ? (formData.fotosUrl?.[0] || '')
+                                        : (formData.fotoUrl || '')}
                                     sx={{
                                         width: 200,
                                         height: 200,
                                         border: '4px solid',
-                                        borderColor: 'background.paper'
+                                        borderColor: 'background.paper',
+                                        bgcolor: alpha(theme.palette.primary.main, 0.1),
+                                        color: 'primary.main',
+                                        fontSize: 48
                                     }}
-                                />
+                                >
+                                    {(!formData.fotoUrl && !(formData.fotosUrl?.[0])) && <FaUpload />}
+                                </Avatar>
                             </Box>
                             <input
                                 type="file"
                                 id="photo-upload-tab"
                                 hidden
-                                accept="image/*"
+                                accept="image/jpeg,image/png,image/webp"
                                 multiple={user.role === 'ESTABELECIMENTO'}
                                 onChange={handleFileChange}
-                                disabled={!isEditing}
+                                disabled={!isEditing || isUploading}
                             />
                             <label htmlFor="photo-upload-tab">
                                 <Button
                                     component="span"
-                                    disabled={!isEditing}
+                                    disabled={!isEditing || isUploading}
                                     variant="contained"
-                                    startIcon={<FaUpload />}
+                                    startIcon={isUploading ? <CircularProgress size={16} color="inherit" /> : <FaUpload />}
                                     sx={{
                                         mt: 3,
                                         borderRadius: 3,
@@ -1034,15 +1197,65 @@ const Perfil = () => {
                                         fontWeight: 700
                                     }}
                                 >
-                                    Carregar Nova Foto
+                                    {isUploading ? 'Enviando...' : 'Carregar Nova Foto'}
                                 </Button>
                             </label>
                         </Box>
 
+                        {/* Dicas de formato */}
+                        <Typography variant="caption" color="text.secondary" sx={{ mb: 2, textAlign: 'center' }}>
+                            Formatos aceitos: JPEG, PNG, WebP | Tamanho máximo: 2MB
+                        </Typography>
+
+                        {/* Barra de Progresso */}
+                        {isUploading && (
+                            <Box sx={{ width: '100%', maxWidth: 400, mb: 3 }}>
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                                    <Typography variant="caption" fontWeight={600}>Enviando...</Typography>
+                                    <Typography variant="caption" fontWeight={600}>{uploadProgress}%</Typography>
+                                </Box>
+                                <LinearProgress
+                                    variant="determinate"
+                                    value={uploadProgress}
+                                    sx={{
+                                        height: 8,
+                                        borderRadius: 4,
+                                        bgcolor: alpha(theme.palette.primary.main, 0.1),
+                                        '& .MuiLinearProgress-bar': { borderRadius: 4 }
+                                    }}
+                                />
+                            </Box>
+                        )}
+
+                        {/* Previews dos arquivos sendo enviados */}
+                        {previewFiles.length > 0 && (
+                            <Box sx={{ width: '100%', mb: 3 }}>
+                                <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 1 }}>Preview:</Typography>
+                                <Grid container spacing={1}>
+                                    {previewFiles.map((pf, idx) => (
+                                        <Grid item xs={4} sm={3} md={2} key={idx}>
+                                            <Box sx={{ position: 'relative', opacity: 0.7 }}>
+                                                <Avatar
+                                                    src={pf.preview}
+                                                    variant="rounded"
+                                                    sx={{ width: '100%', height: 100, border: '2px dashed', borderColor: 'primary.main' }}
+                                                />
+                                                <CircularProgress
+                                                    size={24}
+                                                    sx={{ position: 'absolute', top: '50%', left: '50%', mt: -1.5, ml: -1.5 }}
+                                                />
+                                            </Box>
+                                        </Grid>
+                                    ))}
+                                </Grid>
+                            </Box>
+                        )}
+
+                        {/* Galeria de fotos (Estabelecimento) */}
                         {user.role === 'ESTABELECIMENTO' && (
-                            <Box sx={{ width: '100%', mt: 4 }}>
+                            <Box sx={{ width: '100%', mt: 2 }}>
                                 <Typography variant="subtitle1" fontWeight={800} sx={{ mb: 2 }}>Galeria de Fotos</Typography>
-                                {formData.fotosUrl.length > 0 ? (
+                                {formData.fotosUrl && formData.fotosUrl.length > 0 ? (
                                     <Grid container spacing={2}>
                                         {formData.fotosUrl.map((url, idx) => (
                                             <Grid item xs={6} sm={4} md={3} key={idx}>
@@ -1054,8 +1267,8 @@ const Perfil = () => {
                                                     />
                                                     <IconButton
                                                         size="small"
-                                                        onClick={() => setFormData(prev => ({ ...prev, fotosUrl: prev.fotosUrl.filter((_, i) => i !== idx) }))}
-                                                        disabled={!isEditing}
+                                                        onClick={() => handleDeletePhoto(url, idx)}
+                                                        disabled={!isEditing || isUploading}
                                                         sx={{
                                                             position: 'absolute',
                                                             top: 5,
@@ -1067,13 +1280,68 @@ const Perfil = () => {
                                                     >
                                                         <FaTimes size={14} />
                                                     </IconButton>
+                                                    {idx === 0 && (
+                                                        <Chip
+                                                            label="Principal"
+                                                            size="small"
+                                                            sx={{
+                                                                position: 'absolute',
+                                                                bottom: 5,
+                                                                left: 5,
+                                                                bgcolor: 'primary.main',
+                                                                color: 'white',
+                                                                fontWeight: 700,
+                                                                fontSize: '0.7rem'
+                                                            }}
+                                                        />
+                                                    )}
                                                 </Box>
                                             </Grid>
                                         ))}
                                     </Grid>
                                 ) : (
-                                    <Typography color="text.secondary">Nenhuma foto adicional cadastrada.</Typography>
+                                    <Box sx={{
+                                        textAlign: 'center', py: 6,
+                                        border: '2px dashed',
+                                        borderColor: 'divider',
+                                        borderRadius: 3,
+                                        bgcolor: alpha(theme.palette.primary.main, 0.02)
+                                    }}>
+                                        <FaUpload size={32} color={theme.palette.text.disabled} />
+                                        <Typography color="text.secondary" sx={{ mt: 1 }}>
+                                            Nenhuma foto cadastrada. Clique em "Carregar Nova Foto" para adicionar.
+                                        </Typography>
+                                    </Box>
                                 )}
+                            </Box>
+                        )}
+
+                        {/* Foto única (Profissional) */}
+                        {user.role === 'PROFISSIONAL' && formData.fotoUrl && (
+                            <Box sx={{ width: '100%', mt: 2 }}>
+                                <Typography variant="subtitle1" fontWeight={800} sx={{ mb: 2 }}>Foto de Perfil</Typography>
+                                <Box sx={{ position: 'relative', display: 'inline-block' }}>
+                                    <Avatar
+                                        src={formData.fotoUrl}
+                                        variant="rounded"
+                                        sx={{ width: 200, height: 200, border: '2px solid', borderColor: 'divider' }}
+                                    />
+                                    <IconButton
+                                        size="small"
+                                        onClick={() => handleDeletePhoto(formData.fotoUrl, 0)}
+                                        disabled={!isEditing || isUploading}
+                                        sx={{
+                                            position: 'absolute',
+                                            top: 5,
+                                            right: 5,
+                                            bgcolor: isEditing ? 'error.main' : alpha(theme.palette.text.disabled, 0.5),
+                                            color: 'white',
+                                            '&:hover': { bgcolor: 'error.dark' },
+                                        }}
+                                    >
+                                        <FaTimes size={14} />
+                                    </IconButton>
+                                </Box>
                             </Box>
                         )}
                     </Box>

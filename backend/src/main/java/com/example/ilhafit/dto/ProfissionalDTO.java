@@ -35,6 +35,9 @@ public class ProfissionalDTO {
         private List<GradeAtividadeDTO> gradeAtividades;
         private String fotoUrl;
         private String outrosAtividade;
+        private String instagram;
+        private String facebook;
+        private String website;
     }
 
     @Data
@@ -52,6 +55,9 @@ public class ProfissionalDTO {
         private List<GradeAtividadeDTO> gradeAtividades;
         private String fotoUrl;
         private String outrosAtividade;
+        private String instagram;
+        private String facebook;
+        private String website;
         private Role role;
         private Double avaliacao;
     }

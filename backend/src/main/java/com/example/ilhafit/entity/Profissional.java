@@ -71,6 +71,10 @@ public class Profissional {
     @Column(name = "foto_url", columnDefinition = "TEXT")
     private String fotoUrl;
 
+    private String instagram;
+    private String facebook;
+    private String website;
+
     @Column(name = "data_cadastro", nullable = false, updatable = false)
     private LocalDateTime dataCadastro;
 
