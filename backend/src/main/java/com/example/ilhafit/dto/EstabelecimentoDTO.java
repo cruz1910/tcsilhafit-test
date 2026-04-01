@@ -31,12 +31,13 @@ public class EstabelecimentoDTO {
 
         private EnderecoDTO endereco;
         private Boolean exclusivoMulheres;
-        private List<GradeAtividadeDTO> gradeAtividades;
+        private List<GradeAtividadeDTO.Registro> gradeAtividades;
         private List<String> fotosUrl;
         private String outrosAtividade;
         private String instagram;
         private String facebook;
         private String website;
+        private List<Long> categoriaIds;
     }
 
     @Data
@@ -50,7 +51,7 @@ public class EstabelecimentoDTO {
         private String cnpj;
         private EnderecoDTO endereco;
         private Boolean exclusivoMulheres;
-        private List<GradeAtividadeDTO> gradeAtividades;
+        private List<GradeAtividadeDTO.Resposta> gradeAtividades;
         private List<String> fotosUrl;
         private String outrosAtividade;
         private String instagram;
@@ -58,5 +59,6 @@ public class EstabelecimentoDTO {
         private String website;
         private Role role;
         private Double avaliacao;
+        private List<CategoriaDTO.Resposta> categorias;
     }
 }

@@ -1,5 +1,6 @@
 package com.example.ilhafit.mapper;
 
+import com.example.ilhafit.dto.CategoriaDTO;
 import com.example.ilhafit.dto.EstabelecimentoDTO;
 import com.example.ilhafit.dto.GradeAtividadeDTO;
 import com.example.ilhafit.entity.Estabelecimento;
@@ -55,7 +56,8 @@ public class EstabelecimentoMapper {
         dto.setExclusivoMulheres(est.getExclusivoMulheres());
         if (est.getGradeAtividades() != null) {
             dto.setGradeAtividades(est.getGradeAtividades().stream().map(g -> {
-                GradeAtividadeDTO d = new GradeAtividadeDTO();
+                GradeAtividadeDTO.Resposta d = new GradeAtividadeDTO.Resposta();
+                d.setId(g.getId());
                 d.setAtividade(g.getAtividade());
                 d.setExclusivoMulheres(g.getExclusivoMulheres());
                 d.setDiasSemana(g.getDiasSemana());
@@ -69,6 +71,16 @@ public class EstabelecimentoMapper {
         dto.setFacebook(est.getFacebook());
         dto.setWebsite(est.getWebsite());
         dto.setRole(est.getRole());
+        if (est.getCategorias() != null) {
+            dto.setCategorias(est.getCategorias().stream().map(c -> {
+                CategoriaDTO.Resposta cd = new CategoriaDTO.Resposta();
+                cd.setId(c.getId());
+                cd.setNome(c.getNome());
+                cd.setDescricao(c.getDescricao());
+                cd.setIconeUrl(c.getIconeUrl());
+                return cd;
+            }).toList());
+        }
         return dto;
     }
 }

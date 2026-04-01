@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -66,7 +67,15 @@ public class Profissional {
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "profissional_id")
-    private List<GradeAtividade> gradeAtividades;
+    private List<GradeAtividade> gradeAtividades = new ArrayList<>();
+
+    @ManyToMany
+    @JoinTable(
+            name = "profissional_categorias",
+            joinColumns = @JoinColumn(name = "profissional_id"),
+            inverseJoinColumns = @JoinColumn(name = "categoria_id")
+    )
+    private List<Categoria> categorias = new ArrayList<>();
 
     @Column(name = "foto_url", columnDefinition = "TEXT")
     private String fotoUrl;

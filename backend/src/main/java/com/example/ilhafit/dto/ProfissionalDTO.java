@@ -32,12 +32,13 @@ public class ProfissionalDTO {
         private String registroCref;
         private EnderecoDTO endereco;
         private Boolean exclusivoMulheres;
-        private List<GradeAtividadeDTO> gradeAtividades;
+        private List<GradeAtividadeDTO.Registro> gradeAtividades;
         private String fotoUrl;
         private String outrosAtividade;
         private String instagram;
         private String facebook;
         private String website;
+        private List<Long> categoriaIds;
     }
 
     @Data
@@ -52,7 +53,7 @@ public class ProfissionalDTO {
         private String registroCref;
         private EnderecoDTO endereco;
         private Boolean exclusivoMulheres;
-        private List<GradeAtividadeDTO> gradeAtividades;
+        private List<GradeAtividadeDTO.Resposta> gradeAtividades;
         private String fotoUrl;
         private String outrosAtividade;
         private String instagram;
@@ -60,5 +61,6 @@ public class ProfissionalDTO {
         private String website;
         private Role role;
         private Double avaliacao;
+        private List<CategoriaDTO.Resposta> categorias;
     }
 }

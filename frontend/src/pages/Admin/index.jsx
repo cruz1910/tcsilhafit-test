@@ -12,6 +12,7 @@ import {
     FaStore,
     FaStar,
     FaChartLine,
+    FaTags,
 } from "react-icons/fa";
 import { toast } from "react-toastify";
 import { authService } from "../../services";
@@ -21,6 +22,7 @@ import UsuariosTab from "./Tabs/UsuariosTab";
 import EstabelecimentosTab from "./Tabs/EstabelecimentosTab";
 import AvaliacoesTab from "./Tabs/AvaliacoesTab";
 import DashboardTab from "./Tabs/DashboardTab";
+import CategoriasTab from "./Tabs/CategoriasTab";
 
 function TabPanel(props) {
     const { children, value, index, ...other } = props;
@@ -62,6 +64,7 @@ const Admin = () => {
         { label: "Usuários", icon: <FaUsers size={14} /> },
         { label: "Estabelecimentos", icon: <FaStore size={14} /> },
         { label: "Avaliações", icon: <FaStar size={14} /> },
+        { label: "Categorias", icon: <FaTags size={14} /> },
     ];
 
     return (
@@ -117,6 +120,9 @@ const Admin = () => {
             </TabPanel>
             <TabPanel value={tabValue} index={3}>
                 <AvaliacoesTab />
+            </TabPanel>
+            <TabPanel value={tabValue} index={4}>
+                <CategoriasTab />
             </TabPanel>
         </Container>
     );

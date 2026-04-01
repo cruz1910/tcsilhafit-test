@@ -56,26 +56,9 @@ import {
     LinearProgress,
     CircularProgress
 } from "@mui/material";
-import { authService, meService, userService, estabelecimentoService, profissionalService, uploadService } from "../../services";
+import { authService, meService, categoriaService, userService, estabelecimentoService, profissionalService, uploadService } from "../../services";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
-
-const atividadesList = [
-    "Academia", "CrossFit", "Funcional",
-    "Pilates", "Yoga", "Dança",
-    "Balé", "Basquete", "Futebol",
-    "Natação", "Vôlei", "Jiu-Jitsu",
-    "Boxe", "Muay Thai", "Kung Fu",
-    "Ciclismo", "Circo", "Fisioterapia",
-    "Outros"
-];
-
-const crefRequiredActivities = [
-    "Academia", "CrossFit", "Funcional",
-    "Natação", "Basquete", "Futebol",
-    "Vôlei", "Boxe", "Muay Thai",
-    "Kung Fu", "Jiu-Jitsu", "Ciclismo"
-];
 
 const GRANDE_FLORIANOPOLIS = [
     "Florianópolis", "São José", "Palhoça", "Biguaçu",
@@ -114,6 +97,7 @@ const Perfil = () => {
             latitude: null,
             longitude: null
         },
+        categoriaIds: [],
         gradeAtividades: [],
         exclusivoMulheres: false,
         registroCref: '',
@@ -121,7 +105,6 @@ const Perfil = () => {
         fotosUrl: [],
         nomeFantasia: '',
         razaoSocial: '',
-        outrosAtividade: '',
         instagram: '',
         facebook: '',
         website: '',
@@ -163,6 +146,7 @@ const Perfil = () => {
     };
 
     const [crefOriginal, setCrefOriginal] = useState('');
+    const [categoriasDb, setCategoriasDb] = useState([]);
 
     const [expandedActivities, setExpandedActivities] = useState(new Set());
     const isDark = theme.palette.mode === 'dark';
@@ -177,12 +161,18 @@ const Perfil = () => {
 
     const loadUserData = async () => {
         try {
+            // Carregar dados de domínio simultaneamente
+            const categoriasProm = categoriaService.listarTodas().catch(() => []);
             let data;
+            
             try {
                 data = await meService.get();
             } catch {
                 data = { nome: user.nome, email: user.email };
             }
+            
+            const cats = await categoriasProm;
+            setCategoriasDb(cats || []);
 
             setFormData({
                 ...formData,
@@ -200,17 +190,17 @@ const Perfil = () => {
                     cidade: data.cidade || "Florianópolis",
                     estado: "SC",
                     cep: "",
-                    latitude: null,
-                    longitude: null
-                },
-                gradeAtividades: data.gradeAtividades || [],
+                latitude: null,
+                longitude: null
+            },
+            categoriaIds: data.categorias ? data.categorias.map(c => c.id) : [],
+            gradeAtividades: data.gradeAtividades || [],
                 exclusivoMulheres: data.exclusivoMulheres || false,
                 registroCref: data.registroCref || '',
                 fotoUrl: data.fotoUrl || '',
                 fotosUrl: data.fotosUrl || [],
                 nomeFantasia: data.nomeFantasia || data.nome || '',
                 razaoSocial: data.razaoSocial || '',
-                outrosAtividade: data.outrosAtividade || '',
                 instagram: data.instagram || '',
                 facebook: data.facebook || '',
                 website: data.website || '',
@@ -298,22 +288,28 @@ const Perfil = () => {
         setFormData(prev => ({ ...prev, gradeAtividades: nextGrade }));
     };
 
-    const handleExpandToggle = (atividade) => {
+    const handleExpandToggle = (categoriaId) => {
         setExpandedActivities(prev => {
             const next = new Set(prev);
-            if (next.has(atividade)) next.delete(atividade);
-            else next.add(atividade);
+            if (next.has(categoriaId)) next.delete(categoriaId);
+            else next.add(categoriaId);
             return next;
         });
     };
 
-    const handleGradeUpdate = (atividade, field, value) => {
-        setFormData(prev => ({
-            ...prev,
-            gradeAtividades: prev.gradeAtividades.map(g =>
-                g.atividade === atividade ? { ...g, [field]: value } : g
-            )
-        }));
+    const handleGradeUpdate = (categoriaId, field, value) => {
+        setFormData(prev => {
+            const exists = prev.gradeAtividades.find(g => g.categoria?.id === categoriaId || g.categoriaId === categoriaId);
+            let novaGrade = [];
+            if (exists) {
+                novaGrade = prev.gradeAtividades.map(g =>
+                    (g.categoria?.id === categoriaId || g.categoriaId === categoriaId) ? { ...g, [field]: value } : g
+                );
+            } else {
+                novaGrade = [...prev.gradeAtividades, { categoriaId, diasSemana: [], periodos: [], [field]: value }];
+            }
+            return { ...prev, gradeAtividades: novaGrade };
+        });
     };
 
     const handleFileChange = async (e) => {
@@ -404,9 +400,18 @@ const Perfil = () => {
 
     const handleSave = async () => {
         try {
-            const needsCref = formData.gradeAtividades.some(g => crefRequiredActivities.includes(g.atividade));
+            // Checar se alguma Categoria selecionada exige CREF (ex: natação, musculação)
+            const crefRequiredWords = ["Academia", "CrossFit", "Funcional", "Natação", "Basquete", "Futebol", "Vôlei", "Boxe", "Muay Thai", "Kung Fu", "Jiu-Jitsu", "Ciclismo"];
+            const selectedCategoriesNames = categoriasDb
+                .filter(c => formData.categoriaIds.includes(c.id))
+                .map(c => c.nome);
+
+            const needsCref = selectedCategoriesNames.some(nome =>
+                 crefRequiredWords.some(cr => nome.toLowerCase().includes(cr.toLowerCase()))
+            );
+
             if (user.role === 'PROFISSIONAL' && needsCref && !formData.registroCref) {
-                toast.error("O registro CREF é obrigatório para as atividades selecionadas!");
+                toast.error("O registro CREF é obrigatório para as categorias selecionadas!");
                 setSelectedTab(1); // Mudar para aba de atividades
                 return;
             }
@@ -422,7 +427,7 @@ const Perfil = () => {
             }
 
             const updatedUser = { ...user, nome: formData.nome };
-            localStorage.setItem('user', JSON.stringify(updatedUser));
+            localStorage.setItem('user', JSON.stringify(updatedUser)); // update minimal data
 
             toast.success("Perfil atualizado com sucesso! ✨");
             setIsEditing(false);
@@ -949,9 +954,14 @@ const Perfil = () => {
                             </Typography>
                             <Autocomplete
                                 multiple
-                                options={atividadesList}
-                                value={formData.gradeAtividades.map(g => g.atividade)}
-                                onChange={handleAtividadeToggle}
+                                options={categoriasDb}
+                                getOptionLabel={(option) => option.nome}
+                                isOptionEqualToValue={(option, value) => option.id === value.id}
+                                value={categoriasDb.filter(c => formData.categoriaIds.includes(c.id))}
+                                onChange={(event, newValue) => {
+                                    const ids = newValue.map(item => item.id);
+                                    setFormData(prev => ({ ...prev, categoriaIds: ids }));
+                                }}
                                 disabled={!isEditing}
                                 renderInput={(params) => (
                                     <TextField
@@ -967,13 +977,13 @@ const Perfil = () => {
 
                             {/* Tags fora do input */}
                             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 2 }}>
-                                {formData.gradeAtividades.map((g, index) => (
+                                {categoriasDb.filter(c => formData.categoriaIds.includes(c.id)).map((cat, index) => (
                                     <Chip
                                         key={index}
-                                        label={g.atividade}
+                                        label={cat.nome}
                                         onDelete={isEditing ? () => {
-                                            const newGrade = formData.gradeAtividades.filter(item => item.atividade !== g.atividade);
-                                            setFormData(prev => ({ ...prev, gradeAtividades: newGrade }));
+                                            const newIds = formData.categoriaIds.filter(id => id !== cat.id);
+                                            setFormData(prev => ({ ...prev, categoriaIds: newIds }));
                                         } : undefined}
                                         sx={{ borderRadius: 1.5, fontWeight: 700, bgcolor: 'primary.main', color: 'white' }}
                                     />
@@ -981,24 +991,7 @@ const Perfil = () => {
                             </Box>
                         </Box>
 
-                        {formData.gradeAtividades.some(g => g.atividade === 'Outros') && (
-                            <Box sx={{ mb: 5 }}>
-                                <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 1, color: "text.secondary" }}>
-                                    Especifique a outra atividade
-                                </Typography>
-                                <TextField
-                                    fullWidth
-                                    name="outrosAtividade"
-                                    value={formData.outrosAtividade}
-                                    onChange={handleChange}
-                                    placeholder="Ex: Tênis de Mesa, Surf..."
-                                    autoComplete="off"
-                                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
-                                />
-                            </Box>
-                        )}
-
-                        {formData.gradeAtividades.length > 0 && (
+                        {formData.categoriaIds.length > 0 && (
                             <>
                                 <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', mb: 2 }}>
                                     <Typography variant="subtitle2" fontWeight={700} sx={{ color: "text.secondary" }}>
@@ -1013,11 +1006,14 @@ const Perfil = () => {
                                     mx: 0
                                 }}>
                                     <Grid container sx={{ width: '100%', m: 0 }}>
-                                        {formData.gradeAtividades.map((grade, index) => {
-                                            const atividade = grade.atividade;
+                                        {categoriasDb.filter(c => formData.categoriaIds.includes(c.id)).map((cat, index) => {
+                                            const atividadeId = cat.id;
+                                            const atividadeNome = cat.nome;
+                                            const grade = formData.gradeAtividades.find(g => g.categoria?.id === atividadeId || g.categoriaId === atividadeId) || {};
+
                                             return (
-                                                <Grid item xs={12} key={atividade} sx={{
-                                                    borderBottom: index === formData.gradeAtividades.length - 1 ? 'none' : '1px solid',
+                                                <Grid item xs={12} key={atividadeId} sx={{
+                                                    borderBottom: index === formData.categoriaIds.length - 1 ? 'none' : '1px solid',
                                                     borderColor: 'divider',
                                                     transition: 'all 0.2s',
                                                     width: '100%',
@@ -1026,25 +1022,25 @@ const Perfil = () => {
                                                     <Box sx={{ p: 2, pl: 2, pr: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
                                                         <Typography variant="body1" fontWeight={800} sx={{ color: 'primary.main', display: 'flex', alignItems: 'center', gap: 1.5 }}>
                                                             <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: 'primary.main', boxShadow: '0 0 8px rgba(16, 185, 129, 0.4)' }} />
-                                                            {atividade === 'Outros' ? `Outros (${formData.outrosAtividade || '...'})` : atividade}
+                                                            {atividadeNome}
                                                         </Typography>
                                                         <IconButton
                                                             size="small"
-                                                            onClick={() => handleExpandToggle(atividade)}
+                                                            onClick={() => handleExpandToggle(atividadeId)}
                                                             sx={{
-                                                                bgcolor: expandedActivities.has(atividade) ? 'primary.main' : alpha(theme.palette.primary.main, 0.1),
-                                                                color: expandedActivities.has(atividade) ? 'white' : 'primary.main',
+                                                                bgcolor: expandedActivities.has(atividadeId) ? 'primary.main' : alpha(theme.palette.primary.main, 0.1),
+                                                                color: expandedActivities.has(atividadeId) ? 'white' : 'primary.main',
                                                                 '&:hover': { bgcolor: 'primary.main', color: 'white' },
                                                                 transition: 'all 0.3s',
                                                                 width: 32,
                                                                 height: 32
                                                             }}
                                                         >
-                                                            <FaChevronDown size={14} style={{ transform: expandedActivities.has(atividade) ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.3s' }} />
+                                                            <FaChevronDown size={14} style={{ transform: expandedActivities.has(atividadeId) ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.3s' }} />
                                                         </IconButton>
                                                     </Box>
 
-                                                    <Collapse in={expandedActivities.has(atividade)}>
+                                                    <Collapse in={expandedActivities.has(atividadeId)}>
                                                         <Box sx={{ pl: 2, pr: 0, pb: 3, width: '100%' }}>
                                                             <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, justifyContent: 'space-between', gap: 3, width: '100%' }}>
                                                                 <Box sx={{ flex: 1 }}>
@@ -1060,7 +1056,7 @@ const Perfil = () => {
                                                                                     const newDias = (grade.diasSemana || []).includes(dia)
                                                                                         ? grade.diasSemana.filter(d => d !== dia)
                                                                                         : [...(grade.diasSemana || []), dia];
-                                                                                    handleGradeUpdate(atividade, 'diasSemana', newDias);
+                                                                                    handleGradeUpdate(atividadeId, 'diasSemana', newDias);
                                                                                 }}
                                                                                 size="small"
                                                                                 sx={{
@@ -1090,7 +1086,7 @@ const Perfil = () => {
                                                                                     const newPeriodos = (grade.periodos || []).includes(periodo)
                                                                                         ? grade.periodos.filter(p => p !== periodo)
                                                                                         : [...(grade.periodos || []), periodo];
-                                                                                    handleGradeUpdate(atividade, 'periodos', newPeriodos);
+                                                                                    handleGradeUpdate(atividadeId, 'periodos', newPeriodos);
                                                                                 }}
                                                                                 size="small"
                                                                                 sx={{
@@ -1115,7 +1111,7 @@ const Perfil = () => {
                                                                     control={
                                                                         <Checkbox
                                                                             checked={grade.exclusivoMulheres || false}
-                                                                            onChange={(e) => handleGradeUpdate(atividade, 'exclusivoMulheres', e.target.checked)}
+                                                                            onChange={(e) => handleGradeUpdate(atividadeId, 'exclusivoMulheres', e.target.checked)}
                                                                             disabled={!isEditing}
                                                                             sx={{ color: 'primary.main', '&.Mui-checked': { color: 'primary.main' } }}
                                                                         />

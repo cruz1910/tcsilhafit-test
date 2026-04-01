@@ -23,11 +23,8 @@ import { FaTimes, FaUpload, FaWhatsapp, FaUser, FaBuilding, FaUserTie, FaEye, Fa
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
-import { authService } from "../../services";
-
-
-
-const Cadastro = () => {
+import { authService, categoriaService } from "../../services";
+import { useEffect } from "react";const Cadastro = () => {
     const theme = useTheme();
     const navigate = useNavigate();
     const isDark = theme.palette.mode === 'dark';
@@ -59,7 +56,7 @@ const Cadastro = () => {
         especializacao: "",
         registroCref: "",
         descricao: "",
-        gradeAtividades: [], // [{ atividade, diasSemana: [], periodos: [], exclusivoMulheres: false }]
+        categoriaIds: [], // array de IDs unificados para o DTO
         exclusivoMulheres: false,
         fotoUrl: "",
         fotosUrl: [],
@@ -70,15 +67,25 @@ const Cadastro = () => {
     };
 
     const [formData, setFormData] = useState(initialFormData);
+    const [categoriasDb, setCategoriasDb] = useState([]);
 
-    const [expandedActivities, setExpandedActivities] = useState(new Set());
+    useEffect(() => {
+        const carregarCategorias = async () => {
+            try {
+                const data = await categoriaService.listarTodas();
+                setCategoriasDb(data);
+            } catch (error) {
+                console.error("Erro ao carregar categorias:", error);
+            }
+        };
+        carregarCategorias();
+    }, []);
 
     const handleTypeChange = (event, newType) => {
         if (newType !== null && newType !== accountType) {
             setAccountType(newType);
             setFormData(initialFormData);
             setStep(1);
-            setExpandedActivities(new Set());
         }
     };
 
@@ -167,42 +174,6 @@ const Cadastro = () => {
         } else {
             setFormData(prev => ({ ...prev, [name]: newValue }));
         }
-    };
-
-    const handleAtividadeToggle = (atividade) => {
-        setFormData(prev => {
-            const exists = prev.gradeAtividades.find(g => g.atividade === atividade);
-            let nextGrade;
-            let nextExpanded = new Set(expandedActivities);
-
-            if (exists) {
-                nextGrade = prev.gradeAtividades.filter(g => g.atividade !== atividade);
-                nextExpanded.delete(atividade);
-            } else {
-                nextGrade = [...prev.gradeAtividades, { atividade, diasSemana: [], periodos: [], exclusivoMulheres: false }];
-                nextExpanded.add(atividade);
-            }
-            setExpandedActivities(nextExpanded);
-            return { ...prev, gradeAtividades: nextGrade };
-        });
-    };
-
-    const handleExpandToggle = (atividade) => {
-        setExpandedActivities(prev => {
-            const next = new Set(prev);
-            if (next.has(atividade)) next.delete(atividade);
-            else next.add(atividade);
-            return next;
-        });
-    };
-
-    const handleGradeUpdate = (atividade, field, value) => {
-        setFormData(prev => ({
-            ...prev,
-            gradeAtividades: prev.gradeAtividades.map(g =>
-                g.atividade === atividade ? { ...g, [field]: value } : g
-            )
-        }));
     };
 
     const handleFileChange = async (e) => {
@@ -360,15 +331,7 @@ const Cadastro = () => {
         }
     };
 
-    const atividadesList = [
-        "Academia", "CrossFit", "Funcional",
-        "Pilates", "Yoga", "Dança",
-        "Balé", "Basquete", "Futebol",
-        "Natação", "Vôlei", "Jiu-Jitsu",
-        "Boxe", "Muay Thai", "Kung Fu",
-        "Ciclismo", "Circo", "Fisioterapia",
-        "Outros"
-    ];
+
 
     const crefRequiredActivities = [
         "Academia", "CrossFit", "Funcional",
@@ -378,7 +341,10 @@ const Cadastro = () => {
     ];
 
     const showCref = accountType === "profissional" &&
-        formData.gradeAtividades.some(g => crefRequiredActivities.includes(g.atividade));
+        formData.categoriaIds.some(id => {
+            const cat = categoriasDb.find(c => c.id === id);
+            return cat && crefRequiredActivities.includes(cat.nome);
+        });
 
     const inputStyles = {
         "& .MuiOutlinedInput-root": {
@@ -902,36 +868,13 @@ const Cadastro = () => {
 
                             <Autocomplete
                                 multiple
-                                options={atividadesList.sort()}
-                                value={formData.gradeAtividades.map(g => g.atividade)}
+                                options={categoriasDb}
+                                getOptionLabel={(option) => option.nome}
+                                isOptionEqualToValue={(option, value) => option.id === value.id}
+                                value={categoriasDb.filter(c => formData.categoriaIds.includes(c.id))}
                                 onChange={(event, newValue) => {
-                                    // Sincronizar gradeAtividades com a seleção
-                                    const currentActivities = formData.gradeAtividades.map(g => g.atividade);
-
-                                    // Adicionados novos
-                                    const added = newValue.filter(v => !currentActivities.includes(v));
-                                    // Removidos
-                                    const removed = currentActivities.filter(v => !newValue.includes(v));
-
-                                    let newGrade = [...formData.gradeAtividades];
-
-                                    // Adicionar novos modelos de grade
-                                    added.forEach(atividade => {
-                                        newGrade.push({ atividade, diasSemana: [], periodos: [], exclusivoMulheres: false });
-                                        setExpandedActivities(prev => new Set(prev).add(atividade));
-                                    });
-
-                                    // Remover os que saíram
-                                    if (removed.length > 0) {
-                                        newGrade = newGrade.filter(g => !removed.includes(g.atividade));
-                                        setExpandedActivities(prev => {
-                                            const next = new Set(prev);
-                                            removed.forEach(r => next.delete(r));
-                                            return next;
-                                        });
-                                    }
-
-                                    setFormData(prev => ({ ...prev, gradeAtividades: newGrade }));
+                                    const ids = newValue.map(item => item.id);
+                                    setFormData(prev => ({ ...prev, categoriaIds: ids }));
                                 }}
                                 renderInput={(params) => (
                                     <TextField
@@ -946,136 +889,18 @@ const Cadastro = () => {
 
                             {/* Tags fora do input */}
                             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 3 }}>
-                                {formData.gradeAtividades.map((g, index) => (
+                                {categoriasDb.filter(c => formData.categoriaIds.includes(c.id)).map((cat, index) => (
                                     <Chip
                                         key={index}
-                                        label={g.atividade}
+                                        label={cat.nome}
                                         onDelete={() => {
-                                            const newGrade = formData.gradeAtividades.filter(item => item.atividade !== g.atividade);
-                                            setFormData(prev => ({ ...prev, gradeAtividades: newGrade }));
+                                            const newIds = formData.categoriaIds.filter(id => id !== cat.id);
+                                            setFormData(prev => ({ ...prev, categoriaIds: newIds }));
                                         }}
                                         sx={{ borderRadius: 1.5, fontWeight: 700, bgcolor: 'primary.main', color: 'white' }}
                                     />
                                 ))}
                             </Box>
-
-                            {formData.gradeAtividades.some(g => g.atividade === "Outros") && (
-                                <Box sx={{ mb: 3 }}>
-                                    <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 0.5, color: "text.secondary" }}>
-                                        Especifique a outra atividade
-                                    </Typography>
-                                    <TextField
-                                        fullWidth
-                                        name="outrosAtividade"
-                                        value={formData.outrosAtividade}
-                                        onChange={handleInputChange}
-                                        placeholder="Ex: Tênis de Mesa, Surf..."
-                                        sx={inputStyles}
-                                        required
-                                    />
-                                </Box>
-                            )}
-
-                            {formData.gradeAtividades.length > 0 && (
-                                <>
-                                    <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 1, color: "text.secondary" }}>
-                                        Configurar Horários
-                                    </Typography>
-                                    <Paper variant="outlined" sx={{
-                                        p: 2, mb: 3, borderRadius: 2, overflow: 'hidden',
-                                        bgcolor: isDark ? "rgba(255, 255, 255, 0.02)" : "rgba(16, 185, 129, 0.02)",
-                                    }}>
-                                        <Grid container spacing={1}>
-                                            {formData.gradeAtividades.map((grade) => {
-                                                const atividade = grade.atividade;
-                                                return (
-                                                    <Grid item xs={12} key={atividade} sx={{ mb: 1 }}>
-                                                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                                            <Typography variant="body2" fontWeight={700} sx={{ color: 'primary.main', display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                                <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: 'primary.main' }} />
-                                                                {atividade === "Outros" ? `Outros (${formData.outrosAtividade || '...'})` : atividade}
-                                                            </Typography>
-                                                            <IconButton
-                                                                size="small"
-                                                                onClick={() => handleExpandToggle(atividade)}
-                                                                sx={{
-                                                                    transition: 'transform 0.3s',
-                                                                    transform: expandedActivities.has(atividade) ? 'rotate(180deg)' : 'rotate(0deg)'
-                                                                }}
-                                                            >
-                                                                <FaChevronDown size={14} />
-                                                            </IconButton>
-                                                        </Box>
-
-                                                        <Collapse in={expandedActivities.has(atividade)}>
-                                                            <Box sx={{ ml: 2, mt: 1, pb: 2 }}>
-                                                                <Typography variant="caption" color="text.secondary" fontWeight={700}>Dias da Semana:</Typography>
-                                                                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 1, mt: 0.5 }}>
-                                                                    {["Seg", "Ter", "Qua", "Qui", "Sex", "Sab", "Dom"].map(dia => (
-                                                                        <ToggleButton
-                                                                            key={dia}
-                                                                            value={dia}
-                                                                            selected={grade.diasSemana?.includes(dia)}
-                                                                            onChange={() => {
-                                                                                const newDias = grade.diasSemana?.includes(dia)
-                                                                                    ? grade.diasSemana.filter(d => d !== dia)
-                                                                                    : [...(grade.diasSemana || []), dia];
-                                                                                handleGradeUpdate(atividade, 'diasSemana', newDias);
-                                                                            }}
-                                                                            size="small"
-                                                                            sx={{ borderRadius: 1.5, px: 1, py: 0.2, fontSize: '0.65rem' }}
-                                                                        >
-                                                                            {dia}
-                                                                        </ToggleButton>
-                                                                    ))}
-                                                                </Box>
-                                                                <Typography variant="caption" color="text.secondary" fontWeight={700}>Período:</Typography>
-                                                                <Box sx={{ display: 'flex', gap: 0.5, mt: 0.5 }}>
-                                                                    {["Manhã", "Tarde", "Noite"].map(periodo => (
-                                                                        <ToggleButton
-                                                                            key={periodo}
-                                                                            value={periodo}
-                                                                            selected={grade.periodos?.includes(periodo)}
-                                                                            onChange={() => {
-                                                                                const newPeriodos = grade.periodos?.includes(periodo)
-                                                                                    ? grade.periodos.filter(p => p !== periodo)
-                                                                                    : [...(grade.periodos || []), periodo];
-                                                                                handleGradeUpdate(atividade, 'periodos', newPeriodos);
-                                                                            }}
-                                                                            size="small"
-                                                                            sx={{ borderRadius: 1.5, px: 1, py: 0.2, fontSize: '0.65rem' }}
-                                                                        >
-                                                                            {periodo}
-                                                                        </ToggleButton>
-                                                                    ))}
-                                                                </Box>
-
-                                                                {/* Novo: Opção exclusiva mulheres por atividade */}
-                                                                {(accountType === "estabelecimento" || formData.sexo === "Feminino") && (
-                                                                    <Box sx={{ mt: 1.5 }}>
-                                                                        <FormControlLabel
-                                                                            control={
-                                                                                <Checkbox
-                                                                                    size="small"
-                                                                                    checked={grade.exclusivoMulheres || false}
-                                                                                    onChange={(e) => handleGradeUpdate(atividade, 'exclusivoMulheres', e.target.checked)}
-                                                                                />
-                                                                            }
-                                                                            label={<Typography variant="caption" fontWeight={600}>Oferecer aula apenas para mulheres</Typography>}
-                                                                        />
-                                                                    </Box>
-                                                                )}
-                                                            </Box>
-                                                        </Collapse>
-                                                        <Divider sx={{ mt: 1, opacity: 0.3 }} />
-                                                    </Grid>
-                                                );
-                                            })}
-                                        </Grid>
-                                    </Paper>
-                                </>
-                            )}
-
                             <Button onClick={() => setStep(1)} sx={{ mb: 2, textTransform: 'none' }}>
                                 Voltar para dados básicos
                             </Button>

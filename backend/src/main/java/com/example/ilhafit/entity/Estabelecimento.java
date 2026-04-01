@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -59,7 +60,15 @@ public class Estabelecimento {
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "estabelecimento_id")
-    private List<GradeAtividade> gradeAtividades;
+    private List<GradeAtividade> gradeAtividades = new ArrayList<>();
+
+    @ManyToMany
+    @JoinTable(
+            name = "estabelecimento_categorias",
+            joinColumns = @JoinColumn(name = "estabelecimento_id"),
+            inverseJoinColumns = @JoinColumn(name = "categoria_id")
+    )
+    private List<Categoria> categorias = new ArrayList<>();
 
     @ElementCollection
     @CollectionTable(name = "estabelecimento_fotos", joinColumns = @JoinColumn(name = "estabelecimento_id"))

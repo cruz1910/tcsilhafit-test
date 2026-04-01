@@ -1,4 +1,6 @@
 import api from './api';
+import categoriaService from './categoriaService';
+import gradeService from './gradeService';
 
 // ==================== AUTH ====================
 
@@ -59,7 +61,7 @@ export const authService = {
                 nomeFantasia: formData.nomeFantasia || formData.nome,
                 razaoSocial: formData.razaoSocial || formData.nome,
                 telefone: formData.telefone,
-                gradeAtividades: formData.gradeAtividades || [],
+                categoriaIds: formData.categoriaIds || [],
                 exclusivoMulheres: formData.exclusivoMulheres,
                 fotosUrl: formData.fotosUrl,
                 instagram: formData.instagram || null,
@@ -78,10 +80,10 @@ export const authService = {
                 ...payload,
                 cpf: formData.cpf,
                 telefone: formData.telefone,
-                especializacao: (formData.gradeAtividades || []).map(g => g.atividade).join(", "),
+                especializacao: formData.descricao || "", // Provisório se a UI n enviou nada melhor
                 registroCref: formData.registroCref,
                 descricao: formData.descricao,
-                gradeAtividades: formData.gradeAtividades || [],
+                categoriaIds: formData.categoriaIds || [],
                 exclusivoMulheres: formData.exclusivoMulheres,
                 fotoUrl: formData.fotoUrl,
                 instagram: formData.instagram || null,
@@ -533,3 +535,5 @@ export const denunciaService = {
         return response.data;
     },
 };
+
+export { categoriaService, gradeService };
