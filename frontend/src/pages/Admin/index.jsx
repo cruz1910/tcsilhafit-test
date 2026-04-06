@@ -6,6 +6,7 @@ import {
     useTheme,
     alpha,
     Button,
+    Badge,
 } from "@mui/material";
 import {
     FaUsers,
@@ -13,9 +14,10 @@ import {
     FaStar,
     FaChartLine,
     FaTags,
+    FaListAlt,
 } from "react-icons/fa";
 import { toast } from "react-toastify";
-import { authService } from "../../services";
+import { authService, solicitacaoCategoriaService } from "../../services";
 import { useNavigate } from "react-router-dom";
 
 import UsuariosTab from "./Tabs/UsuariosTab";
@@ -23,6 +25,7 @@ import EstabelecimentosTab from "./Tabs/EstabelecimentosTab";
 import AvaliacoesTab from "./Tabs/AvaliacoesTab";
 import DashboardTab from "./Tabs/DashboardTab";
 import CategoriasTab from "./Tabs/CategoriasTab";
+import SolicitacoesCategoriasTab from "./Tabs/SolicitacoesCategoriasTab";
 
 function TabPanel(props) {
     const { children, value, index, ...other } = props;
@@ -47,6 +50,13 @@ function TabPanel(props) {
 const Admin = () => {
     const navigate = useNavigate();
     const [tabValue, setTabValue] = useState(0);
+    const [pendentesCount, setPendentesCount] = useState(0);
+
+    const loadPendentesCount = () => {
+        solicitacaoCategoriaService.getAll("PENDENTE")
+            .then(data => setPendentesCount(data.length))
+            .catch(() => {});
+    };
 
     useEffect(() => {
         const userInfo = authService.getUserInfo();
@@ -55,7 +65,13 @@ const Admin = () => {
             navigate("/");
             return;
         }
+        loadPendentesCount();
     }, [navigate]);
+
+    const handleTabChange = (index) => {
+        setTabValue(index);
+        if (index === 5) loadPendentesCount();
+    };
 
     const theme = useTheme();
 
@@ -65,6 +81,7 @@ const Admin = () => {
         { label: "Estabelecimentos", icon: <FaStore size={14} /> },
         { label: "Avaliações", icon: <FaStar size={14} /> },
         { label: "Categorias", icon: <FaTags size={14} /> },
+        { label: "Solicitações", icon: <FaListAlt size={14} />, badge: pendentesCount },
     ];
 
     return (
@@ -88,7 +105,7 @@ const Admin = () => {
                 {tabs.map((tab, index) => (
                     <Button
                         key={index}
-                        onClick={() => setTabValue(index)}
+                        onClick={() => handleTabChange(index)}
                         startIcon={tab.icon}
                         sx={{
                             borderRadius: 10,
@@ -104,7 +121,9 @@ const Admin = () => {
                             }
                         }}
                     >
-                        {tab.label}
+                        <Badge badgeContent={tab.badge || 0} color="error" max={99}>
+                            {tab.label}
+                        </Badge>
                     </Button>
                 ))}
             </Box>
@@ -123,6 +142,9 @@ const Admin = () => {
             </TabPanel>
             <TabPanel value={tabValue} index={4}>
                 <CategoriasTab />
+            </TabPanel>
+            <TabPanel value={tabValue} index={5}>
+                <SolicitacoesCategoriasTab />
             </TabPanel>
         </Container>
     );

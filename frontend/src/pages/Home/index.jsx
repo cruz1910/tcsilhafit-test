@@ -20,7 +20,7 @@ import ModalChatIA from "../../components/ModalChatIA";
 import CardEstabelecimento from "../../components/Card/CardEstabelecimento";
 import ModalDetalhesEstabelecimento from "../../components/ModalDetalhesEstabelecimento";
 import { Link } from "react-router-dom";
-import { estabelecimentoService } from "../../services";
+import { estabelecimentoService, categoriaService } from "../../services";
 
 const Home = () => {
   const theme = useTheme();
@@ -32,6 +32,7 @@ const Home = () => {
   const [loading, setLoading] = useState(true);
   const [selectedEstab, setSelectedEstab] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [categorias, setCategorias] = useState([]);
 
   useEffect(() => {
     const fetchEstabelecimentos = async () => {
@@ -41,7 +42,7 @@ const Home = () => {
           ...item,
           Imagem: (item.fotosUrl && item.fotosUrl.length > 0) ? item.fotosUrl[0] : "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=500&auto=format&fit=crop&q=60",
           Imagens: item.fotosUrl || [],
-          categorias: (item.gradeAtividades || []).map(g => g.atividade),
+          categorias: (item.categorias || []).map(c => c.nome),
           avaliacao: item.avaliacao || 0.0,
           aberto: true,
           descricao: item.descricao || "Um ótimo local para treinar e cuidar da sua saúde.",
@@ -54,6 +55,10 @@ const Home = () => {
       }
     };
     fetchEstabelecimentos();
+  }, []);
+
+  useEffect(() => {
+    categoriaService.listarTodas().then(setCategorias).catch(console.error);
   }, []);
 
   const handleOpenModal = (estab) => {
@@ -181,25 +186,9 @@ const Home = () => {
                   }}
                 >
                   <MenuItem value="Todas">Todas</MenuItem>
-                  <MenuItem value="Academia">Academia</MenuItem>
-                  <MenuItem value="CrossFit">CrossFit</MenuItem>
-                  <MenuItem value="Funcional">Funcional</MenuItem>
-                  <MenuItem value="Pilates">Pilates</MenuItem>
-                  <MenuItem value="Yoga">Yoga</MenuItem>
-                  <MenuItem value="Dança">Dança</MenuItem>
-                  <MenuItem value="Balé">Balé</MenuItem>
-                  <MenuItem value="Basquete">Basquete</MenuItem>
-                  <MenuItem value="Futebol">Futebol</MenuItem>
-                  <MenuItem value="Natação">Natação</MenuItem>
-                  <MenuItem value="Vôlei">Vôlei</MenuItem>
-                  <MenuItem value="Jiu-Jitsu">Jiu-Jitsu</MenuItem>
-                  <MenuItem value="Boxe">Boxe</MenuItem>
-                  <MenuItem value="Muay Thai">Muay Thai</MenuItem>
-                  <MenuItem value="Kung Fu">Kung Fu</MenuItem>
-                  <MenuItem value="Ciclismo">Ciclismo</MenuItem>
-                  <MenuItem value="Circo">Circo</MenuItem>
-                  <MenuItem value="Fisioterapia">Fisioterapia</MenuItem>
-                  <MenuItem value="Outros">Outros</MenuItem>
+                  {categorias.map(cat => (
+                    <MenuItem key={cat.id} value={cat.nome}>{cat.nome}</MenuItem>
+                  ))}
                 </Select>
               </Box>
 

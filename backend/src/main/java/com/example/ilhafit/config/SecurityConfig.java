@@ -65,6 +65,11 @@ public class SecurityConfig {
                         .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/denuncias").hasRole("ADMIN")
                         .requestMatchers(org.springframework.http.HttpMethod.PUT, "/api/denuncias/**").hasRole("ADMIN")
                         .requestMatchers(org.springframework.http.HttpMethod.DELETE, "/api/denuncias/**").hasRole("ADMIN")
+                        // Solicitações de Categoria: /minhas antes do GET genérico (ordem importa!)
+                        .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/solicitacoes-categorias").authenticated()
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/solicitacoes-categorias/minhas").authenticated()
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/solicitacoes-categorias").hasRole("ADMIN")
+                        .requestMatchers(org.springframework.http.HttpMethod.PATCH, "/api/solicitacoes-categorias/**").hasRole("ADMIN")
                         // Qualquer outra rota precisa de autenticação
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

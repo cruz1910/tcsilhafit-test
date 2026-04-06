@@ -14,6 +14,9 @@ import {
     TextField,
     InputAdornment,
     Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions,
     Typography,
     Select,
     MenuItem,
@@ -41,6 +44,7 @@ import { useNavigate } from "react-router-dom";
 
 const UsuariosTab = () => {
     const navigate = useNavigate();
+    const theme = useTheme();
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");

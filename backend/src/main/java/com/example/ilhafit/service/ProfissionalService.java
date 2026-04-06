@@ -3,11 +3,16 @@ package com.example.ilhafit.service;
 import com.example.ilhafit.dto.ProfissionalDTO;
 import com.example.ilhafit.entity.Profissional;
 import com.example.ilhafit.entity.Role;
+import com.example.ilhafit.entity.SolicitacaoCategoria;
+import com.example.ilhafit.entity.StatusSolicitacao;
 import com.example.ilhafit.mapper.ProfissionalMapper;
+import com.example.ilhafit.repository.CategoriaRepository;
 import com.example.ilhafit.repository.ProfissionalRepository;
 import com.example.ilhafit.repository.AvaliacaoRepository;
+import com.example.ilhafit.repository.SolicitacaoCategoriaRepository;
 import com.example.ilhafit.entity.Avaliacao;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,6 +21,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ProfissionalService {
@@ -24,6 +30,8 @@ public class ProfissionalService {
     private final ProfissionalMapper profissionalMapper;
     private final AvaliacaoRepository avaliacaoRepository;
     private final PasswordEncoder passwordEncoder;
+    private final SolicitacaoCategoriaRepository solicitacaoCategoriaRepository;
+    private final CategoriaRepository categoriaRepository;
 
     @Transactional
     public ProfissionalDTO.Resposta cadastrar(ProfissionalDTO.Registro dto) {
@@ -35,7 +43,19 @@ public class ProfissionalService {
         }
         Profissional profissional = profissionalMapper.toEntity(dto);
         profissional.setRole(Role.PROFISSIONAL);
-        return mappedWithRating(profissionalRepository.save(profissional));
+        ProfissionalDTO.Resposta resposta = mappedWithRating(profissionalRepository.save(profissional));
+
+        log.info("Cadastro profissional - outrosAtividade recebido: '{}'", dto.getOutrosAtividade());
+        if (dto.getOutrosAtividade() != null && !dto.getOutrosAtividade().isBlank()) {
+            SolicitacaoCategoria solicitacao = new SolicitacaoCategoria();
+            solicitacao.setSolicitanteEmail(dto.getEmail());
+            solicitacao.setNome(dto.getOutrosAtividade().trim());
+            solicitacao.setStatus(StatusSolicitacao.PENDENTE);
+            solicitacaoCategoriaRepository.save(solicitacao);
+            log.info("SolicitacaoCategoria criada: nome='{}', email='{}'", solicitacao.getNome(), solicitacao.getSolicitanteEmail());
+        }
+
+        return resposta;
     }
 
     public List<ProfissionalDTO.Resposta> listarTodos() {
@@ -103,6 +123,11 @@ public class ProfissionalService {
         if (dto.getGradeAtividades() != null) {
             profissional.getGradeAtividades().clear();
             profissional.getGradeAtividades().addAll(profissionalMapper.toEntity(dto).getGradeAtividades());
+        }
+
+        // Atualiza Categorias
+        if (dto.getCategoriaIds() != null) {
+            profissional.setCategorias(new java.util.ArrayList<>(categoriaRepository.findAllById(dto.getCategoriaIds())));
         }
 
         // Senha

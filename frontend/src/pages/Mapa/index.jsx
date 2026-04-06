@@ -24,7 +24,7 @@ import {
 import { alpha } from "@mui/material/styles";
 import { FaSearch, FaMapMarkerAlt, FaPhone, FaClock, FaChevronRight, FaStar, FaFilter, FaTimes, FaChevronDown, FaLocationArrow } from "react-icons/fa";
 import { Snackbar, Alert } from "@mui/material";
-import { estabelecimentoService } from "../../services";
+import { estabelecimentoService, categoriaService } from "../../services";
 import MapComponent from "../../components/MapComponent";
 import ModalDetalhesEstabelecimento from "../../components/ModalDetalhesEstabelecimento";
 
@@ -40,35 +40,8 @@ const haversineDistance = (lat1, lon1, lat2, lon2) => {
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 };
 
-// Normaliza nome de atividade para comparação case-insensitive
-const normalizeAtividade = (name) => {
-    if (!name) return '';
-    const lower = name.toLowerCase().trim();
-    const map = {
-        'academia': 'Academia', 'crossfit': 'CrossFit', 'funcional': 'Funcional',
-        'pilates': 'Pilates', 'yoga': 'Yoga', 'dança': 'Dança', 'balé': 'Balé',
-        'basquete': 'Basquete', 'futebol': 'Futebol', 'natação': 'Natação',
-        'vôlei': 'Vôlei', 'jiu-jitsu': 'Jiu-Jitsu', 'boxe': 'Boxe',
-        'muay thai': 'Muay Thai', 'kung fu': 'Kung Fu', 'ciclismo': 'Ciclismo',
-        'circo': 'Circo', 'fisioterapia': 'Fisioterapia', 'outros': 'Outros',
-        // Variantes sem acento / legado
-        'musculacao': 'Academia', 'musculação': 'Academia',
-        'natacao': 'Natação', 'spinning': 'Ciclismo',
-        'luta': 'Boxe', 'danca': 'Dança', 'bale': 'Balé',
-        'volei': 'Vôlei', 'jiu jitsu': 'Jiu-Jitsu', 'jiujitsu': 'Jiu-Jitsu',
-    };
-    return map[lower] || name;
-};
-
 // Configurações para Grande Florianópolis
 const FLORIPA_COORDS = { lat: -27.5948, lng: -48.5482 };
-
-const mainCategories = ["Academia", "CrossFit", "Funcional", "Pilates", "Yoga"];
-const allCategories = [
-    "Academia", "CrossFit", "Funcional", "Pilates", "Yoga", "Dança",
-    "Balé", "Basquete", "Futebol", "Natação", "Vôlei", "Jiu-Jitsu",
-    "Boxe", "Muay Thai", "Kung Fu", "Ciclismo", "Circo", "Fisioterapia", "Outros"
-];
 
 const Mapa = () => {
     const theme = useTheme();
@@ -90,6 +63,7 @@ const Mapa = () => {
     const [userLocation, setUserLocation] = useState(FLORIPA_COORDS);
     const [geoStatus, setGeoStatus] = useState('pending'); // 'pending' | 'granted' | 'denied' | 'unavailable'
     const [geoSnackbar, setGeoSnackbar] = useState({ open: false, message: '', severity: 'info' });
+    const [categorias, setCategorias] = useState([]);
 
     // Captura localização do usuário via Geolocation API
     const requestUserLocation = useCallback(() => {
@@ -124,6 +98,10 @@ const Mapa = () => {
     }, [requestUserLocation]);
 
     useEffect(() => {
+        categoriaService.listarTodas().then(setCategorias).catch(console.error);
+    }, []);
+
+    useEffect(() => {
         const fetchAll = async () => {
             try {
                 const data = await estabelecimentoService.getAll();
@@ -132,13 +110,12 @@ const Mapa = () => {
                     const lat = est.endereco?.latitude || null;
                     const lng = est.endereco?.longitude || null;
 
-                    // Extrair atividades da gradeAtividades e normalizar
-                    const atividades = (est.gradeAtividades || []).map(g => normalizeAtividade(g.atividade));
+                    const atividades = (est.categorias || []).map(c => c.nome);
 
                     return {
                         id: est.id,
                         nome: est.nomeFantasia || est.nome,
-                        categoria: atividades[0] || "Academia",
+                        categoria: atividades[0] || "",
                         lat,
                         lng,
                         avaliacao: est.avaliacao || 0,
@@ -401,24 +378,24 @@ const Mapa = () => {
                                 boxShadow: selectedCategories.length === 0 ? `0 4px 12px ${alpha(theme.palette.primary.main, 0.3)}` : 'none'
                             }}
                         />
-                        {mainCategories.map((cat) => (
+                        {categorias.slice(0, 5).map((cat) => (
                             <Chip
-                                key={cat}
-                                label={cat}
-                                onClick={() => toggleCategory(cat)}
+                                key={cat.id}
+                                label={cat.nome}
+                                onClick={() => toggleCategory(cat.nome)}
                                 sx={{
                                     borderRadius: 2.5,
                                     fontWeight: 600,
                                     transition: 'all 0.2s ease',
-                                    bgcolor: selectedCategories.includes(cat) ? theme.palette.primary.main : 'background.paper',
-                                    color: selectedCategories.includes(cat) ? 'white' : 'text.primary',
+                                    bgcolor: selectedCategories.includes(cat.nome) ? theme.palette.primary.main : 'background.paper',
+                                    color: selectedCategories.includes(cat.nome) ? 'white' : 'text.primary',
                                     border: '1px solid',
-                                    borderColor: selectedCategories.includes(cat) ? theme.palette.primary.main : 'divider',
+                                    borderColor: selectedCategories.includes(cat.nome) ? theme.palette.primary.main : 'divider',
                                     cursor: 'pointer',
                                     '&:hover': {
-                                        bgcolor: selectedCategories.includes(cat) ? theme.palette.primary.dark : alpha(theme.palette.primary.main, 0.1),
+                                        bgcolor: selectedCategories.includes(cat.nome) ? theme.palette.primary.dark : alpha(theme.palette.primary.main, 0.1),
                                     },
-                                    boxShadow: selectedCategories.includes(cat) ? `0 4px 12px ${alpha(theme.palette.primary.main, 0.3)}` : 'none'
+                                    boxShadow: selectedCategories.includes(cat.nome) ? `0 4px 12px ${alpha(theme.palette.primary.main, 0.3)}` : 'none'
                                 }}
                             />
                         ))}
@@ -455,20 +432,20 @@ const Mapa = () => {
                                 }
                             }}
                         >
-                            {allCategories.map((cat) => (
+                            {categorias.map((cat) => (
                                 <MenuItem
-                                    key={cat}
+                                    key={cat.id}
                                     onClick={() => {
-                                        toggleCategory(cat);
+                                        toggleCategory(cat.nome);
                                         setCategoryMenuAnchor(null);
                                     }}
-                                    selected={selectedCategories.includes(cat)}
+                                    selected={selectedCategories.includes(cat.nome)}
                                     sx={{
-                                        fontWeight: selectedCategories.includes(cat) ? 700 : 400,
-                                        bgcolor: selectedCategories.includes(cat) ? alpha(theme.palette.primary.main, 0.1) : 'transparent'
+                                        fontWeight: selectedCategories.includes(cat.nome) ? 700 : 400,
+                                        bgcolor: selectedCategories.includes(cat.nome) ? alpha(theme.palette.primary.main, 0.1) : 'transparent'
                                     }}
                                 >
-                                    {cat}
+                                    {cat.nome}
                                 </MenuItem>
                             ))}
                         </Menu>

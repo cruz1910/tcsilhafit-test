@@ -9,13 +9,17 @@
 /home/oem/Projetos/tcs/projeto/tcsilhafit-test/backend/src/main/java/com/example/ilhafit/mapper/EstabelecimentoMapper.java
 /home/oem/Projetos/tcs/projeto/tcsilhafit-test/backend/src/main/java/com/example/ilhafit/controller/AvaliacaoController.java
 /home/oem/Projetos/tcs/projeto/tcsilhafit-test/backend/src/main/java/com/example/ilhafit/mapper/EnderecoMapper.java
+/home/oem/Projetos/tcs/projeto/tcsilhafit-test/backend/src/main/java/com/example/ilhafit/config/DataInitializer.java
 /home/oem/Projetos/tcs/projeto/tcsilhafit-test/backend/src/main/java/com/example/ilhafit/repository/VerificationTokenRepository.java
 /home/oem/Projetos/tcs/projeto/tcsilhafit-test/backend/src/main/java/com/example/ilhafit/mapper/ProfissionalMapper.java
 /home/oem/Projetos/tcs/projeto/tcsilhafit-test/backend/src/main/java/com/example/ilhafit/entity/Administrador.java
 /home/oem/Projetos/tcs/projeto/tcsilhafit-test/backend/src/main/java/com/example/ilhafit/repository/AdministradorRepository.java
+/home/oem/Projetos/tcs/projeto/tcsilhafit-test/backend/src/main/java/com/example/ilhafit/entity/StatusSolicitacao.java
+/home/oem/Projetos/tcs/projeto/tcsilhafit-test/backend/src/main/java/com/example/ilhafit/service/SolicitacaoCategoriaService.java
 /home/oem/Projetos/tcs/projeto/tcsilhafit-test/backend/src/main/java/com/example/ilhafit/controller/EstabelecimentoController.java
 /home/oem/Projetos/tcs/projeto/tcsilhafit-test/backend/src/main/java/com/example/ilhafit/BackendApplication.java
 /home/oem/Projetos/tcs/projeto/tcsilhafit-test/backend/src/main/java/com/example/ilhafit/controller/ProfissionalController.java
+/home/oem/Projetos/tcs/projeto/tcsilhafit-test/backend/src/main/java/com/example/ilhafit/repository/SolicitacaoCategoriaRepository.java
 /home/oem/Projetos/tcs/projeto/tcsilhafit-test/backend/src/main/java/com/example/ilhafit/dto/EnderecoDTO.java
 /home/oem/Projetos/tcs/projeto/tcsilhafit-test/backend/src/main/java/com/example/ilhafit/mapper/UsuarioMapper.java
 /home/oem/Projetos/tcs/projeto/tcsilhafit-test/backend/src/main/java/com/example/ilhafit/service/DenunciaService.java
@@ -23,6 +27,7 @@
 /home/oem/Projetos/tcs/projeto/tcsilhafit-test/backend/src/main/java/com/example/ilhafit/entity/Usuario.java
 /home/oem/Projetos/tcs/projeto/tcsilhafit-test/backend/src/main/java/com/example/ilhafit/config/SwaggerConfig.java
 /home/oem/Projetos/tcs/projeto/tcsilhafit-test/backend/src/main/java/com/example/ilhafit/controller/UsuarioController.java
+/home/oem/Projetos/tcs/projeto/tcsilhafit-test/backend/src/main/java/com/example/ilhafit/dto/SolicitacaoCategoriaDTO.java
 /home/oem/Projetos/tcs/projeto/tcsilhafit-test/backend/src/main/java/com/example/ilhafit/service/FileStorageService.java
 /home/oem/Projetos/tcs/projeto/tcsilhafit-test/backend/src/main/java/com/example/ilhafit/service/EmailService.java
 /home/oem/Projetos/tcs/projeto/tcsilhafit-test/backend/src/main/java/com/example/ilhafit/security/UserPrincipal.java
@@ -51,9 +56,11 @@
 /home/oem/Projetos/tcs/projeto/tcsilhafit-test/backend/src/main/java/com/example/ilhafit/repository/PasswordResetTokenRepository.java
 /home/oem/Projetos/tcs/projeto/tcsilhafit-test/backend/src/main/java/com/example/ilhafit/config/SecurityConfig.java
 /home/oem/Projetos/tcs/projeto/tcsilhafit-test/backend/src/main/java/com/example/ilhafit/repository/CategoriaRepository.java
+/home/oem/Projetos/tcs/projeto/tcsilhafit-test/backend/src/main/java/com/example/ilhafit/controller/SolicitacaoCategoriaController.java
 /home/oem/Projetos/tcs/projeto/tcsilhafit-test/backend/src/main/java/com/example/ilhafit/entity/Estabelecimento.java
 /home/oem/Projetos/tcs/projeto/tcsilhafit-test/backend/src/main/java/com/example/ilhafit/service/CategoriaService.java
 /home/oem/Projetos/tcs/projeto/tcsilhafit-test/backend/src/main/java/com/example/ilhafit/config/WebMvcConfig.java
+/home/oem/Projetos/tcs/projeto/tcsilhafit-test/backend/src/main/java/com/example/ilhafit/entity/SolicitacaoCategoria.java
 /home/oem/Projetos/tcs/projeto/tcsilhafit-test/backend/src/main/java/com/example/ilhafit/service/AvaliacaoService.java
 /home/oem/Projetos/tcs/projeto/tcsilhafit-test/backend/src/main/java/com/example/ilhafit/service/GradeAtividadeService.java
 /home/oem/Projetos/tcs/projeto/tcsilhafit-test/backend/src/main/java/com/example/ilhafit/mapper/AdministradorMapper.java

@@ -3,11 +3,16 @@ package com.example.ilhafit.service;
 import com.example.ilhafit.dto.EstabelecimentoDTO;
 import com.example.ilhafit.entity.Estabelecimento;
 import com.example.ilhafit.entity.Role;
+import com.example.ilhafit.entity.SolicitacaoCategoria;
+import com.example.ilhafit.entity.StatusSolicitacao;
 import com.example.ilhafit.mapper.EstabelecimentoMapper;
+import com.example.ilhafit.repository.CategoriaRepository;
 import com.example.ilhafit.repository.EstabelecimentoRepository;
 import com.example.ilhafit.repository.AvaliacaoRepository;
+import com.example.ilhafit.repository.SolicitacaoCategoriaRepository;
 import com.example.ilhafit.entity.Avaliacao;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,6 +21,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class EstabelecimentoService {
@@ -24,6 +30,8 @@ public class EstabelecimentoService {
     private final EstabelecimentoMapper estabelecimentoMapper;
     private final AvaliacaoRepository avaliacaoRepository;
     private final PasswordEncoder passwordEncoder;
+    private final SolicitacaoCategoriaRepository solicitacaoCategoriaRepository;
+    private final CategoriaRepository categoriaRepository;
 
     @Transactional
     public EstabelecimentoDTO.Resposta cadastrar(EstabelecimentoDTO.Registro dto) {
@@ -35,7 +43,19 @@ public class EstabelecimentoService {
         }
         Estabelecimento estabelecimento = estabelecimentoMapper.toEntity(dto);
         estabelecimento.setRole(Role.ESTABELECIMENTO);
-        return mappedWithRating(estabelecimentoRepository.save(estabelecimento));
+        EstabelecimentoDTO.Resposta resposta = mappedWithRating(estabelecimentoRepository.save(estabelecimento));
+
+        log.info("Cadastro estabelecimento - outrosAtividade recebido: '{}'", dto.getOutrosAtividade());
+        if (dto.getOutrosAtividade() != null && !dto.getOutrosAtividade().isBlank()) {
+            SolicitacaoCategoria solicitacao = new SolicitacaoCategoria();
+            solicitacao.setSolicitanteEmail(dto.getEmail());
+            solicitacao.setNome(dto.getOutrosAtividade().trim());
+            solicitacao.setStatus(StatusSolicitacao.PENDENTE);
+            solicitacaoCategoriaRepository.save(solicitacao);
+            log.info("SolicitacaoCategoria criada: nome='{}', email='{}'", solicitacao.getNome(), solicitacao.getSolicitanteEmail());
+        }
+
+        return resposta;
     }
 
     public List<EstabelecimentoDTO.Resposta> listarTodos() {
@@ -112,6 +132,11 @@ public class EstabelecimentoService {
             // Limpa lista atual e adiciona novas (orphanRemoval cuida do resto)
             estabelecimento.getGradeAtividades().clear();
             estabelecimento.getGradeAtividades().addAll(estabelecimentoMapper.toEntity(dto).getGradeAtividades());
+        }
+
+        // Atualiza Categorias
+        if (dto.getCategoriaIds() != null) {
+            estabelecimento.setCategorias(new java.util.ArrayList<>(categoriaRepository.findAllById(dto.getCategoriaIds())));
         }
 
         // Senha

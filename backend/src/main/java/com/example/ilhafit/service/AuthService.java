@@ -13,10 +13,13 @@ import com.example.ilhafit.mapper.AdministradorMapper;
 import com.example.ilhafit.mapper.EstabelecimentoMapper;
 import com.example.ilhafit.mapper.ProfissionalMapper;
 import com.example.ilhafit.mapper.UsuarioMapper;
+import com.example.ilhafit.entity.SolicitacaoCategoria;
+import com.example.ilhafit.entity.StatusSolicitacao;
 import com.example.ilhafit.repository.AdministradorRepository;
 import com.example.ilhafit.repository.EstabelecimentoRepository;
 import com.example.ilhafit.repository.PasswordResetTokenRepository;
 import com.example.ilhafit.repository.ProfissionalRepository;
+import com.example.ilhafit.repository.SolicitacaoCategoriaRepository;
 import com.example.ilhafit.repository.UsuarioRepository;
 import com.example.ilhafit.repository.VerificationTokenRepository;
 import com.example.ilhafit.security.CustomUserDetailsService;
@@ -51,6 +54,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final CustomUserDetailsService customUserDetailsService;
 
+    private final SolicitacaoCategoriaRepository solicitacaoCategoriaRepository;
     private final PasswordResetTokenRepository passwordResetTokenRepository;
     private final VerificationTokenRepository verificationTokenRepository;
     private final EmailService emailService;
@@ -242,6 +246,13 @@ public class AuthService {
             estabelecimento.setRazaoSocial(estabelecimento.getNome());
         }
         estabelecimento = estabelecimentoRepository.save(estabelecimento);
+        if (dto.getOutrosAtividade() != null && !dto.getOutrosAtividade().isBlank()) {
+            SolicitacaoCategoria solicitacao = new SolicitacaoCategoria();
+            solicitacao.setSolicitanteEmail(estabelecimento.getEmail());
+            solicitacao.setNome(dto.getOutrosAtividade().trim());
+            solicitacao.setStatus(StatusSolicitacao.PENDENTE);
+            solicitacaoCategoriaRepository.save(solicitacao);
+        }
         return estabelecimentoMapper.toDTO(estabelecimento);
     }
 
@@ -265,6 +276,13 @@ public class AuthService {
         profissional.setSenha(passwordEncoder.encode(dto.getSenha())); // Criptografa senha
         profissional.setRole(Role.PROFISSIONAL);
         profissional = profissionalRepository.save(profissional);
+        if (dto.getOutrosAtividade() != null && !dto.getOutrosAtividade().isBlank()) {
+            SolicitacaoCategoria solicitacao = new SolicitacaoCategoria();
+            solicitacao.setSolicitanteEmail(profissional.getEmail());
+            solicitacao.setNome(dto.getOutrosAtividade().trim());
+            solicitacao.setStatus(StatusSolicitacao.PENDENTE);
+            solicitacaoCategoriaRepository.save(solicitacao);
+        }
         return profissionalMapper.toDTO(profissional);
     }
 }

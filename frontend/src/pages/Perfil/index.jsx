@@ -20,7 +20,13 @@ import {
     Dialog,
     DialogTitle,
     DialogContent,
-    DialogContentText
+    DialogContentText,
+    Table,
+    TableContainer,
+    TableHead,
+    TableBody,
+    TableRow,
+    TableCell,
 } from "@mui/material";
 import {
     FaUser,
@@ -45,7 +51,8 @@ import {
     FaHome,
     FaInstagram,
     FaFacebook,
-    FaGlobe
+    FaGlobe,
+    FaTags,
 } from "react-icons/fa";
 import {
     Collapse,
@@ -56,7 +63,7 @@ import {
     LinearProgress,
     CircularProgress
 } from "@mui/material";
-import { authService, meService, categoriaService, userService, estabelecimentoService, profissionalService, uploadService } from "../../services";
+import { authService, meService, categoriaService, userService, estabelecimentoService, profissionalService, uploadService, solicitacaoCategoriaService } from "../../services";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 
@@ -147,6 +154,13 @@ const Perfil = () => {
 
     const [crefOriginal, setCrefOriginal] = useState('');
     const [categoriasDb, setCategoriasDb] = useState([]);
+    const [solicitacaoForm, setSolicitacaoForm] = useState({ nome: '', descricao: '', iconeUrl: '' });
+    const [minhasSolicitacoes, setMinhasSolicitacoes] = useState([]);
+    const [loadingSolicitacao, setLoadingSolicitacao] = useState(false);
+    const [loadingMinhas, setLoadingMinhas] = useState(false);
+    const [sugestaoModalPerfil, setSugestaoModalPerfil] = useState(false);
+    const [sugestaoNomePerfil, setSugestaoNomePerfil] = useState("");
+    const [enviandoSugestao, setEnviandoSugestao] = useState(false);
 
     const [expandedActivities, setExpandedActivities] = useState(new Set());
     const isDark = theme.palette.mode === 'dark';
@@ -206,10 +220,25 @@ const Perfil = () => {
                 website: data.website || '',
             });
             if (data.registroCref) setCrefOriginal(data.registroCref);
+            if (user.role === 'PROFISSIONAL' || user.role === 'ESTABELECIMENTO') {
+                loadMinhasSolicitacoes();
+            }
         } catch (error) {
             toast.error("Erro ao carregar dados do perfil");
         } finally {
             setLoading(false);
+        }
+    };
+
+    const loadMinhasSolicitacoes = async () => {
+        try {
+            setLoadingMinhas(true);
+            const data = await solicitacaoCategoriaService.getMinhas();
+            setMinhasSolicitacoes(data);
+        } catch {
+            // não crítico
+        } finally {
+            setLoadingMinhas(false);
         }
     };
 
@@ -562,6 +591,28 @@ const Perfil = () => {
                 >
                     Fotos
                 </Button>
+
+                {(user?.role === 'PROFISSIONAL' || user?.role === 'ESTABELECIMENTO') && (
+                    <Button
+                        onClick={() => setSelectedTab(3)}
+                        startIcon={<FaTags size={14} />}
+                        sx={{
+                            borderRadius: 10,
+                            textTransform: 'none',
+                            px: 3,
+                            fontWeight: 700,
+                            bgcolor: selectedTab === 3 ? 'primary.main' : 'transparent',
+                            color: selectedTab === 3 ? 'white' : 'text.primary',
+                            border: '1px solid',
+                            borderColor: selectedTab === 3 ? 'primary.main' : 'divider',
+                            '&:hover': {
+                                bgcolor: selectedTab === 3 ? 'primary.main' : alpha(theme.palette.divider, 0.1),
+                            }
+                        }}
+                    >
+                        Sugerir Categoria
+                    </Button>
+                )}
 
             </Box>
 
@@ -989,6 +1040,28 @@ const Perfil = () => {
                                     />
                                 ))}
                             </Box>
+
+                            {/* Botão sugerir nova categoria */}
+                            {isEditing && (() => {
+                                const pendentes = minhasSolicitacoes.filter(s => s.status === 'PENDENTE').length;
+                                const bloqueado = pendentes >= 3;
+                                return (
+                                    <Tooltip title={bloqueado ? `Você já tem ${pendentes}/3 solicitações pendentes. Vá até a aba "Sugerir Categoria" para acompanhar.` : ""}>
+                                        <span>
+                                            <Button
+                                                variant="text"
+                                                size="small"
+                                                disabled={bloqueado}
+                                                onClick={() => { setSugestaoNomePerfil(""); setSugestaoModalPerfil(true); }}
+                                                sx={{ mt: 1.5, textTransform: 'none', color: 'text.secondary', fontWeight: 600,
+                                                    '&:hover': { color: 'primary.main' } }}
+                                            >
+                                                Não encontrei minha área de atuação →
+                                            </Button>
+                                        </span>
+                                    </Tooltip>
+                                );
+                            })()}
                         </Box>
 
                         {formData.categoriaIds.length > 0 && (
@@ -1342,7 +1415,234 @@ const Perfil = () => {
                         )}
                     </Box>
                 )}
+
+                {/* Aba Sugerir Categoria */}
+                {selectedTab === 3 && (user?.role === 'PROFISSIONAL' || user?.role === 'ESTABELECIMENTO') && (
+                    <Box sx={{ p: { xs: 3, md: 6 } }}>
+                        <Typography variant="h6" fontWeight={800} sx={{ mb: 1, display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                            <Box sx={{ width: 4, height: 24, bgcolor: 'primary.main', borderRadius: 2 }} />
+                            Sugerir Nova Categoria
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                            Sugira categorias que ainda não existem na plataforma. Após análise do administrador, a categoria poderá ser criada.
+                        </Typography>
+
+                        {/* Contador de pendentes */}
+                        {(() => {
+                            const pendingCount = minhasSolicitacoes.filter(s => s.status === 'PENDENTE').length;
+                            return (
+                                <Box sx={{ mb: 3 }}>
+                                    <Chip
+                                        label={`${pendingCount}/3 solicitações pendentes`}
+                                        color={pendingCount >= 3 ? 'error' : pendingCount >= 2 ? 'warning' : 'success'}
+                                        variant="outlined"
+                                        sx={{ fontWeight: 700 }}
+                                    />
+                                    {pendingCount >= 3 && (
+                                        <Typography variant="body2" color="error" sx={{ mt: 1 }}>
+                                            Aguarde o admin revisar suas solicitações pendentes para enviar novas.
+                                        </Typography>
+                                    )}
+                                </Box>
+                            );
+                        })()}
+
+                        {/* Formulário de solicitação */}
+                        {(() => {
+                            const pendingCount = minhasSolicitacoes.filter(s => s.status === 'PENDENTE').length;
+                            const isBlocked = pendingCount >= 3;
+                            return (
+                                <Paper elevation={0} sx={{ p: 3, border: '1px solid', borderColor: 'divider', borderRadius: 3, mb: 4 }}>
+                                    <Grid container spacing={2}>
+                                        <Grid item xs={12} md={6}>
+                                            <TextField
+                                                fullWidth
+                                                label="Nome da Categoria"
+                                                value={solicitacaoForm.nome}
+                                                onChange={e => setSolicitacaoForm(prev => ({ ...prev, nome: e.target.value }))}
+                                                required
+                                                disabled={isBlocked}
+                                                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
+                                            />
+                                        </Grid>
+                                        <Grid item xs={12} md={6}>
+                                            <TextField
+                                                fullWidth
+                                                label="URL do Ícone (opcional)"
+                                                value={solicitacaoForm.iconeUrl}
+                                                onChange={e => setSolicitacaoForm(prev => ({ ...prev, iconeUrl: e.target.value }))}
+                                                disabled={isBlocked}
+                                                placeholder="https://..."
+                                                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
+                                            />
+                                        </Grid>
+                                        <Grid item xs={12}>
+                                            <TextField
+                                                fullWidth
+                                                label="Descrição (opcional)"
+                                                value={solicitacaoForm.descricao}
+                                                onChange={e => setSolicitacaoForm(prev => ({ ...prev, descricao: e.target.value }))}
+                                                disabled={isBlocked}
+                                                multiline
+                                                rows={2}
+                                                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
+                                            />
+                                        </Grid>
+                                        <Grid item xs={12}>
+                                            <Button
+                                                variant="contained"
+                                                disabled={isBlocked || loadingSolicitacao || !solicitacaoForm.nome.trim()}
+                                                onClick={async () => {
+                                                    try {
+                                                        setLoadingSolicitacao(true);
+                                                        await solicitacaoCategoriaService.solicitar(solicitacaoForm);
+                                                        toast.success("Solicitação enviada com sucesso!");
+                                                        setSolicitacaoForm({ nome: '', descricao: '', iconeUrl: '' });
+                                                        await loadMinhasSolicitacoes();
+                                                    } catch (error) {
+                                                        toast.error(error.response?.data?.erro || "Erro ao enviar solicitação.");
+                                                    } finally {
+                                                        setLoadingSolicitacao(false);
+                                                    }
+                                                }}
+                                                sx={{ borderRadius: 3, textTransform: 'none', fontWeight: 700, px: 4 }}
+                                            >
+                                                {loadingSolicitacao ? <CircularProgress size={20} color="inherit" /> : "Enviar Solicitação"}
+                                            </Button>
+                                        </Grid>
+                                    </Grid>
+                                </Paper>
+                            );
+                        })()}
+
+                        {/* Minhas solicitações */}
+                        <Typography variant="h6" fontWeight={700} sx={{ mb: 2 }}>Minhas Solicitações</Typography>
+                        {loadingMinhas ? (
+                            <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+                                <CircularProgress />
+                            </Box>
+                        ) : minhasSolicitacoes.length === 0 ? (
+                            <Typography color="text.secondary">Você ainda não enviou nenhuma solicitação.</Typography>
+                        ) : (
+                            <TableContainer component={Paper} elevation={0}
+                                sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 3 }}>
+                                <Table size="small">
+                                    <TableHead>
+                                        <TableRow>
+                                            <TableCell><strong>Nome</strong></TableCell>
+                                            <TableCell><strong>Descrição</strong></TableCell>
+                                            <TableCell><strong>Status</strong></TableCell>
+                                            <TableCell><strong>Data</strong></TableCell>
+                                        </TableRow>
+                                    </TableHead>
+                                    <TableBody>
+                                        {minhasSolicitacoes.map(s => {
+                                            const statusMap = {
+                                                PENDENTE:  { label: 'Pendente',  color: 'warning' },
+                                                APROVADA:  { label: 'Aprovada',  color: 'success' },
+                                                REJEITADA: { label: 'Rejeitada', color: 'error'   },
+                                            };
+                                            return (
+                                                <TableRow key={s.id} hover>
+                                                    <TableCell sx={{ fontWeight: 600 }}>{s.nome}</TableCell>
+                                                    <TableCell>
+                                                        <Typography variant="body2" color="text.secondary" noWrap sx={{ maxWidth: 200 }}>
+                                                            {s.descricao || '—'}
+                                                        </Typography>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <Chip
+                                                            label={statusMap[s.status]?.label || s.status}
+                                                            color={statusMap[s.status]?.color || 'default'}
+                                                            size="small"
+                                                            sx={{ fontWeight: 600 }}
+                                                        />
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <Typography variant="caption" color="text.secondary">
+                                                            {s.dataSolicitacao
+                                                                ? new Date(s.dataSolicitacao).toLocaleDateString('pt-BR')
+                                                                : '—'}
+                                                        </Typography>
+                                                    </TableCell>
+                                                </TableRow>
+                                            );
+                                        })}
+                                    </TableBody>
+                                </Table>
+                            </TableContainer>
+                        )}
+                    </Box>
+                )}
             </Paper>
+
+            {/* Dialog: Sugerir nova categoria (dentro do sistema) */}
+            <Dialog
+                open={sugestaoModalPerfil}
+                onClose={() => setSugestaoModalPerfil(false)}
+                PaperProps={{ sx: { borderRadius: 4, p: 1, minWidth: 360 } }}
+            >
+                <DialogTitle sx={{ fontWeight: 800 }}>Sugerir nova categoria</DialogTitle>
+                <DialogContent>
+                    <DialogContentText sx={{ mb: 2, fontWeight: 500 }}>
+                        Informe o nome da área de atuação que não encontrou na lista.
+                        Sua sugestão será analisada pelo administrador e, se aprovada,
+                        estará disponível para seleção. Você pode acompanhar o status
+                        na aba <strong>Sugerir Categoria</strong>.
+                    </DialogContentText>
+                    <TextField
+                        autoFocus
+                        fullWidth
+                        label="Nome da categoria"
+                        value={sugestaoNomePerfil}
+                        onChange={e => setSugestaoNomePerfil(e.target.value)}
+                        onKeyDown={async e => {
+                            if (e.key === 'Enter' && sugestaoNomePerfil.trim() && !enviandoSugestao) {
+                                setEnviandoSugestao(true);
+                                try {
+                                    await solicitacaoCategoriaService.solicitar({ nome: sugestaoNomePerfil.trim() });
+                                    toast.success("Sugestão enviada! Acompanhe na aba \"Sugerir Categoria\".");
+                                    setSugestaoModalPerfil(false);
+                                    loadMinhasSolicitacoes();
+                                } catch (err) {
+                                    toast.error(err.response?.data?.erro || "Erro ao enviar sugestão.");
+                                } finally {
+                                    setEnviandoSugestao(false);
+                                }
+                            }
+                        }}
+                        sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
+                    />
+                </DialogContent>
+                <DialogActions sx={{ p: 2.5, pt: 0 }}>
+                    <Button
+                        onClick={() => setSugestaoModalPerfil(false)}
+                        sx={{ borderRadius: 3, textTransform: 'none', fontWeight: 700 }}
+                    >
+                        Cancelar
+                    </Button>
+                    <Button
+                        variant="contained"
+                        disabled={!sugestaoNomePerfil.trim() || enviandoSugestao}
+                        onClick={async () => {
+                            setEnviandoSugestao(true);
+                            try {
+                                await solicitacaoCategoriaService.solicitar({ nome: sugestaoNomePerfil.trim() });
+                                toast.success("Sugestão enviada! Acompanhe na aba \"Sugerir Categoria\".");
+                                setSugestaoModalPerfil(false);
+                                loadMinhasSolicitacoes();
+                            } catch (err) {
+                                toast.error(err.response?.data?.erro || "Erro ao enviar sugestão.");
+                            } finally {
+                                setEnviandoSugestao(false);
+                            }
+                        }}
+                        sx={{ borderRadius: 3, textTransform: 'none', fontWeight: 700 }}
+                    >
+                        {enviandoSugestao ? <CircularProgress size={18} color="inherit" /> : "Enviar Sugestão"}
+                    </Button>
+                </DialogActions>
+            </Dialog>
 
             {/* Modal de Confirmação de Exclusão */}
             <Dialog

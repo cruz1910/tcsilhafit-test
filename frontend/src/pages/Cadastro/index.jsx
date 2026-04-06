@@ -17,7 +17,13 @@ import {
     Collapse,
     Autocomplete,
     Chip,
-    InputAdornment
+    InputAdornment,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogContentText,
+    DialogActions,
+    Tooltip,
 } from "@mui/material";
 import { FaTimes, FaUpload, FaWhatsapp, FaUser, FaBuilding, FaUserTie, FaEye, FaEyeSlash, FaChevronDown, FaInstagram, FaFacebook, FaGlobe } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
@@ -68,6 +74,8 @@ import { useEffect } from "react";const Cadastro = () => {
 
     const [formData, setFormData] = useState(initialFormData);
     const [categoriasDb, setCategoriasDb] = useState([]);
+    const [sugestaoModal, setSugestaoModal] = useState(false);
+    const [sugestaoNome, setSugestaoNome] = useState("");
 
     useEffect(() => {
         const carregarCategorias = async () => {
@@ -357,6 +365,7 @@ import { useEffect } from "react";const Cadastro = () => {
     };
 
     return (
+        <>
         <Box sx={{
             minHeight: "100vh",
             display: "flex",
@@ -808,7 +817,7 @@ import { useEffect } from "react";const Cadastro = () => {
                                     Quase lá! 🏋️‍♀️
                                 </Typography>
                                 <Typography variant="body2" color="text.secondary">
-                                    Agora defina suas atividades e horários de disponibilidade.
+                                    Agora selecione as categorias em que você atua.
                                 </Typography>
                             </Box>
 
@@ -863,7 +872,7 @@ import { useEffect } from "react";const Cadastro = () => {
                             )}
 
                             <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 1, color: "text.secondary" }}>
-                                {accountType === "estabelecimento" ? "Atividades Oferecidas *" : "Sua Especialidade/Profissão *"}
+                                {accountType === "estabelecimento" ? "Categorias de Atividades *" : "Suas Categorias de Atuação *"}
                             </Typography>
 
                             <Autocomplete
@@ -879,7 +888,7 @@ import { useEffect } from "react";const Cadastro = () => {
                                 renderInput={(params) => (
                                     <TextField
                                         {...params}
-                                        placeholder="Selecione as atividades..."
+                                        placeholder="Selecione as categorias..."
                                         sx={inputStyles}
                                     />
                                 )}
@@ -901,6 +910,33 @@ import { useEffect } from "react";const Cadastro = () => {
                                     />
                                 ))}
                             </Box>
+                            {/* Chip de sugestão pendente */}
+                            {formData.outrosAtividade && (
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                                    <Chip
+                                        label={`Sugestão enviada: "${formData.outrosAtividade}"`}
+                                        onDelete={() => setFormData(prev => ({ ...prev, outrosAtividade: "" }))}
+                                        sx={{ borderRadius: 1.5, fontWeight: 600, bgcolor: 'warning.main', color: 'white' }}
+                                    />
+                                </Box>
+                            )}
+
+                            {/* Botão sugerir nova categoria */}
+                            <Tooltip title={formData.outrosAtividade ? "Você já fez uma sugestão. Remova-a para enviar outra." : ""}>
+                                <span>
+                                    <Button
+                                        variant="text"
+                                        size="small"
+                                        disabled={!!formData.outrosAtividade}
+                                        onClick={() => { setSugestaoNome(""); setSugestaoModal(true); }}
+                                        sx={{ mb: 2, textTransform: 'none', color: 'text.secondary', fontWeight: 600,
+                                            '&:hover': { color: 'primary.main' } }}
+                                    >
+                                        Não encontrei minha área de atuação →
+                                    </Button>
+                                </span>
+                            </Tooltip>
+
                             <Button onClick={() => setStep(1)} sx={{ mb: 2, textTransform: 'none' }}>
                                 Voltar para dados básicos
                             </Button>
@@ -948,6 +984,53 @@ import { useEffect } from "react";const Cadastro = () => {
                 </form>
             </Paper>
         </Box>
+
+        {/* Dialog: Sugerir nova categoria */}
+        <Dialog
+            open={sugestaoModal}
+            onClose={() => setSugestaoModal(false)}
+            PaperProps={{ sx: { borderRadius: 4, p: 1, minWidth: 360 } }}
+        >
+            <DialogTitle sx={{ fontWeight: 800 }}>Sugerir nova categoria</DialogTitle>
+            <DialogContent>
+                <DialogContentText sx={{ mb: 2, fontWeight: 500 }}>
+                    Informe o nome da área de atuação que não encontrou na lista.
+                    Sua sugestão será analisada pelo administrador e, se aprovada,
+                    estará disponível para seleção.
+                </DialogContentText>
+                <TextField
+                    autoFocus
+                    fullWidth
+                    label="Nome da categoria"
+                    value={sugestaoNome}
+                    onChange={e => setSugestaoNome(e.target.value)}
+                    onKeyDown={e => {
+                        if (e.key === 'Enter' && sugestaoNome.trim()) {
+                            setFormData(prev => ({ ...prev, outrosAtividade: sugestaoNome.trim() }));
+                            setSugestaoModal(false);
+                        }
+                    }}
+                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
+                />
+            </DialogContent>
+            <DialogActions sx={{ p: 2.5, pt: 0 }}>
+                <Button onClick={() => setSugestaoModal(false)} sx={{ borderRadius: 3, textTransform: 'none', fontWeight: 700 }}>
+                    Cancelar
+                </Button>
+                <Button
+                    variant="contained"
+                    disabled={!sugestaoNome.trim()}
+                    onClick={() => {
+                        setFormData(prev => ({ ...prev, outrosAtividade: sugestaoNome.trim() }));
+                        setSugestaoModal(false);
+                    }}
+                    sx={{ borderRadius: 3, textTransform: 'none', fontWeight: 700 }}
+                >
+                    Enviar Sugestão
+                </Button>
+            </DialogActions>
+        </Dialog>
+        </>
     );
 };
 

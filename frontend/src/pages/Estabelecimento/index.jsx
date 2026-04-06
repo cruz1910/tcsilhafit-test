@@ -4,7 +4,7 @@ import { FaLocationArrow, FaSearch, FaStar, FaFilter, FaTimes } from "react-icon
 import { alpha, useTheme } from "@mui/material/styles";
 import CardEstabelecimento from "../../components/Card/CardEstabelecimento";
 import ModalDetalhesEstabelecimento from "../../components/ModalDetalhesEstabelecimento";
-import { estabelecimentoService } from "../../services";
+import { estabelecimentoService, categoriaService } from "../../services";
 
 const FLORIPA_COORDS = { lat: -27.5948, lng: -48.5482 };
 
@@ -19,11 +19,6 @@ const haversineDistance = (lat1, lon1, lat2, lon2) => {
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 };
 
-const allCategories = [
-    "Academia", "CrossFit", "Funcional", "Pilates", "Yoga", "Dança",
-    "Balé", "Basquete", "Futebol", "Natação", "Vôlei", "Jiu-Jitsu",
-    "Boxe", "Muay Thai", "Kung Fu", "Ciclismo", "Circo", "Fisioterapia", "Outros"
-];
 
 const Estabelecimento = () => {
   const theme = useTheme();
@@ -44,6 +39,7 @@ const Estabelecimento = () => {
   const [maxDistance, setMaxDistance] = useState(50);
   const [showFilters, setShowFilters] = useState(false);
   const [exclusivoMulheres, setExclusivoMulheres] = useState(false);
+  const [categorias, setCategorias] = useState([]);
 
   const requestUserLocation = useCallback(() => {
     if (!navigator.geolocation) {
@@ -83,7 +79,7 @@ const Estabelecimento = () => {
           ...item,
           Imagem: (item.fotosUrl && item.fotosUrl.length > 0) ? item.fotosUrl[0] : "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=1470&auto=format&fit=crop",
           Imagens: item.fotosUrl || [],
-          categorias: (item.gradeAtividades || []).map(g => g.atividade),
+          categorias: (item.categorias || []).map(c => c.nome),
           avaliacao: item.avaliacao || 0.0,
           aberto: true,
           descricao: item.descricao || "Um ótimo local para treinar e cuidar da sua saúde.",
@@ -97,6 +93,10 @@ const Estabelecimento = () => {
     };
 
     fetchEstabelecimentos();
+  }, []);
+
+  useEffect(() => {
+    categoriaService.listarTodas().then(setCategorias).catch(console.error);
   }, []);
 
   const handleOpenModal = (estab) => {
@@ -251,19 +251,19 @@ const Estabelecimento = () => {
               '&:hover': { bgcolor: selectedCategories.length === 0 ? theme.palette.primary.dark : alpha(theme.palette.primary.main, 0.1) },
             }}
           />
-          {allCategories.map((cat) => (
+          {categorias.map((cat) => (
             <Chip
-              key={cat}
-              label={cat}
-              onClick={() => toggleCategory(cat)}
+              key={cat.id}
+              label={cat.nome}
+              onClick={() => toggleCategory(cat.nome)}
               sx={{
                 borderRadius: 2.5, fontWeight: 600,
-                bgcolor: selectedCategories.includes(cat) ? theme.palette.primary.main : 'background.paper',
-                color: selectedCategories.includes(cat) ? 'white' : 'text.primary',
+                bgcolor: selectedCategories.includes(cat.nome) ? theme.palette.primary.main : 'background.paper',
+                color: selectedCategories.includes(cat.nome) ? 'white' : 'text.primary',
                 border: '1px solid',
-                borderColor: selectedCategories.includes(cat) ? theme.palette.primary.main : 'divider',
+                borderColor: selectedCategories.includes(cat.nome) ? theme.palette.primary.main : 'divider',
                 cursor: 'pointer',
-                '&:hover': { bgcolor: selectedCategories.includes(cat) ? theme.palette.primary.dark : alpha(theme.palette.primary.main, 0.1) },
+                '&:hover': { bgcolor: selectedCategories.includes(cat.nome) ? theme.palette.primary.dark : alpha(theme.palette.primary.main, 0.1) },
               }}
             />
           ))}

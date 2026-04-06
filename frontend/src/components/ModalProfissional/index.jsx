@@ -115,7 +115,7 @@ const ModalProfissional = ({ open, onClose, profissional }) => {
     // Dados seguros
     const nome = profissional.nome || "Profissional";
     const foto = profissional.Imagem || profissional.fotoUrl || "";
-    const especialidades = Array.isArray(profissional.especialidades) ? profissional.especialidades : [];
+    const especialidades = Array.isArray(profissional.especialidades) ? profissional.especialidades : (profissional.categorias || []).map(c => c.nome);
     const gradeAtividades = Array.isArray(profissional.gradeAtividades) ? profissional.gradeAtividades : [];
 
     return (<>

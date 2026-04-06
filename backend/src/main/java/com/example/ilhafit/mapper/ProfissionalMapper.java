@@ -3,16 +3,22 @@ package com.example.ilhafit.mapper;
 import com.example.ilhafit.dto.CategoriaDTO;
 import com.example.ilhafit.dto.GradeAtividadeDTO;
 import com.example.ilhafit.dto.ProfissionalDTO;
+import com.example.ilhafit.entity.Categoria;
 import com.example.ilhafit.entity.GradeAtividade;
 import com.example.ilhafit.entity.Profissional;
+import com.example.ilhafit.repository.CategoriaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
 public class ProfissionalMapper {
 
     private final EnderecoMapper enderecoMapper;
+    private final CategoriaRepository categoriaRepository;
 
     public Profissional toEntity(ProfissionalDTO.Registro dto) {
         Profissional pro = new Profissional();
@@ -41,6 +47,10 @@ public class ProfissionalMapper {
         pro.setInstagram(dto.getInstagram());
         pro.setFacebook(dto.getFacebook());
         pro.setWebsite(dto.getWebsite());
+        if (dto.getCategoriaIds() != null && !dto.getCategoriaIds().isEmpty()) {
+            List<Categoria> categorias = categoriaRepository.findAllById(dto.getCategoriaIds());
+            pro.setCategorias(new ArrayList<>(categorias));
+        }
         return pro;
     }
 

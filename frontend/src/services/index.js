@@ -1,6 +1,7 @@
 import api from './api';
 import categoriaService from './categoriaService';
 import gradeService from './gradeService';
+import solicitacaoCategoriaService from './solicitacaoCategoriaService';
 
 // ==================== AUTH ====================
 
@@ -62,6 +63,7 @@ export const authService = {
                 razaoSocial: formData.razaoSocial || formData.nome,
                 telefone: formData.telefone,
                 categoriaIds: formData.categoriaIds || [],
+                outrosAtividade: formData.outrosAtividade || null,
                 exclusivoMulheres: formData.exclusivoMulheres,
                 fotosUrl: formData.fotosUrl,
                 instagram: formData.instagram || null,
@@ -84,6 +86,7 @@ export const authService = {
                 registroCref: formData.registroCref,
                 descricao: formData.descricao,
                 categoriaIds: formData.categoriaIds || [],
+                outrosAtividade: formData.outrosAtividade || null,
                 exclusivoMulheres: formData.exclusivoMulheres,
                 fotoUrl: formData.fotoUrl,
                 instagram: formData.instagram || null,
@@ -536,4 +539,4 @@ export const denunciaService = {
     },
 };
 
-export { categoriaService, gradeService };
+export { categoriaService, gradeService, solicitacaoCategoriaService };

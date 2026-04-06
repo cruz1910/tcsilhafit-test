@@ -117,27 +117,13 @@ api.interceptors.response.use(
       }
     }
 
-    // Mensagem de erro padrão
-    let errorMessage = "Ocorreu um erro inesperado. Tente novamente mais tarde.";
-
     if (error.response) {
-      // Erro de resposta do servidor
-      console.error('Erro na resposta:', error.response.data);
-
-      // Tenta extrair mensagem de erro do backend (formato padronizado: { erro: "..." })
-      errorMessage = error.response.data?.erro || error.response.data?.message || errorMessage;
+      console.error('Erro na resposta:', error.response.status, error.response.data);
     } else if (error.request) {
-      // Erro de requisição (sem resposta)
-      console.error('Erro na requisição:', error.request);
-      errorMessage = "Erro de conexão com o servidor. Verifique sua internet.";
+      console.error('Erro de conexão:', error.message);
     } else {
-      // Outro tipo de erro
       console.error('Erro:', error.message);
-      errorMessage = error.message;
     }
-
-    // Exibe o toast com a mensagem de erro (exceto se for tratado especificamente)
-    toast.error(errorMessage);
 
     return Promise.reject(error);
   }

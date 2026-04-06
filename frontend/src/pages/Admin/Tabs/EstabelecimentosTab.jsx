@@ -115,12 +115,12 @@ const EstabelecimentosTab = () => {
     const categoryStats = useMemo(() => {
         const map = {};
         estabelecimentos.forEach((estab) => {
-            const atividades = estab.gradeAtividades || [];
-            if (atividades.length === 0) {
+            const cats = estab.categorias || [];
+            if (cats.length === 0) {
                 map["Sem categoria"] = (map["Sem categoria"] || 0) + 1;
             } else {
-                atividades.forEach((g) => {
-                    const nome = g.atividade || "Outros";
+                cats.forEach((c) => {
+                    const nome = c.nome || "Outros";
                     map[nome] = (map[nome] || 0) + 1;
                 });
             }
@@ -136,11 +136,11 @@ const EstabelecimentosTab = () => {
         if (selectedCategory) {
             if (selectedCategory === "Sem categoria") {
                 filtered = filtered.filter(
-                    (e) => !e.gradeAtividades || e.gradeAtividades.length === 0
+                    (e) => !e.categorias || e.categorias.length === 0
                 );
             } else {
                 filtered = filtered.filter((e) =>
-                    e.gradeAtividades?.some((g) => g.atividade === selectedCategory)
+                    e.categorias?.some((c) => c.nome === selectedCategory)
                 );
             }
         }
@@ -177,7 +177,7 @@ const EstabelecimentosTab = () => {
     };
 
     const handleOpenModal = (estab) => {
-        const atividades = (estab.gradeAtividades || []).map((g) => g.atividade);
+        const atividades = (estab.categorias || []).map((c) => c.nome);
         const mapped = {
             ...estab,
             nome: estab.nomeFantasia || estab.nome,
@@ -386,12 +386,12 @@ const EstabelecimentosTab = () => {
                                     <TableCell>{estab.email || "N/A"}</TableCell>
                                     <TableCell>
                                         <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap" }}>
-                                            {(estab.gradeAtividades || []).slice(0, 3).map((g) => {
-                                                const cfg = getCategoryConfig(g.atividade);
+                                            {(estab.categorias || []).slice(0, 3).map((c) => {
+                                                const cfg = getCategoryConfig(c.nome);
                                                 return (
                                                     <Chip
-                                                        key={g.atividade}
-                                                        label={g.atividade}
+                                                        key={c.id}
+                                                        label={c.nome}
                                                         size="small"
                                                         sx={{
                                                             bgcolor: alpha(cfg.color, isDark ? 0.2 : 0.1),
@@ -402,14 +402,14 @@ const EstabelecimentosTab = () => {
                                                     />
                                                 );
                                             })}
-                                            {(estab.gradeAtividades || []).length > 3 && (
+                                            {(estab.categorias || []).length > 3 && (
                                                 <Chip
-                                                    label={`+${estab.gradeAtividades.length - 3}`}
+                                                    label={`+${(estab.categorias || []).length - 3}`}
                                                     size="small"
                                                     sx={{ fontWeight: 600, fontSize: "0.7rem" }}
                                                 />
                                             )}
-                                            {(!estab.gradeAtividades || estab.gradeAtividades.length === 0) && (
+                                            {(!estab.categorias || estab.categorias.length === 0) && (
                                                 <Typography variant="caption" color="text.secondary">—</Typography>
                                             )}
                                         </Box>

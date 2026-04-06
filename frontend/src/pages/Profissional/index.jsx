@@ -1,10 +1,10 @@
-import { Box, Container, Typography, CircularProgress, Pagination, Button, Snackbar, Alert, Tooltip, TextField, InputAdornment, Chip, IconButton, Slider, Paper, Collapse } from "@mui/material";
+import { Box, Container, Typography, CircularProgress, Pagination, Button, Snackbar, Alert, Tooltip, TextField, InputAdornment, Chip, IconButton, Paper, Collapse } from "@mui/material";
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { FaLocationArrow, FaSearch, FaStar, FaFilter, FaTimes } from "react-icons/fa";
 import { alpha, useTheme } from "@mui/material/styles";
 import CardProfissional from "../../components/Card/CardProfissional";
 import ModalProfissional from "../../components/ModalProfissional";
-import { profissionalService } from "../../services";
+import { profissionalService, categoriaService } from "../../services";
 
 const FLORIPA_COORDS = { lat: -27.5948, lng: -48.5482 };
 
@@ -19,11 +19,6 @@ const haversineDistance = (lat1, lon1, lat2, lon2) => {
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 };
 
-const allEspecialidades = [
-    "Academia", "CrossFit", "Funcional", "Pilates", "Yoga", "Dança",
-    "Balé", "Basquete", "Futebol", "Natação", "Vôlei", "Jiu-Jitsu",
-    "Boxe", "Muay Thai", "Kung Fu", "Ciclismo", "Circo", "Fisioterapia", "Outros"
-];
 
 const Profissional = () => {
     const theme = useTheme();
@@ -42,6 +37,7 @@ const Profissional = () => {
     const [selectedEspecialidades, setSelectedEspecialidades] = useState([]);
     const [minRating, setMinRating] = useState(0);
     const [showFilters, setShowFilters] = useState(false);
+    const [categorias, setCategorias] = useState([]);
 
     const requestUserLocation = useCallback(() => {
         if (!navigator.geolocation) {
@@ -74,15 +70,18 @@ const Profissional = () => {
     }, [requestUserLocation]);
 
     useEffect(() => {
+        categoriaService.listarTodas().then(setCategorias).catch(console.error);
+    }, []);
+
+    useEffect(() => {
         const fetchProfissionais = async () => {
             try {
                 const data = await profissionalService.getAll();
                 const mappedData = data.map(item => ({
                     ...item,
                     Imagem: item.fotoUrl || "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=500&auto=format&fit=crop&q=60",
-                    especialidades: item.especializacao ? item.especializacao.split(", ") : (Array.isArray(item.atividadesOferecidas) ? item.atividadesOferecidas : []),
-                    gradeAtividades: Array.isArray(item.gradeAtividades) ? item.gradeAtividades : [],
-                    atividades: (item.gradeAtividades || []).map(g => g.atividade),
+                    especialidades: (item.categorias || []).map(c => c.nome),
+                    atividades: (item.categorias || []).map(c => c.nome),
                     avaliacao: item.avaliacao || 0.0,
                 }));
                 setProfissionais(mappedData);
@@ -106,7 +105,7 @@ const Profissional = () => {
         setSelectedProfissional(null);
     };
 
-    const handleChangePage = (event, value) => {
+    const handleChangePage = (_event, value) => {
         setPage(value);
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
@@ -245,19 +244,19 @@ const Profissional = () => {
                             '&:hover': { bgcolor: selectedEspecialidades.length === 0 ? theme.palette.primary.dark : alpha(theme.palette.primary.main, 0.1) },
                         }}
                     />
-                    {allEspecialidades.map((esp) => (
+                    {categorias.map((cat) => (
                         <Chip
-                            key={esp}
-                            label={esp}
-                            onClick={() => toggleEspecialidade(esp)}
+                            key={cat.id}
+                            label={cat.nome}
+                            onClick={() => toggleEspecialidade(cat.nome)}
                             sx={{
                                 borderRadius: 2.5, fontWeight: 600,
-                                bgcolor: selectedEspecialidades.includes(esp) ? theme.palette.primary.main : 'background.paper',
-                                color: selectedEspecialidades.includes(esp) ? 'white' : 'text.primary',
+                                bgcolor: selectedEspecialidades.includes(cat.nome) ? theme.palette.primary.main : 'background.paper',
+                                color: selectedEspecialidades.includes(cat.nome) ? 'white' : 'text.primary',
                                 border: '1px solid',
-                                borderColor: selectedEspecialidades.includes(esp) ? theme.palette.primary.main : 'divider',
+                                borderColor: selectedEspecialidades.includes(cat.nome) ? theme.palette.primary.main : 'divider',
                                 cursor: 'pointer',
-                                '&:hover': { bgcolor: selectedEspecialidades.includes(esp) ? theme.palette.primary.dark : alpha(theme.palette.primary.main, 0.1) },
+                                '&:hover': { bgcolor: selectedEspecialidades.includes(cat.nome) ? theme.palette.primary.dark : alpha(theme.palette.primary.main, 0.1) },
                             }}
                         />
                     ))}
