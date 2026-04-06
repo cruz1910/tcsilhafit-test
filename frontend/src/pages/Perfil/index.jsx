@@ -27,6 +27,7 @@ import {
     TableBody,
     TableRow,
     TableCell,
+    Tooltip,
 } from "@mui/material";
 import {
     FaUser,
@@ -208,7 +209,10 @@ const Perfil = () => {
                 longitude: null
             },
             categoriaIds: data.categorias ? data.categorias.map(c => c.id) : [],
-            gradeAtividades: data.gradeAtividades || [],
+            gradeAtividades: (data.gradeAtividades || []).map(g => {
+                const cat = (cats || []).find(c => c.nome === g.atividade);
+                return { ...g, categoriaId: cat?.id ?? g.categoriaId };
+            }),
                 exclusivoMulheres: data.exclusivoMulheres || false,
                 registroCref: data.registroCref || '',
                 fotoUrl: data.fotoUrl || '',
@@ -445,7 +449,18 @@ const Perfil = () => {
                 return;
             }
 
-            const payload = { ...formData };
+            const payload = {
+                ...formData,
+                gradeAtividades: formData.gradeAtividades.map(g => {
+                    const cat = categoriasDb.find(c => c.id === g.categoriaId);
+                    return {
+                        atividade: cat?.nome || g.atividade || '',
+                        diasSemana: g.diasSemana || [],
+                        periodos: g.periodos || [],
+                        exclusivoMulheres: g.exclusivoMulheres || false,
+                    };
+                }),
+            };
 
             if (user.role === 'USER') {
                 await meService.update(payload);

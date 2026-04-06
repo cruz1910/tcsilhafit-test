@@ -55,6 +55,8 @@ public class SecurityConfig {
                         // Rotas de listagem pública
                         .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/estabelecimentos",
                                 "/api/profissionais",
+                                "/api/categorias",
+                                "/api/categorias/**",
                                 "/api/avaliacoes/**")
                         .permitAll()
                         // Proteger rotas ADMIN
