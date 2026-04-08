@@ -52,14 +52,33 @@ public class SecurityConfig {
                                 "/swagger-ui/**",
                                 "/swagger-ui.html")
                         .permitAll()
-                        // Rotas de listagem pública
-                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/estabelecimentos",
+                        // Rotas de leitura pública
+                        .requestMatchers(org.springframework.http.HttpMethod.GET,
+                                "/api/estabelecimentos",
+                                "/api/estabelecimentos/**",
                                 "/api/profissionais",
-                                "/api/avaliacoes/**")
+                                "/api/profissionais/**",
+                                "/api/categorias",
+                                "/api/categorias/**",
+                                "/api/avaliacoes/**",
+                                "/api/grade-atividades/**")
                         .permitAll()
                         // Proteger rotas ADMIN
                         .requestMatchers("/api/administradores/**", "/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/usuarios/**").hasRole("ADMIN")
+                        // Categorias: somente ADMIN pode escrever
+                        .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/categorias/**").hasRole("ADMIN")
+                        .requestMatchers(org.springframework.http.HttpMethod.PUT, "/api/categorias/**").hasRole("ADMIN")
+                        .requestMatchers(org.springframework.http.HttpMethod.DELETE, "/api/categorias/**").hasRole("ADMIN")
+                        // Grade de Atividades: somente ADMIN pode escrever
+                        .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/grade-atividades/**").hasRole("ADMIN")
+                        .requestMatchers(org.springframework.http.HttpMethod.PUT, "/api/grade-atividades/**").hasRole("ADMIN")
+                        .requestMatchers(org.springframework.http.HttpMethod.DELETE, "/api/grade-atividades/**").hasRole("ADMIN")
+                        // Estabelecimentos e Profissionais: somente ADMIN pode editar/deletar via /api (owners usam /api/me)
+                        .requestMatchers(org.springframework.http.HttpMethod.PUT, "/api/estabelecimentos/**").hasRole("ADMIN")
+                        .requestMatchers(org.springframework.http.HttpMethod.DELETE, "/api/estabelecimentos/**").hasRole("ADMIN")
+                        .requestMatchers(org.springframework.http.HttpMethod.PUT, "/api/profissionais/**").hasRole("ADMIN")
+                        .requestMatchers(org.springframework.http.HttpMethod.DELETE, "/api/profissionais/**").hasRole("ADMIN")
                         // Denúncias: POST qualquer autenticado, GET/PUT/DELETE apenas ADMIN
                         .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/denuncias").authenticated()
                         .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/denuncias").hasRole("ADMIN")

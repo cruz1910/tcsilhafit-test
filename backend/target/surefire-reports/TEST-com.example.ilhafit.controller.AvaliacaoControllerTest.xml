@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="com.example.ilhafit.controller.AuthControllerTest" time="1.006" tests="12" errors="0" skipped="0" failures="0">
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="com.example.ilhafit.controller.AvaliacaoControllerTest" time="4.968" tests="12" errors="0" skipped="0" failures="0">
   <properties>
     <property name="java.specification.version" value="21"/>
     <property name="sun.jnu.encoding" value="UTF-8"/>
@@ -62,26 +62,44 @@
     <property name="java.class.version" value="65.0"/>
     <property name="LOGGED_APPLICATION_NAME" value="[backend] "/>
   </properties>
-  <testcase name="loginBodyVazio" classname="com.example.ilhafit.controller.AuthControllerTest" time="0.01">
-    <system-out><![CDATA[2026-04-06T22:51:24.668-03:00  INFO 815569 --- [backend] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.example.ilhafit.controller.AuthControllerTest]: AuthControllerTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-2026-04-06T22:51:24.670-03:00  INFO 815569 --- [backend] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.example.ilhafit.BackendApplication for test class com.example.ilhafit.controller.AuthControllerTest
+  <testcase name="estabelecimentoNaoPodeAvaliar" classname="com.example.ilhafit.controller.AvaliacaoControllerTest" time="0.603">
+    <system-out><![CDATA[2026-04-06T22:51:14.728-03:00  INFO 815569 --- [backend] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.example.ilhafit.controller.AvaliacaoControllerTest]: AvaliacaoControllerTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-04-06T22:51:14.752-03:00  INFO 815569 --- [backend] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.example.ilhafit.BackendApplication for test class com.example.ilhafit.controller.AvaliacaoControllerTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v3.2.0)
+
+2026-04-06T22:51:14.970-03:00  INFO 815569 --- [backend] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-04-06T22:51:14.986-03:00  INFO 815569 --- [backend] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 14 ms. Found 11 JPA repository interfaces.
+2026-04-06T22:51:15.342-03:00  INFO 815569 --- [backend] [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-04-06T22:51:15.347-03:00  INFO 815569 --- [backend] [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-04-06T22:51:15.353-03:00  INFO 815569 --- [backend] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-04-06T22:51:15.356-03:00  INFO 815569 --- [backend] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Starting...
+2026-04-06T22:51:15.358-03:00  INFO 815569 --- [backend] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-2 - Added connection conn10: url=jdbc:h2:mem:testdb user=SA
+2026-04-06T22:51:15.359-03:00  INFO 815569 --- [backend] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Start completed.
+2026-04-06T22:51:15.360-03:00  WARN 815569 --- [backend] [           main] org.hibernate.orm.deprecation            : HHH90000025: H2Dialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-04-06T22:51:15.699-03:00  INFO 815569 --- [backend] [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-04-06T22:51:15.759-03:00  INFO 815569 --- [backend] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-04-06T22:51:16.210-03:00  WARN 815569 --- [backend] [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-04-06T22:51:16.455-03:00  INFO 815569 --- [backend] [           main] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-04-06T22:51:16.455-03:00  INFO 815569 --- [backend] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-04-06T22:51:16.457-03:00  INFO 815569 --- [backend] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
 ]]></system-out>
   </testcase>
-  <testcase name="loginEmailInexistente" classname="com.example.ilhafit.controller.AuthControllerTest" time="0.067"/>
-  <testcase name="refreshTokenValido" classname="com.example.ilhafit.controller.AuthControllerTest" time="0.193"/>
-  <testcase name="redefinirSenhaTokenInvalido" classname="com.example.ilhafit.controller.AuthControllerTest" time="0.006"/>
-  <testcase name="refreshTokenInvalido" classname="com.example.ilhafit.controller.AuthControllerTest" time="0.004">
-    <system-err><![CDATA[Invalid JWT signature
-]]></system-err>
-  </testcase>
-  <testcase name="loginEstabelecimentoRetornaRoleCorreto" classname="com.example.ilhafit.controller.AuthControllerTest" time="0.19"/>
-  <testcase name="rotaProtegidaSemToken" classname="com.example.ilhafit.controller.AuthControllerTest" time="0.003"/>
-  <testcase name="rotaProtegidaTokenInvalido" classname="com.example.ilhafit.controller.AuthControllerTest" time="0.004">
-    <system-err><![CDATA[Invalid JWT signature
-]]></system-err>
-  </testcase>
-  <testcase name="loginSenhaErrada" classname="com.example.ilhafit.controller.AuthControllerTest" time="0.185"/>
-  <testcase name="loginValido" classname="com.example.ilhafit.controller.AuthControllerTest" time="0.185"/>
-  <testcase name="esqueciSenhaEmailInexistente" classname="com.example.ilhafit.controller.AuthControllerTest" time="0.009"/>
-  <testcase name="esqueciSenhaEmailExistente" classname="com.example.ilhafit.controller.AuthControllerTest" time="0.133"/>
+  <testcase name="userNaoDeletaAvaliacaoDeOutro" classname="com.example.ilhafit.controller.AvaliacaoControllerTest" time="0.39"/>
+  <testcase name="listarAvaliacoesSemAuth" classname="com.example.ilhafit.controller.AvaliacaoControllerTest" time="0.097"/>
+  <testcase name="adminDeletaAvaliacaoDeOutroUsuario" classname="com.example.ilhafit.controller.AvaliacaoControllerTest" time="0.365"/>
+  <testcase name="userAvaliaEstabelecimento" classname="com.example.ilhafit.controller.AvaliacaoControllerTest" time="0.212"/>
+  <testcase name="autorDeletaPropriaAvaliacao" classname="com.example.ilhafit.controller.AvaliacaoControllerTest" time="0.224"/>
+  <testcase name="profissionalNaoPodeAvaliar" classname="com.example.ilhafit.controller.AvaliacaoControllerTest" time="0.234"/>
+  <testcase name="duplicataAvaliacaoMesmoUserMesmoEstabelecimento" classname="com.example.ilhafit.controller.AvaliacaoControllerTest" time="0.211"/>
+  <testcase name="avaliacaoSemAuth" classname="com.example.ilhafit.controller.AvaliacaoControllerTest" time="0.005"/>
+  <testcase name="notaForaDoRange" classname="com.example.ilhafit.controller.AvaliacaoControllerTest" time="0.205"/>
+  <testcase name="mediaRecalculadaAposAvaliacao" classname="com.example.ilhafit.controller.AvaliacaoControllerTest" time="0.353"/>
+  <testcase name="userAvaliaProfissional" classname="com.example.ilhafit.controller.AvaliacaoControllerTest" time="0.203"/>
 </testsuite>

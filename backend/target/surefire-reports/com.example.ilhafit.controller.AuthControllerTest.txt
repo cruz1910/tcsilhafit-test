@@ -1,26 +1,4 @@
 -------------------------------------------------------------------------------
 Test set: com.example.ilhafit.controller.AuthControllerTest
 -------------------------------------------------------------------------------
-Tests run: 2, Failures: 2, Errors: 0, Skipped: 0, Time elapsed: 3.151 s <<< FAILURE! -- in com.example.ilhafit.controller.AuthControllerTest
-com.example.ilhafit.controller.AuthControllerTest.deveFalharLoginComSenhaIncorreta -- Time elapsed: 0.589 s <<< FAILURE!
-java.lang.AssertionError: Status expected:<201> but was:<400>
-	at org.springframework.test.util.AssertionErrors.fail(AssertionErrors.java:59)
-	at org.springframework.test.util.AssertionErrors.assertEquals(AssertionErrors.java:122)
-	at org.springframework.test.web.servlet.result.StatusResultMatchers.lambda$matcher$9(StatusResultMatchers.java:637)
-	at org.springframework.test.web.servlet.MockMvc$1.andExpect(MockMvc.java:214)
-	at com.example.ilhafit.controller.AuthControllerTest.deveFalharLoginComSenhaIncorreta(AuthControllerTest.java:73)
-	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
-	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
-	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
-
-com.example.ilhafit.controller.AuthControllerTest.deveRegistrarELogarUsuarioComSucesso -- Time elapsed: 0.020 s <<< FAILURE!
-java.lang.AssertionError: Status expected:<201> but was:<400>
-	at org.springframework.test.util.AssertionErrors.fail(AssertionErrors.java:59)
-	at org.springframework.test.util.AssertionErrors.assertEquals(AssertionErrors.java:122)
-	at org.springframework.test.web.servlet.result.StatusResultMatchers.lambda$matcher$9(StatusResultMatchers.java:637)
-	at org.springframework.test.web.servlet.MockMvc$1.andExpect(MockMvc.java:214)
-	at com.example.ilhafit.controller.AuthControllerTest.deveRegistrarELogarUsuarioComSucesso(AuthControllerTest.java:47)
-	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
-	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
-	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
-
+Tests run: 12, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.006 s -- in com.example.ilhafit.controller.AuthControllerTest

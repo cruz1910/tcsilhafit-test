@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="com.example.ilhafit.controller.AuthControllerTest" time="1.006" tests="12" errors="0" skipped="0" failures="0">
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="com.example.ilhafit.controller.ProfissionalControllerTest" time="0.858" tests="7" errors="0" skipped="0" failures="0">
   <properties>
     <property name="java.specification.version" value="21"/>
     <property name="sun.jnu.encoding" value="UTF-8"/>
@@ -62,26 +62,20 @@
     <property name="java.class.version" value="65.0"/>
     <property name="LOGGED_APPLICATION_NAME" value="[backend] "/>
   </properties>
-  <testcase name="loginBodyVazio" classname="com.example.ilhafit.controller.AuthControllerTest" time="0.01">
-    <system-out><![CDATA[2026-04-06T22:51:24.668-03:00  INFO 815569 --- [backend] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.example.ilhafit.controller.AuthControllerTest]: AuthControllerTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-2026-04-06T22:51:24.670-03:00  INFO 815569 --- [backend] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.example.ilhafit.BackendApplication for test class com.example.ilhafit.controller.AuthControllerTest
+  <testcase name="listarProfissionaisPublico" classname="com.example.ilhafit.controller.ProfissionalControllerTest" time="0.006">
+    <system-out><![CDATA[2026-04-06T22:51:21.800-03:00  INFO 815569 --- [backend] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.example.ilhafit.controller.ProfissionalControllerTest]: ProfissionalControllerTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-04-06T22:51:21.802-03:00  INFO 815569 --- [backend] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.example.ilhafit.BackendApplication for test class com.example.ilhafit.controller.ProfissionalControllerTest
 ]]></system-out>
   </testcase>
-  <testcase name="loginEmailInexistente" classname="com.example.ilhafit.controller.AuthControllerTest" time="0.067"/>
-  <testcase name="refreshTokenValido" classname="com.example.ilhafit.controller.AuthControllerTest" time="0.193"/>
-  <testcase name="redefinirSenhaTokenInvalido" classname="com.example.ilhafit.controller.AuthControllerTest" time="0.006"/>
-  <testcase name="refreshTokenInvalido" classname="com.example.ilhafit.controller.AuthControllerTest" time="0.004">
-    <system-err><![CDATA[Invalid JWT signature
-]]></system-err>
+  <testcase name="adminDeletaProfissional" classname="com.example.ilhafit.controller.ProfissionalControllerTest" time="0.209"/>
+  <testcase name="registrarCpfDuplicado" classname="com.example.ilhafit.controller.ProfissionalControllerTest" time="0.132">
+    <system-out><![CDATA[2026-04-06T22:51:22.148-03:00  WARN 815569 --- [backend] [           main] o.h.engine.jdbc.spi.SqlExceptionHelper   : SQL Error: 23505, SQLState: 23505
+2026-04-06T22:51:22.148-03:00 ERROR 815569 --- [backend] [           main] o.h.engine.jdbc.spi.SqlExceptionHelper   : Unique index or primary key violation: "PUBLIC.CONSTRAINT_INDEX_5B ON PUBLIC.PROFISSIONAIS(CPF NULLS FIRST) VALUES ( /* 5 */ '55701557984' )"; SQL statement:
+insert into profissionais (cpf,data_cadastro,email,bairro,cep,cidade,complemento,estado,latitude,longitude,numero,rua,especializacao,exclusivo_mulheres,facebook,foto_url,instagram,nome,outros_atividade,registro_cref,role,senha,sexo,telefone,website,id) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,default) [23505-224]
+]]></system-out>
   </testcase>
-  <testcase name="loginEstabelecimentoRetornaRoleCorreto" classname="com.example.ilhafit.controller.AuthControllerTest" time="0.19"/>
-  <testcase name="rotaProtegidaSemToken" classname="com.example.ilhafit.controller.AuthControllerTest" time="0.003"/>
-  <testcase name="rotaProtegidaTokenInvalido" classname="com.example.ilhafit.controller.AuthControllerTest" time="0.004">
-    <system-err><![CDATA[Invalid JWT signature
-]]></system-err>
-  </testcase>
-  <testcase name="loginSenhaErrada" classname="com.example.ilhafit.controller.AuthControllerTest" time="0.185"/>
-  <testcase name="loginValido" classname="com.example.ilhafit.controller.AuthControllerTest" time="0.185"/>
-  <testcase name="esqueciSenhaEmailInexistente" classname="com.example.ilhafit.controller.AuthControllerTest" time="0.009"/>
-  <testcase name="esqueciSenhaEmailExistente" classname="com.example.ilhafit.controller.AuthControllerTest" time="0.133"/>
+  <testcase name="registrarComOutrosAtividadeCriaSolicitacao" classname="com.example.ilhafit.controller.ProfissionalControllerTest" time="0.217"/>
+  <testcase name="buscarPorEmailExistente" classname="com.example.ilhafit.controller.ProfissionalControllerTest" time="0.08"/>
+  <testcase name="buscarPorEmailInexistente" classname="com.example.ilhafit.controller.ProfissionalControllerTest" time="0.136"/>
+  <testcase name="registrarValido" classname="com.example.ilhafit.controller.ProfissionalControllerTest" time="0.066"/>
 </testsuite>

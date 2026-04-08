@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="com.example.ilhafit.controller.AuthControllerTest" time="1.006" tests="12" errors="0" skipped="0" failures="0">
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="com.example.ilhafit.controller.CategoriaControllerTest" time="0.761" tests="7" errors="0" skipped="0" failures="0">
   <properties>
     <property name="java.specification.version" value="21"/>
     <property name="sun.jnu.encoding" value="UTF-8"/>
@@ -62,26 +62,15 @@
     <property name="java.class.version" value="65.0"/>
     <property name="LOGGED_APPLICATION_NAME" value="[backend] "/>
   </properties>
-  <testcase name="loginBodyVazio" classname="com.example.ilhafit.controller.AuthControllerTest" time="0.01">
-    <system-out><![CDATA[2026-04-06T22:51:24.668-03:00  INFO 815569 --- [backend] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.example.ilhafit.controller.AuthControllerTest]: AuthControllerTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-2026-04-06T22:51:24.670-03:00  INFO 815569 --- [backend] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.example.ilhafit.BackendApplication for test class com.example.ilhafit.controller.AuthControllerTest
+  <testcase name="adminCriaCategoriaNomeDuplicado" classname="com.example.ilhafit.controller.CategoriaControllerTest" time="0.157">
+    <system-out><![CDATA[2026-04-06T22:51:21.037-03:00  INFO 815569 --- [backend] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.example.ilhafit.controller.CategoriaControllerTest]: CategoriaControllerTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-04-06T22:51:21.040-03:00  INFO 815569 --- [backend] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.example.ilhafit.BackendApplication for test class com.example.ilhafit.controller.CategoriaControllerTest
 ]]></system-out>
   </testcase>
-  <testcase name="loginEmailInexistente" classname="com.example.ilhafit.controller.AuthControllerTest" time="0.067"/>
-  <testcase name="refreshTokenValido" classname="com.example.ilhafit.controller.AuthControllerTest" time="0.193"/>
-  <testcase name="redefinirSenhaTokenInvalido" classname="com.example.ilhafit.controller.AuthControllerTest" time="0.006"/>
-  <testcase name="refreshTokenInvalido" classname="com.example.ilhafit.controller.AuthControllerTest" time="0.004">
-    <system-err><![CDATA[Invalid JWT signature
-]]></system-err>
-  </testcase>
-  <testcase name="loginEstabelecimentoRetornaRoleCorreto" classname="com.example.ilhafit.controller.AuthControllerTest" time="0.19"/>
-  <testcase name="rotaProtegidaSemToken" classname="com.example.ilhafit.controller.AuthControllerTest" time="0.003"/>
-  <testcase name="rotaProtegidaTokenInvalido" classname="com.example.ilhafit.controller.AuthControllerTest" time="0.004">
-    <system-err><![CDATA[Invalid JWT signature
-]]></system-err>
-  </testcase>
-  <testcase name="loginSenhaErrada" classname="com.example.ilhafit.controller.AuthControllerTest" time="0.185"/>
-  <testcase name="loginValido" classname="com.example.ilhafit.controller.AuthControllerTest" time="0.185"/>
-  <testcase name="esqueciSenhaEmailInexistente" classname="com.example.ilhafit.controller.AuthControllerTest" time="0.009"/>
-  <testcase name="esqueciSenhaEmailExistente" classname="com.example.ilhafit.controller.AuthControllerTest" time="0.133"/>
+  <testcase name="buscarCategoriaPorIdInexistente" classname="com.example.ilhafit.controller.CategoriaControllerTest" time="0.007"/>
+  <testcase name="adminAtualizaCategoria" classname="com.example.ilhafit.controller.CategoriaControllerTest" time="0.153"/>
+  <testcase name="listarCategoriasPublico" classname="com.example.ilhafit.controller.CategoriaControllerTest" time="0.007"/>
+  <testcase name="adminCriaCategoria" classname="com.example.ilhafit.controller.CategoriaControllerTest" time="0.142"/>
+  <testcase name="naoAdminNaoCriaCategoria" classname="com.example.ilhafit.controller.CategoriaControllerTest" time="0.133"/>
+  <testcase name="adminDeletaCategoria" classname="com.example.ilhafit.controller.CategoriaControllerTest" time="0.15"/>
 </testsuite>

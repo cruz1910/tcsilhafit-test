@@ -1,2 +1,13 @@
+/home/oem/Projetos/tcs/projeto/tcsilhafit-test/backend/src/test/java/com/example/ilhafit/controller/MeControllerTest.java
+/home/oem/Projetos/tcs/projeto/tcsilhafit-test/backend/src/test/java/com/example/ilhafit/controller/DenunciaControllerTest.java
+/home/oem/Projetos/tcs/projeto/tcsilhafit-test/backend/src/test/java/com/example/ilhafit/controller/AdministradorControllerTest.java
+/home/oem/Projetos/tcs/projeto/tcsilhafit-test/backend/src/test/java/com/example/ilhafit/BaseIntegrationTest.java
+/home/oem/Projetos/tcs/projeto/tcsilhafit-test/backend/src/test/java/com/example/ilhafit/controller/EstabelecimentoControllerTest.java
 /home/oem/Projetos/tcs/projeto/tcsilhafit-test/backend/src/test/java/com/example/ilhafit/controller/AuthControllerTest.java
+/home/oem/Projetos/tcs/projeto/tcsilhafit-test/backend/src/test/java/com/example/ilhafit/controller/CategoriaControllerTest.java
+/home/oem/Projetos/tcs/projeto/tcsilhafit-test/backend/src/test/java/com/example/ilhafit/controller/UsuarioControllerTest.java
+/home/oem/Projetos/tcs/projeto/tcsilhafit-test/backend/src/test/java/com/example/ilhafit/controller/ProfissionalControllerTest.java
+/home/oem/Projetos/tcs/projeto/tcsilhafit-test/backend/src/test/java/com/example/ilhafit/controller/AvaliacaoControllerTest.java
+/home/oem/Projetos/tcs/projeto/tcsilhafit-test/backend/src/test/java/com/example/ilhafit/controller/GradeAtividadeControllerTest.java
+/home/oem/Projetos/tcs/projeto/tcsilhafit-test/backend/src/test/java/com/example/ilhafit/controller/SolicitacaoCategoriaControllerTest.java
 /home/oem/Projetos/tcs/projeto/tcsilhafit-test/backend/src/test/java/com/example/ilhafit/BackendApplicationTests.java
